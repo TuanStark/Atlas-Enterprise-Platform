@@ -1,0 +1,13 @@
+export const DATE = {
+    MILLISECONDS_PER_SECOND: 1000,
+
+    SECONDS_PER_MINUTE: 60,
+
+    MINUTES_PER_HOUR: 60,
+
+    HOURS_PER_DAY: 24,
+
+    DAYS_PER_WEEK: 7,
+
+    MONTHS_PER_YEAR: 12,
+} as const;
