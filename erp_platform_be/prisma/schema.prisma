@@ -1,0 +1,2498 @@
+// This is your Prisma schema file,
+// converted from your PostgreSQL DDL by Antigravity.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TenantStatus {
+  active
+  inactive
+  suspended
+
+  @@map("tenant_status")
+}
+
+enum SubscriptionStatus {
+  trial
+  active
+  expired
+  cancelled
+
+  @@map("subscription_status")
+}
+
+enum PrincipalType {
+  user
+  service_account
+
+  @@map("principal_type")
+}
+
+enum PrincipalStatus {
+  active
+  inactive
+  locked
+
+  @@map("principal_status")
+}
+
+enum CredentialType {
+  password
+  oauth
+  saml
+  oidc
+
+  @@map("credential_type")
+}
+
+enum MfaType {
+  totp
+  email
+  sms
+
+  @@map("mfa_type")
+}
+
+enum EffectType {
+  allow
+  deny
+
+  @@map("effect_type")
+}
+
+enum FeatureFlagStatus {
+  enabled
+  disabled
+
+  @@map("feature_flag_status")
+}
+
+enum WorkflowStatus {
+  draft
+  active
+  inactive
+
+  @@map("workflow_status")
+}
+
+enum WorkflowStepType {
+  start
+  approval
+  task
+  notification
+  end
+
+  @@map("workflow_step_type")
+}
+
+enum WorkflowInstanceStatus {
+  running
+  completed
+  cancelled
+  rejected
+
+  @@map("workflow_instance_status")
+}
+
+enum WorkflowTaskStatus {
+  pending
+  approved
+  rejected
+  skipped
+
+  @@map("workflow_task_status")
+}
+
+enum AssignmentType {
+  user
+  role
+  manager
+  department_manager
+  dynamic
+
+  @@map("assignment_type")
+}
+
+enum NotificationChannel {
+  in_app
+  email
+  sms
+  push
+  webhook
+
+  @@map("notification_channel")
+}
+
+enum NotificationStatus {
+  pending
+  sending
+  sent
+  failed
+  cancelled
+
+  @@map("notification_status")
+}
+
+enum FileStorageProvider {
+  local
+  s3
+  minio
+  azure_blob
+  gcs
+
+  @@map("file_storage_provider")
+}
+
+enum FileVisibility {
+  private
+  internal
+  public
+
+  @@map("file_visibility")
+}
+
+enum AuditAction {
+  create
+  update
+  delete
+  login
+  logout
+  approve
+  reject
+  export
+  import
+
+  @@map("audit_action")
+}
+
+enum CommentStatus {
+  active
+  edited
+  deleted
+
+  @@map("comment_status")
+}
+
+enum CustomFieldType {
+  text
+  textarea
+  number
+  decimal
+  boolean
+  date
+  datetime
+  email
+  phone
+  url
+  select
+  multiselect
+  json
+
+  @@map("custom_field_type")
+}
+
+enum Gender {
+  male
+  female
+  other
+
+  @@map("gender")
+}
+
+enum MaritalStatus {
+  single
+  married
+  divorced
+  widowed
+
+  @@map("marital_status")
+}
+
+enum EmploymentStatus {
+  probation
+  active
+  suspended
+  resigned
+  terminated
+  retired
+
+  @@map("employment_status")
+}
+
+enum AssignmentStatus {
+  active
+  ended
+
+  @@map("assignment_status")
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+  early_leave
+  overtime
+  holiday
+
+  @@map("attendance_status")
+}
+
+enum AttendanceSource {
+  manual
+  biometric
+  mobile
+  web
+  api
+
+  @@map("attendance_source")
+}
+
+enum LeaveRequestStatus {
+  draft
+  pending
+  approved
+  rejected
+  cancelled
+
+  @@map("leave_request_status")
+}
+
+enum SalaryComponentType {
+  earning
+  allowance
+  deduction
+  employer_contribution
+
+  @@map("salary_component_type")
+}
+
+enum PayrollStatus {
+  draft
+  calculating
+  calculated
+  approved
+  paid
+  cancelled
+
+  @@map("payroll_status")
+}
+
+enum RequisitionStatus {
+  draft
+  approved
+  closed
+  cancelled
+
+  @@map("requisition_status")
+}
+
+enum ApplicationStatus {
+  applied
+  screening
+  interviewing
+  offered
+  hired
+  rejected
+  withdrawn
+
+  @@map("application_status")
+}
+
+enum InterviewStatus {
+  scheduled
+  completed
+  cancelled
+  no_show
+
+  @@map("interview_status")
+}
+
+enum OfferStatus {
+  draft
+  sent
+  accepted
+  declined
+  expired
+
+  @@map("offer_status")
+}
+
+enum ReviewStatus {
+  draft
+  self_review
+  manager_review
+  completed
+  cancelled
+
+  @@map("review_status")
+}
+
+enum TrainingStatus {
+  planned
+  ongoing
+  completed
+  cancelled
+
+  @@map("training_status")
+}
+
+enum EnrollmentStatus {
+  enrolled
+  attended
+  completed
+  failed
+  cancelled
+
+  @@map("enrollment_status")
+}
+
+enum AssetStatus {
+  available
+  assigned
+  maintenance
+  disposed
+
+  @@map("asset_status")
+}
+
+model SubscriptionPlan {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String @db.VarChar(50) @unique @map("code")
+  name String @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  price Decimal? @db.Decimal(18, 2) @map("price")
+  billingCycleMonth Int? @map("billing_cycle_month")
+  maxUsers Int? @map("max_users")
+  maxStorageGb Int? @map("max_storage_gb")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  subscriptionPlanTenantSubscriptions TenantSubscription[] @relation
+
+  @@map("subscription_plans")
+}
+
+model Tenant {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String @db.VarChar(50) @unique @map("code")
+  name String @db.VarChar(255) @map("name")
+  legalName String? @db.VarChar(255) @map("legal_name")
+  taxCode String? @db.VarChar(100) @map("tax_code")
+  email String? @db.VarChar(255) @map("email")
+  phone String? @db.VarChar(50) @map("phone")
+  logoFileId String? @db.Uuid @map("logo_file_id")
+  timezone String? @db.VarChar(100) @map("timezone")
+  locale String? @db.VarChar(20) @map("locale")
+  currency String? @db.VarChar(10) @map("currency")
+  status TenantStatus? @map("status")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+  version Int? @map("version")
+
+  logoFile File? @relation(name: "Tenant_logoFile", fields: [logoFileId], references: [id])
+  tenantDomains TenantDomain[] @relation
+  tenantSubscriptions TenantSubscription[] @relation
+  tenantSettings TenantSetting[] @relation
+  principals Principal[] @relation
+  users User[] @relation
+  roles Role[] @relation
+  organizations Organization[] @relation
+  configurations Configuration[] @relation
+  featureFlags FeatureFlag[] @relation
+  numberingSequences NumberingSequence[] @relation
+  emailTemplates EmailTemplate[] @relation
+  systemCalendars SystemCalendar[] @relation
+  workflowDefinitions WorkflowDefinition[] @relation
+  notificationTemplates NotificationTemplate[] @relation
+  notifications Notification[] @relation
+  files File[] @relation("File_tenant")
+  auditLogs AuditLog[] @relation
+  auditExports AuditExport[] @relation
+  comments Comment[] @relation
+  customFieldDefinitions CustomFieldDefinition[] @relation
+  tags Tag[] @relation
+  employees Employee[] @relation
+  employmentTypes EmploymentType[] @relation
+  contractTypes ContractType[] @relation
+  employments Employment[] @relation
+  jobTitles JobTitle[] @relation
+  workLocations WorkLocation[] @relation
+  organizationAssignments OrganizationAssignment[] @relation
+  shifts Shift[] @relation
+  shiftAssignments ShiftAssignment[] @relation
+  attendanceRecords AttendanceRecord[] @relation
+  attendanceDevices AttendanceDevice[] @relation
+  leaveTypes LeaveType[] @relation
+  leavePolicies LeavePolicy[] @relation
+  leaveBalances LeaveBalance[] @relation
+  leaveRequests LeaveRequest[] @relation
+  leaveTransactions LeaveTransaction[] @relation
+  salaryStructures SalaryStructure[] @relation
+  salaryComponents SalaryComponent[] @relation
+  employeeSalaryAssignments EmployeeSalaryAssignment[] @relation
+  payrollPeriods PayrollPeriod[] @relation
+  payrolls Payroll[] @relation
+  jobRequisitions JobRequisition[] @relation
+  jobPostings JobPosting[] @relation
+  candidates Candidate[] @relation
+  jobApplications JobApplication[] @relation
+  performanceCycles PerformanceCycle[] @relation
+  performanceRatings PerformanceRating[] @relation
+  performanceGoals PerformanceGoal[] @relation
+  performanceReviews PerformanceReview[] @relation
+  trainingCourses TrainingCourse[] @relation
+  trainingSessions TrainingSession[] @relation
+  trainingEnrollments TrainingEnrollment[] @relation
+  trainingCertificates TrainingCertificate[] @relation
+  assetCategories AssetCategory[] @relation
+  assets Asset[] @relation
+  assetAssignments AssetAssignment[] @relation
+  assetMaintenances AssetMaintenance[] @relation
+  assetDisposals AssetDisposal[] @relation
+
+  @@map("tenants")
+}
+
+model TenantDomain {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  domain String @db.VarChar(255) @map("domain")
+  isPrimary Boolean? @map("is_primary")
+  verifiedAt DateTime? @db.Timestamptz @map("verified_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([domain])
+  @@map("tenant_domains")
+}
+
+model TenantSubscription {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  subscriptionPlanId String @db.Uuid @map("subscription_plan_id")
+  status SubscriptionStatus? @map("status")
+  startsAt DateTime? @db.Timestamptz @map("starts_at")
+  expiresAt DateTime? @db.Timestamptz @map("expires_at")
+  autoRenew Boolean? @map("auto_renew")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  subscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+
+  @@map("tenant_subscriptions")
+}
+
+model TenantSetting {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  settingKey String? @db.VarChar(150) @map("setting_key")
+  settingValue Json? @db.JsonB @map("setting_value")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, settingKey])
+  @@map("tenant_settings")
+}
+
+model Principal {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  type PrincipalType @map("type")
+  status PrincipalStatus @map("status")
+  displayName String? @db.VarChar(255) @map("display_name")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+  version Int? @map("version")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user User? @relation
+  credentials Credential[] @relation
+  sessions Session[] @relation
+  mfaMethods MfaMethod[] @relation
+  apiKeys ApiKey[] @relation
+  refreshTokens RefreshToken[] @relation
+  principalRoles PrincipalRole[] @relation
+  principalPermissions PrincipalPermission[] @relation
+  startedByWorkflowInstances WorkflowInstance[] @relation
+  assigneeWorkflowTasks WorkflowTask[] @relation
+  actorWorkflowHistories WorkflowHistory[] @relation
+  createdByNotifications Notification[] @relation
+  notificationRecipients NotificationRecipient[] @relation
+  createdByFiles File[] @relation
+  uploadedByFileVersions FileVersion[] @relation
+  attachedByFileAttachments FileAttachment[] @relation
+  actorAuditLogs AuditLog[] @relation
+  exportedByAuditExports AuditExport[] @relation
+  authorComments Comment[] @relation
+  commentMentions CommentMention[] @relation
+  commentReactions CommentReaction[] @relation
+  createdByCustomFieldDefinitions CustomFieldDefinition[] @relation
+  createdByTags Tag[] @relation
+  assignedByTagAssignments TagAssignment[] @relation
+  employee Employee? @relation
+  changedByEmploymentStatusHistories EmploymentStatusHistory[] @relation
+  requestedByAttendanceAdjustments AttendanceAdjustment[] @relation("AttendanceAdjustment_requestedByPrincipal")
+  approvedByAttendanceAdjustments AttendanceAdjustment[] @relation("AttendanceAdjustment_approvedByPrincipal")
+  updatedByPerformanceGoalProgress PerformanceGoalProgress[] @relation
+  assignedByAssetAssignments AssetAssignment[] @relation
+  returnedByAssetReturns AssetReturn[] @relation
+
+  @@index([tenantId])
+  @@map("principals")
+}
+
+model User {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  principalId String @db.Uuid @unique @map("principal_id")
+  username String @db.VarChar(100) @map("username")
+  email String @db.VarChar(255) @map("email")
+  phone String? @db.VarChar(30) @map("phone")
+  emailVerified Boolean? @map("email_verified")
+  phoneVerified Boolean? @map("phone_verified")
+  lastLoginAt DateTime? @db.Timestamptz @map("last_login_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  tenantId String @db.Uuid @map("tenant_id")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, username])
+  @@index([email])
+  @@map("users")
+}
+
+model Credential {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  principalId String @db.Uuid @map("principal_id")
+  type CredentialType? @map("type")
+  passwordHash String? @db.Text @map("password_hash")
+  passwordChangedAt DateTime? @db.Timestamptz @map("password_changed_at")
+  passwordExpiresAt DateTime? @db.Timestamptz @map("password_expires_at")
+  failedAttempts Int? @map("failed_attempts")
+  lockedUntil DateTime? @db.Timestamptz @map("locked_until")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+
+  @@map("credentials")
+}
+
+model Session {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  principalId String @db.Uuid @map("principal_id")
+  refreshTokenId String? @db.Uuid @map("refresh_token_id")
+  ipAddress String? @db.VarChar(100) @map("ip_address")
+  userAgent String? @db.Text @map("user_agent")
+  deviceName String? @db.VarChar(255) @map("device_name")
+  expiresAt DateTime? @db.Timestamptz @map("expires_at")
+  revokedAt DateTime? @db.Timestamptz @map("revoked_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+  refreshToken RefreshToken? @relation(fields: [refreshTokenId], references: [id])
+
+  @@map("sessions")
+}
+
+model MfaMethod {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  principalId String @db.Uuid @map("principal_id")
+  type MfaType? @map("type")
+  secret String? @db.Text @map("secret")
+  isDefault Boolean? @map("is_default")
+  enabled Boolean? @map("enabled")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+
+  @@map("mfa_methods")
+}
+
+model ApiKey {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  principalId String @db.Uuid @map("principal_id")
+  name String? @db.VarChar(255) @map("name")
+  keyHash String? @db.Text @map("key_hash")
+  expiresAt DateTime? @db.Timestamptz @map("expires_at")
+  lastUsedAt DateTime? @db.Timestamptz @map("last_used_at")
+  revokedAt DateTime? @db.Timestamptz @map("revoked_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+
+  @@map("api_keys")
+}
+
+model RefreshToken {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  principalId String @db.Uuid @map("principal_id")
+  tokenHash String? @db.Text @map("token_hash")
+  expiresAt DateTime? @db.Timestamptz @map("expires_at")
+  revokedAt DateTime? @db.Timestamptz @map("revoked_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  sessions Session[] @relation
+  principal Principal @relation(fields: [principalId], references: [id])
+
+  @@map("refresh_tokens")
+}
+
+model Resource {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String @db.VarChar(100) @unique @map("code")
+  name String? @db.VarChar(150) @map("name")
+
+  permissions Permission[] @relation
+
+  @@map("resources")
+}
+
+model Action {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String @db.VarChar(50) @unique @map("code")
+  name String? @db.VarChar(100) @map("name")
+
+  permissions Permission[] @relation
+
+  @@map("actions")
+}
+
+model PermissionGroup {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String @db.VarChar(100) @unique @map("code")
+  name String? @db.VarChar(150) @map("name")
+
+  permissionGroupPermissions Permission[] @relation
+
+  @@map("permission_groups")
+}
+
+model Permission {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  permissionGroupId String? @db.Uuid @map("permission_group_id")
+  resourceId String @db.Uuid @map("resource_id")
+  actionId String @db.Uuid @map("action_id")
+  code String @db.VarChar(150) @unique @map("code")
+  description String? @db.Text @map("description")
+
+  permissionGroup PermissionGroup? @relation(fields: [permissionGroupId], references: [id])
+  resource Resource @relation(fields: [resourceId], references: [id])
+  action Action @relation(fields: [actionId], references: [id])
+  rolePermissions RolePermission[] @relation
+  principalPermissions PrincipalPermission[] @relation
+
+  @@map("permissions")
+}
+
+model Role {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(100) @map("code")
+  name String? @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  isSystem Boolean? @map("is_system")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  rolePermissions RolePermission[] @relation
+  principalRoles PrincipalRole[] @relation
+  parentRoleHierarchies RoleHierarchy[] @relation("RoleHierarchy_parentRole")
+  childRoleHierarchies RoleHierarchy[] @relation("RoleHierarchy_childRole")
+
+  @@unique([tenantId, code])
+  @@map("roles")
+}
+
+model RolePermission {
+  roleId String @db.Uuid @map("role_id")
+  permissionId String @db.Uuid @map("permission_id")
+  effect EffectType? @map("effect")
+
+  role Role @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model PrincipalRole {
+  principalId String @db.Uuid @map("principal_id")
+  roleId String @db.Uuid @map("role_id")
+  scopeId String @db.Uuid @map("scope_id")
+  assignedAt DateTime? @db.Timestamptz @map("assigned_at")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+  scope Scope @relation(fields: [scopeId], references: [id])
+
+  @@id([principalId, roleId, scopeId])
+  @@map("principal_roles")
+}
+
+model PrincipalPermission {
+  principalId String @db.Uuid @map("principal_id")
+  permissionId String @db.Uuid @map("permission_id")
+  scopeId String @db.Uuid @map("scope_id")
+  effect EffectType? @map("effect")
+
+  principal Principal @relation(fields: [principalId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+  scope Scope @relation(fields: [scopeId], references: [id])
+
+  @@id([principalId, permissionId, scopeId])
+  @@map("principal_permissions")
+}
+
+model RoleHierarchy {
+  parentRoleId String @db.Uuid @map("parent_role_id")
+  childRoleId String @db.Uuid @map("child_role_id")
+
+  parentRole Role @relation(name: "RoleHierarchy_parentRole", fields: [parentRoleId], references: [id])
+  childRole Role @relation(name: "RoleHierarchy_childRole", fields: [childRoleId], references: [id])
+
+  @@id([parentRoleId, childRoleId])
+  @@map("role_hierarchies")
+}
+
+model Scope {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String? @db.VarChar(100) @unique @map("code")
+  name String? @db.VarChar(150) @map("name")
+
+  principalRoles PrincipalRole[] @relation
+  principalPermissions PrincipalPermission[] @relation
+
+  @@map("scopes")
+}
+
+model Organization {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(255) @map("name")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+  version Int? @map("version")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  organizationUnits OrganizationUnit[] @relation
+  positions Position[] @relation
+  costCenters CostCenter[] @relation
+  organizationCalendars OrganizationCalendar[] @relation
+
+  @@unique([tenantId, code])
+  @@map("organizations")
+}
+
+model OrganizationUnitType {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  code String @db.VarChar(50) @unique @map("code")
+  name String @db.VarChar(100) @map("name")
+  description String? @db.Text @map("description")
+
+  unitTypeOrganizationUnits OrganizationUnit[] @relation
+
+  @@map("organization_unit_types")
+}
+
+model OrganizationUnit {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  organizationId String @db.Uuid @map("organization_id")
+  parentUnitId String? @db.Uuid @map("parent_unit_id")
+  unitTypeId String @db.Uuid @map("unit_type_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(255) @map("name")
+  path String? @db.VarChar(1000) @map("path")
+  level Int? @map("level")
+  sortOrder Int? @map("sort_order")
+  isActive Boolean? @map("is_active")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+  version Int? @map("version")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  parentUnit OrganizationUnit? @relation(name: "OrganizationUnit_parentUnit", fields: [parentUnitId], references: [id])
+  parentUnitOrganizationUnits OrganizationUnit[] @relation("OrganizationUnit_parentUnit")
+  unitType OrganizationUnitType @relation(fields: [unitTypeId], references: [id])
+  departmentJobRequisitions JobRequisition[] @relation
+
+  @@unique([organizationId, code])
+  @@index([parentUnitId])
+  @@index([path])
+  @@map("organization_units")
+}
+
+model Position {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  organizationId String @db.Uuid @map("organization_id")
+  code String? @db.VarChar(50) @map("code")
+  name String? @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  level Int? @map("level")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationAssignments OrganizationAssignment[] @relation
+  jobRequisitions JobRequisition[] @relation
+
+  @@unique([organizationId, code])
+  @@map("positions")
+}
+
+model CostCenter {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  organizationId String @db.Uuid @map("organization_id")
+  code String? @db.VarChar(50) @map("code")
+  name String? @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  costCenterOrganizationAssignments OrganizationAssignment[] @relation
+
+  @@map("cost_centers")
+}
+
+model OrganizationCalendar {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  organizationId String @db.Uuid @map("organization_id")
+  name String? @db.VarChar(100) @map("name")
+  timezone String? @db.VarChar(100) @map("timezone")
+  workDays Json? @db.JsonB @map("work_days")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("organization_calendars")
+}
+
+model Configuration {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  configKey String @db.VarChar(150) @map("config_key")
+  configValue Json? @db.JsonB @map("config_value")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, configKey])
+  @@map("configurations")
+}
+
+model FeatureFlag {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  code String @db.VarChar(100) @map("code")
+  name String? @db.VarChar(150) @map("name")
+  status FeatureFlagStatus? @map("status")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, code])
+  @@map("feature_flags")
+}
+
+model NumberingSequence {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(100) @map("code")
+  prefix String? @db.VarChar(30) @map("prefix")
+  suffix String? @db.VarChar(30) @map("suffix")
+  nextNumber BigInt? @map("next_number")
+  padding Int? @map("padding")
+  resetRule String? @db.VarChar(30) @map("reset_rule")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@map("numbering_sequences")
+}
+
+model LocalizationResource {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  locale String? @db.VarChar(20) @map("locale")
+  resourceKey String? @db.VarChar(255) @map("resource_key")
+  resourceValue String? @db.Text @map("resource_value")
+
+  @@unique([locale, resourceKey])
+  @@map("localization_resources")
+}
+
+model EmailTemplate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(100) @map("code")
+  subject String? @db.VarChar(255) @map("subject")
+  body String? @db.Text @map("body")
+  language String? @db.VarChar(20) @map("language")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@map("email_templates")
+}
+
+model SystemCalendar {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(100) @map("code")
+  name String? @db.VarChar(255) @map("name")
+  timezone String? @db.VarChar(100) @map("timezone")
+  workDays Json? @db.JsonB @map("work_days")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  calendarHolidays Holiday[] @relation
+
+  @@map("system_calendars")
+}
+
+model Holiday {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  calendarId String? @db.Uuid @map("calendar_id")
+  holidayDate DateTime? @db.Date @map("holiday_date")
+  name String? @db.VarChar(255) @map("name")
+  recurring Boolean? @map("recurring")
+
+  calendar SystemCalendar? @relation(fields: [calendarId], references: [id])
+
+  @@map("holidays")
+}
+
+model WorkflowDefinition {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(100) @map("code")
+  name String @db.VarChar(255) @map("name")
+  description String? @db.Text @map("description")
+  version Int? @default(1) @map("version")
+  status WorkflowStatus @map("status")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  workflowDefinitionWorkflowSteps WorkflowStep[] @relation
+  workflowDefinitionWorkflowTransitions WorkflowTransition[] @relation
+  workflowDefinitionWorkflowInstances WorkflowInstance[] @relation
+
+  @@unique([tenantId, code, version])
+  @@map("workflow_definitions")
+}
+
+model WorkflowStep {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  workflowDefinitionId String @db.Uuid @map("workflow_definition_id")
+  code String @db.VarChar(100) @map("code")
+  name String @db.VarChar(255) @map("name")
+  stepType WorkflowStepType @map("step_type")
+  sequenceNo Int? @map("sequence_no")
+  assignmentType AssignmentType? @map("assignment_type")
+  assignmentConfig Json? @db.JsonB @map("assignment_config")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  workflowDefinition WorkflowDefinition @relation(fields: [workflowDefinitionId], references: [id])
+  fromStepWorkflowTransitions WorkflowTransition[] @relation("WorkflowTransition_fromStep")
+  toStepWorkflowTransitions WorkflowTransition[] @relation("WorkflowTransition_toStep")
+  currentStepWorkflowInstances WorkflowInstance[] @relation
+  workflowStepWorkflowTasks WorkflowTask[] @relation
+  workflowStepWorkflowHistories WorkflowHistory[] @relation
+
+  @@unique([workflowDefinitionId, code])
+  @@map("workflow_steps")
+}
+
+model WorkflowTransition {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  workflowDefinitionId String @db.Uuid @map("workflow_definition_id")
+  fromStepId String @db.Uuid @map("from_step_id")
+  toStepId String @db.Uuid @map("to_step_id")
+  transitionName String? @db.VarChar(100) @map("transition_name")
+  conditionExpression Json? @db.JsonB @map("condition_expression")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  workflowDefinition WorkflowDefinition @relation(fields: [workflowDefinitionId], references: [id])
+  fromStep WorkflowStep @relation(name: "WorkflowTransition_fromStep", fields: [fromStepId], references: [id])
+  toStep WorkflowStep @relation(name: "WorkflowTransition_toStep", fields: [toStepId], references: [id])
+
+  @@map("workflow_transitions")
+}
+
+model WorkflowInstance {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  workflowDefinitionId String @db.Uuid @map("workflow_definition_id")
+  targetRecordId String @db.Uuid @map("target_record_id")
+  currentStepId String? @db.Uuid @map("current_step_id")
+  status WorkflowInstanceStatus? @map("status")
+  startedByPrincipalId String? @db.Uuid @map("started_by_principal_id")
+  startedAt DateTime? @db.Timestamptz @map("started_at")
+  completedAt DateTime? @db.Timestamptz @map("completed_at")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  workflowDefinition WorkflowDefinition @relation(fields: [workflowDefinitionId], references: [id])
+  currentStep WorkflowStep? @relation(fields: [currentStepId], references: [id])
+  startedByPrincipal Principal? @relation(fields: [startedByPrincipalId], references: [id])
+  workflowInstanceWorkflowTasks WorkflowTask[] @relation
+  workflowInstanceWorkflowHistories WorkflowHistory[] @relation
+  workflowInstanceLeaveRequests LeaveRequest[] @relation
+  workflowInstancePerformanceReviews PerformanceReview[] @relation
+
+  @@map("workflow_instances")
+}
+
+model WorkflowTask {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  workflowInstanceId String @db.Uuid @map("workflow_instance_id")
+  workflowStepId String @db.Uuid @map("workflow_step_id")
+  assigneePrincipalId String? @db.Uuid @map("assignee_principal_id")
+  status WorkflowTaskStatus? @map("status")
+  dueAt DateTime? @db.Timestamptz @map("due_at")
+  remindAt DateTime? @db.Timestamptz @map("remind_at")
+  priority Int? @map("priority")
+  assignedAt DateTime? @db.Timestamptz @map("assigned_at")
+  completedAt DateTime? @db.Timestamptz @map("completed_at")
+  comment String? @db.Text @map("comment")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  workflowInstance WorkflowInstance @relation(fields: [workflowInstanceId], references: [id])
+  workflowStep WorkflowStep @relation(fields: [workflowStepId], references: [id])
+  assigneePrincipal Principal? @relation(fields: [assigneePrincipalId], references: [id])
+
+  @@map("workflow_tasks")
+}
+
+model WorkflowHistory {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  workflowInstanceId String @db.Uuid @map("workflow_instance_id")
+  workflowStepId String? @db.Uuid @map("workflow_step_id")
+  actorPrincipalId String? @db.Uuid @map("actor_principal_id")
+  action String? @db.VarChar(100) @map("action")
+  fromStatus String? @db.VarChar(50) @map("from_status")
+  toStatus String? @db.VarChar(50) @map("to_status")
+  comment String? @db.Text @map("comment")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  workflowInstance WorkflowInstance @relation(fields: [workflowInstanceId], references: [id])
+  workflowStep WorkflowStep? @relation(fields: [workflowStepId], references: [id])
+  actorPrincipal Principal? @relation(fields: [actorPrincipalId], references: [id])
+
+  @@map("workflow_histories")
+}
+
+model NotificationTemplate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  code String @db.VarChar(100) @map("code")
+  name String? @db.VarChar(255) @map("name")
+  channel NotificationChannel? @map("channel")
+  subject String? @db.VarChar(255) @map("subject")
+  body String? @db.Text @map("body")
+  language String? @db.VarChar(20) @map("language")
+  isActive Boolean? @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  templateNotifications Notification[] @relation
+
+  @@unique([tenantId, code, language])
+  @@map("notification_templates")
+}
+
+model Notification {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  templateId String? @db.Uuid @map("template_id")
+  targetModule String? @db.VarChar(100) @map("target_module")
+  targetEntity String? @db.VarChar(100) @map("target_entity")
+  targetRecordId String? @db.Uuid @map("target_record_id")
+  title String? @db.VarChar(255) @map("title")
+  message String? @db.Text @map("message")
+  metadata Json? @db.JsonB @map("metadata")
+  createdByPrincipalId String? @db.Uuid @map("created_by_principal_id")
+  scheduledAt DateTime? @db.Timestamptz @map("scheduled_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  template NotificationTemplate? @relation(fields: [templateId], references: [id])
+  createdByPrincipal Principal? @relation(fields: [createdByPrincipalId], references: [id])
+  notificationRecipients NotificationRecipient[] @relation
+
+  @@map("notifications")
+}
+
+model NotificationRecipient {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  notificationId String @db.Uuid @map("notification_id")
+  principalId String @db.Uuid @map("principal_id")
+  isRead Boolean? @map("is_read")
+  readAt DateTime? @db.Timestamptz @map("read_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  notification Notification @relation(fields: [notificationId], references: [id])
+  principal Principal @relation(fields: [principalId], references: [id])
+  recipientNotificationDeliveries NotificationDelivery[] @relation
+
+  @@unique([notificationId, principalId])
+  @@map("notification_recipients")
+}
+
+model NotificationDelivery {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  recipientId String @db.Uuid @map("recipient_id")
+  channel NotificationChannel? @map("channel")
+  status NotificationStatus? @map("status")
+  provider String? @db.VarChar(100) @map("provider")
+  providerMessageId String? @db.VarChar(255) @map("provider_message_id")
+  retryCount Int? @map("retry_count")
+  sentAt DateTime? @db.Timestamptz @map("sent_at")
+  deliveredAt DateTime? @db.Timestamptz @map("delivered_at")
+  failedAt DateTime? @db.Timestamptz @map("failed_at")
+  errorMessage String? @db.Text @map("error_message")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  recipient NotificationRecipient @relation(fields: [recipientId], references: [id])
+
+  @@map("notification_deliveries")
+}
+
+model File {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(100) @map("code")
+  fileName String? @db.VarChar(255) @map("file_name")
+  mimeType String? @db.VarChar(150) @map("mime_type")
+  extension String? @db.VarChar(20) @map("extension")
+  visibility FileVisibility? @map("visibility")
+  currentVersion Int? @map("current_version")
+  size BigInt? @map("size")
+  checksum String? @db.VarChar(255) @map("checksum")
+  metadata Json? @db.JsonB @map("metadata")
+  createdByPrincipalId String? @db.Uuid @map("created_by_principal_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  logoTenants Tenant[] @relation("Tenant_logoFile")
+  tenant Tenant @relation(name: "File_tenant", fields: [tenantId], references: [id])
+  createdByPrincipal Principal? @relation(fields: [createdByPrincipalId], references: [id])
+  fileVersions FileVersion[] @relation
+  fileAttachments FileAttachment[] @relation
+  auditExports AuditExport[] @relation
+  avatarEmployees Employee[] @relation
+  employeeDocuments EmployeeDocument[] @relation
+  employmentContracts EmploymentContract[] @relation
+  payslipPayrolls Payroll[] @relation
+  resumeCandidates Candidate[] @relation
+  offerJobOffers JobOffer[] @relation
+  trainingCertificates TrainingCertificate[] @relation
+
+  @@map("files")
+}
+
+model FileVersion {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  fileId String @db.Uuid @map("file_id")
+  version Int? @map("version")
+  storageProvider FileStorageProvider? @map("storage_provider")
+  storageKey String? @db.Text @map("storage_key")
+  size BigInt? @map("size")
+  checksum String? @db.VarChar(255) @map("checksum")
+  uploadedByPrincipalId String? @db.Uuid @map("uploaded_by_principal_id")
+  uploadedAt DateTime? @db.Timestamptz @map("uploaded_at")
+
+  file File @relation(fields: [fileId], references: [id])
+  uploadedByPrincipal Principal? @relation(fields: [uploadedByPrincipalId], references: [id])
+
+  @@unique([fileId, version])
+  @@map("file_versions")
+}
+
+model FileAttachment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  fileId String @db.Uuid @map("file_id")
+  targetModule String? @db.VarChar(100) @map("target_module")
+  targetEntity String? @db.VarChar(100) @map("target_entity")
+  targetRecordId String? @db.Uuid @map("target_record_id")
+  attachedByPrincipalId String? @db.Uuid @map("attached_by_principal_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  file File @relation(fields: [fileId], references: [id])
+  attachedByPrincipal Principal? @relation(fields: [attachedByPrincipalId], references: [id])
+
+  @@index([targetModule, targetEntity, targetRecordId])
+  @@map("file_attachments")
+}
+
+model AuditLog {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  targetModule String? @db.VarChar(100) @map("target_module")
+  targetEntity String? @db.VarChar(100) @map("target_entity")
+  targetRecordId String? @db.Uuid @map("target_record_id")
+  action AuditAction? @map("action")
+  actorPrincipalId String? @db.Uuid @map("actor_principal_id")
+  ipAddress String? @db.VarChar(100) @map("ip_address")
+  userAgent String? @db.Text @map("user_agent")
+  requestId String? @db.VarChar(255) @map("request_id")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  actorPrincipal Principal? @relation(fields: [actorPrincipalId], references: [id])
+  auditLogAuditDetails AuditDetail[] @relation
+
+  @@index([targetModule, targetEntity, targetRecordId])
+  @@index([actorPrincipalId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model AuditDetail {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  auditLogId String @db.Uuid @map("audit_log_id")
+  fieldName String? @db.VarChar(150) @map("field_name")
+  oldValue String? @db.Text @map("old_value")
+  newValue String? @db.Text @map("new_value")
+
+  auditLog AuditLog @relation(fields: [auditLogId], references: [id])
+
+  @@map("audit_details")
+}
+
+model AuditExport {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String? @db.Uuid @map("tenant_id")
+  exportedByPrincipalId String? @db.Uuid @map("exported_by_principal_id")
+  fileId String? @db.Uuid @map("file_id")
+  exportedAt DateTime? @db.Timestamptz @map("exported_at")
+  filters Json? @db.JsonB @map("filters")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  exportedByPrincipal Principal? @relation(fields: [exportedByPrincipalId], references: [id])
+  file File? @relation(fields: [fileId], references: [id])
+
+  @@map("audit_exports")
+}
+
+model Comment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  targetModule String @db.VarChar(100) @map("target_module")
+  targetEntity String @db.VarChar(100) @map("target_entity")
+  targetRecordId String @db.Uuid @map("target_record_id")
+  parentCommentId String? @db.Uuid @map("parent_comment_id")
+  authorPrincipalId String @db.Uuid @map("author_principal_id")
+  content String @db.Text @map("content")
+  status CommentStatus? @default(active) @map("status")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  parentComment Comment? @relation(name: "Comment_parentComment", fields: [parentCommentId], references: [id])
+  parentComments Comment[] @relation("Comment_parentComment")
+  authorPrincipal Principal @relation(fields: [authorPrincipalId], references: [id])
+  commentMentions CommentMention[] @relation
+  commentReactions CommentReaction[] @relation
+
+  @@index([targetModule, targetEntity, targetRecordId])
+  @@index([parentCommentId])
+  @@index([authorPrincipalId])
+  @@map("comments")
+}
+
+model CommentMention {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  commentId String @db.Uuid @map("comment_id")
+  principalId String @db.Uuid @map("principal_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id])
+  principal Principal @relation(fields: [principalId], references: [id])
+
+  @@unique([commentId, principalId])
+  @@map("comment_mentions")
+}
+
+model CommentReaction {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  commentId String @db.Uuid @map("comment_id")
+  principalId String @db.Uuid @map("principal_id")
+  reaction String @db.VarChar(30) @map("reaction")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id])
+  principal Principal @relation(fields: [principalId], references: [id])
+
+  @@unique([commentId, principalId, reaction])
+  @@map("comment_reactions")
+}
+
+model CustomFieldDefinition {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  targetModule String @db.VarChar(100) @map("target_module")
+  targetEntity String @db.VarChar(100) @map("target_entity")
+  code String @db.VarChar(100) @map("code")
+  name String @db.VarChar(255) @map("name")
+  fieldType CustomFieldType @map("field_type")
+  isRequired Boolean? @default(false) @map("is_required")
+  defaultValue String? @db.Text @map("default_value")
+  validationRules Json? @db.JsonB @map("validation_rules")
+  displayOrder Int? @map("display_order")
+  metadata Json? @db.JsonB @map("metadata")
+  createdByPrincipalId String? @db.Uuid @map("created_by_principal_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  createdByPrincipal Principal? @relation(fields: [createdByPrincipalId], references: [id])
+  customFieldDefinitionCustomFieldOptions CustomFieldOption[] @relation
+  customFieldDefinitionCustomFieldValues CustomFieldValue[] @relation
+
+  @@unique([tenantId, targetModule, targetEntity, code])
+  @@map("custom_field_definitions")
+}
+
+model CustomFieldOption {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  customFieldDefinitionId String @db.Uuid @map("custom_field_definition_id")
+  value String @db.VarChar(255) @map("value")
+  label String @db.VarChar(255) @map("label")
+  sortOrder Int? @map("sort_order")
+  isActive Boolean? @default(true) @map("is_active")
+
+  customFieldDefinition CustomFieldDefinition @relation(fields: [customFieldDefinitionId], references: [id])
+
+  @@map("custom_field_options")
+}
+
+model CustomFieldValue {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  customFieldDefinitionId String @db.Uuid @map("custom_field_definition_id")
+  targetRecordId String @db.Uuid @map("target_record_id")
+  value Json? @db.JsonB @map("value")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  customFieldDefinition CustomFieldDefinition @relation(fields: [customFieldDefinitionId], references: [id])
+
+  @@unique([customFieldDefinitionId, targetRecordId])
+  @@index([targetRecordId])
+  @@map("custom_field_values")
+}
+
+model Tag {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(100) @map("code")
+  name String? @db.VarChar(150) @map("name")
+  color String? @db.VarChar(20) @map("color")
+  description String? @db.Text @map("description")
+  createdByPrincipalId String? @db.Uuid @map("created_by_principal_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  createdByPrincipal Principal? @relation(fields: [createdByPrincipalId], references: [id])
+  tagAssignments TagAssignment[] @relation
+
+  @@unique([tenantId, code])
+  @@map("tags")
+}
+
+model TagAssignment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tagId String @db.Uuid @map("tag_id")
+  targetModule String? @db.VarChar(100) @map("target_module")
+  targetEntity String? @db.VarChar(100) @map("target_entity")
+  targetRecordId String? @db.Uuid @map("target_record_id")
+  assignedByPrincipalId String? @db.Uuid @map("assigned_by_principal_id")
+  assignedAt DateTime? @db.Timestamptz @map("assigned_at")
+
+  tag Tag @relation(fields: [tagId], references: [id])
+  assignedByPrincipal Principal? @relation(fields: [assignedByPrincipalId], references: [id])
+
+  @@unique([tagId, targetModule, targetEntity, targetRecordId])
+  @@index([targetModule, targetEntity, targetRecordId])
+  @@map("tag_assignments")
+}
+
+model Employee {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employeeNo String @db.VarChar(50) @map("employee_no")
+  principalId String @db.Uuid @unique @map("principal_id")
+  firstName String @db.VarChar(100) @map("first_name")
+  lastName String @db.VarChar(100) @map("last_name")
+  preferredName String? @db.VarChar(100) @map("preferred_name")
+  gender Gender? @map("gender")
+  dateOfBirth DateTime? @db.Date @map("date_of_birth")
+  maritalStatus MaritalStatus? @map("marital_status")
+  nationality String? @db.VarChar(100) @map("nationality")
+  nationalId String? @db.VarChar(100) @map("national_id")
+  passportNo String? @db.VarChar(100) @map("passport_no")
+  taxNumber String? @db.VarChar(100) @map("tax_number")
+  avatarFileId String? @db.Uuid @map("avatar_file_id")
+  status String? @db.VarChar(30) @map("status")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  principal Principal @relation(fields: [principalId], references: [id])
+  avatarFile File? @relation(fields: [avatarFileId], references: [id])
+  employeeContacts EmployeeContact[] @relation
+  employeeAddresses EmployeeAddress[] @relation
+  employeeEmergencyContacts EmployeeEmergencyContact[] @relation
+  employeeDocuments EmployeeDocument[] @relation
+  employments Employment[] @relation
+  hiringRecords HiringRecord[] @relation
+
+  @@unique([tenantId, employeeNo])
+  @@map("employees")
+}
+
+model EmployeeContact {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  employeeId String @db.Uuid @map("employee_id")
+  contactType String? @db.VarChar(30) @map("contact_type")
+  value String? @db.VarChar(255) @map("value")
+  isPrimary Boolean? @map("is_primary")
+  verifiedAt DateTime? @db.Timestamptz @map("verified_at")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], map: "employee_contacts_employee_id_fkey_1")
+  employeeEmployeeAddress EmployeeAddress @relation(fields: [employeeId], references: [id], map: "employee_contacts_employee_id_fkey_2")
+
+  @@map("employee_contacts")
+}
+
+model EmployeeAddress {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  employeeId String @db.Uuid @map("employee_id")
+  addressType String? @db.VarChar(30) @map("address_type")
+  country String? @db.VarChar(100) @map("country")
+  state String? @db.VarChar(100) @map("state")
+  city String? @db.VarChar(100) @map("city")
+  district String? @db.VarChar(100) @map("district")
+  ward String? @db.VarChar(100) @map("ward")
+  addressLine String? @db.Text @map("address_line")
+  postalCode String? @db.VarChar(30) @map("postal_code")
+  isPrimary Boolean? @map("is_primary")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  employeeEmployeeContacts EmployeeContact[] @relation
+
+  @@map("employee_addresses")
+}
+
+model EmployeeEmergencyContact {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  employeeId String @db.Uuid @map("employee_id")
+  fullName String? @db.VarChar(255) @map("full_name")
+  relationship String? @db.VarChar(100) @map("relationship")
+  phone String? @db.VarChar(50) @map("phone")
+  email String? @db.VarChar(255) @map("email")
+  address String? @db.Text @map("address")
+  priority Int? @map("priority")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("employee_emergency_contacts")
+}
+
+model EmployeeDocument {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  employeeId String @db.Uuid @map("employee_id")
+  documentType String? @db.VarChar(100) @map("document_type")
+  documentNumber String? @db.VarChar(100) @map("document_number")
+  issuedDate DateTime? @db.Date @map("issued_date")
+  expiryDate DateTime? @db.Date @map("expiry_date")
+  issuedPlace String? @db.VarChar(255) @map("issued_place")
+  fileId String? @db.Uuid @map("file_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  file File? @relation(fields: [fileId], references: [id])
+
+  @@map("employee_documents")
+}
+
+model EmploymentType {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(100) @map("name")
+  description String? @db.Text @map("description")
+  isActive Boolean? @default(true) @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employmentTypeEmployments Employment[] @relation
+  employmentTypeLeavePolicies LeavePolicy[] @relation
+
+  @@unique([tenantId, code])
+  @@map("employment_types")
+}
+
+model ContractType {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(100) @map("name")
+  durationMonth Int? @map("duration_month")
+  description String? @db.Text @map("description")
+  isActive Boolean? @default(true) @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  contractTypeEmploymentContracts EmploymentContract[] @relation
+
+  @@unique([tenantId, code])
+  @@map("contract_types")
+}
+
+model Employment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employeeId String @db.Uuid @map("employee_id")
+  employmentTypeId String @db.Uuid @map("employment_type_id")
+  employeeCode String @db.VarChar(50) @map("employee_code")
+  hireDate DateTime @db.Date @map("hire_date")
+  probationStartDate DateTime? @db.Date @map("probation_start_date")
+  probationEndDate DateTime? @db.Date @map("probation_end_date")
+  confirmationDate DateTime? @db.Date @map("confirmation_date")
+  terminationDate DateTime? @db.Date @map("termination_date")
+  status EmploymentStatus @map("status")
+  reason String? @db.Text @map("reason")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+  deletedAt DateTime? @db.Timestamptz @map("deleted_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+  employmentType EmploymentType @relation(fields: [employmentTypeId], references: [id])
+  employmentContracts EmploymentContract[] @relation
+  employmentStatusHistories EmploymentStatusHistory[] @relation
+  organizationAssignments OrganizationAssignment[] @relation("OrganizationAssignment_employment")
+  managerOrganizationAssignments OrganizationAssignment[] @relation("OrganizationAssignment_managerEmployment")
+  shiftAssignments ShiftAssignment[] @relation
+  attendanceRecords AttendanceRecord[] @relation
+  leaveBalances LeaveBalance[] @relation
+  leaveRequests LeaveRequest[] @relation
+  employeeSalaryAssignments EmployeeSalaryAssignment[] @relation
+  payrolls Payroll[] @relation
+  requestedByJobRequisitions JobRequisition[] @relation
+  interviewerInterviews Interview[] @relation
+  hiringRecords HiringRecord[] @relation
+  performanceGoals PerformanceGoal[] @relation
+  performanceReviews PerformanceReview[] @relation("PerformanceReview_employment")
+  reviewerPerformanceReviews PerformanceReview[] @relation("PerformanceReview_reviewerEmployment")
+  instructorTrainingSessions TrainingSession[] @relation
+  trainingEnrollments TrainingEnrollment[] @relation
+  evaluatedByTrainingResults TrainingResult[] @relation
+  assetAssignments AssetAssignment[] @relation
+
+  @@unique([tenantId, employeeCode])
+  @@map("employments")
+}
+
+model EmploymentContract {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  employmentId String @db.Uuid @map("employment_id")
+  contractTypeId String @db.Uuid @map("contract_type_id")
+  contractNumber String @db.VarChar(100) @map("contract_number")
+  startDate DateTime @db.Date @map("start_date")
+  endDate DateTime? @db.Date @map("end_date")
+  signedDate DateTime? @db.Date @map("signed_date")
+  fileId String? @db.Uuid @map("file_id")
+  isCurrent Boolean? @default(true) @map("is_current")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  employment Employment @relation(fields: [employmentId], references: [id])
+  contractType ContractType @relation(fields: [contractTypeId], references: [id])
+  file File? @relation(fields: [fileId], references: [id])
+
+  @@map("employment_contracts")
+}
+
+model EmploymentStatusHistory {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  employmentId String @db.Uuid @map("employment_id")
+  fromStatus EmploymentStatus? @map("from_status")
+  toStatus EmploymentStatus? @map("to_status")
+  effectiveDate DateTime @db.Date @map("effective_date")
+  reason String? @db.Text @map("reason")
+  changedByPrincipalId String? @db.Uuid @map("changed_by_principal_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  employment Employment @relation(fields: [employmentId], references: [id])
+  changedByPrincipal Principal? @relation(fields: [changedByPrincipalId], references: [id])
+
+  @@map("employment_status_histories")
+}
+
+model JobTitle {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  isActive Boolean? @default(true) @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  jobTitleOrganizationAssignments OrganizationAssignment[] @relation
+
+  @@unique([tenantId, code])
+  @@map("job_titles")
+}
+
+model WorkLocation {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  address String? @db.Text @map("address")
+  timezone String? @db.VarChar(100) @map("timezone")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  workLocationOrganizationAssignments OrganizationAssignment[] @relation
+
+  @@unique([tenantId, code])
+  @@map("work_locations")
+}
+
+model OrganizationAssignment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  departmentId String @db.Uuid @map("department_id")
+  positionId String @db.Uuid @map("position_id")
+  jobTitleId String? @db.Uuid @map("job_title_id")
+  managerEmploymentId String? @db.Uuid @map("manager_employment_id")
+  workLocationId String? @db.Uuid @map("work_location_id")
+  costCenterId String? @db.Uuid @map("cost_center_id")
+  effectiveFrom DateTime @db.Date @map("effective_from")
+  effectiveTo DateTime? @db.Date @map("effective_to")
+  isPrimary Boolean? @default(true) @map("is_primary")
+  status AssignmentStatus? @default(active) @map("status")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(name: "OrganizationAssignment_employment", fields: [employmentId], references: [id])
+  department OrganizationAssignment @relation(name: "OrganizationAssignment_department", fields: [departmentId], references: [id])
+  departmentOrganizationAssignments OrganizationAssignment[] @relation("OrganizationAssignment_department")
+  position Position @relation(fields: [positionId], references: [id])
+  jobTitle JobTitle? @relation(fields: [jobTitleId], references: [id])
+  managerEmployment Employment? @relation(name: "OrganizationAssignment_managerEmployment", fields: [managerEmploymentId], references: [id])
+  workLocation WorkLocation? @relation(fields: [workLocationId], references: [id])
+  costCenter CostCenter? @relation(fields: [costCenterId], references: [id])
+
+  @@index([employmentId, effectiveFrom])
+  @@index([departmentId])
+  @@index([managerEmploymentId])
+  @@map("organization_assignments")
+}
+
+model Shift {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(100) @map("name")
+  startTime DateTime @db.Time(6) @map("start_time")
+  endTime DateTime @db.Time(6) @map("end_time")
+  breakMinutes Int? @default(60) @map("break_minutes")
+  isFlexible Boolean? @default(false) @map("is_flexible")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  shiftAssignments ShiftAssignment[] @relation
+
+  @@unique([tenantId, code])
+  @@map("shifts")
+}
+
+model ShiftAssignment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  shiftId String @db.Uuid @map("shift_id")
+  effectiveFrom DateTime @db.Date @map("effective_from")
+  effectiveTo DateTime? @db.Date @map("effective_to")
+  isPrimary Boolean? @default(true) @map("is_primary")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  shift Shift @relation(fields: [shiftId], references: [id])
+  shiftAssignmentAttendanceRecords AttendanceRecord[] @relation
+
+  @@map("shift_assignments")
+}
+
+model AttendanceRecord {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  shiftAssignmentId String? @db.Uuid @map("shift_assignment_id")
+  attendanceDate DateTime @db.Date @map("attendance_date")
+  checkInAt DateTime? @db.Timestamptz @map("check_in_at")
+  checkOutAt DateTime? @db.Timestamptz @map("check_out_at")
+  workedMinutes Int? @map("worked_minutes")
+  overtimeMinutes Int? @default(0) @map("overtime_minutes")
+  lateMinutes Int? @default(0) @map("late_minutes")
+  earlyLeaveMinutes Int? @default(0) @map("early_leave_minutes")
+  status AttendanceStatus? @map("status")
+  source AttendanceSource? @map("source")
+  deviceId String? @db.Uuid @map("device_id")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  shiftAssignment ShiftAssignment? @relation(fields: [shiftAssignmentId], references: [id])
+  device AttendanceDevice? @relation(fields: [deviceId], references: [id])
+  attendanceRecordAttendanceAdjustments AttendanceAdjustment[] @relation
+
+  @@unique([employmentId, attendanceDate])
+  @@index([attendanceDate])
+  @@map("attendance_records")
+}
+
+model AttendanceAdjustment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  attendanceRecordId String @db.Uuid @map("attendance_record_id")
+  requestedByPrincipalId String? @db.Uuid @map("requested_by_principal_id")
+  approvedByPrincipalId String? @db.Uuid @map("approved_by_principal_id")
+  reason String? @db.Text @map("reason")
+  oldCheckIn DateTime? @db.Timestamptz @map("old_check_in")
+  newCheckIn DateTime? @db.Timestamptz @map("new_check_in")
+  oldCheckOut DateTime? @db.Timestamptz @map("old_check_out")
+  newCheckOut DateTime? @db.Timestamptz @map("new_check_out")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  attendanceRecord AttendanceRecord @relation(fields: [attendanceRecordId], references: [id])
+  requestedByPrincipal Principal? @relation(name: "AttendanceAdjustment_requestedByPrincipal", fields: [requestedByPrincipalId], references: [id])
+  approvedByPrincipal Principal? @relation(name: "AttendanceAdjustment_approvedByPrincipal", fields: [approvedByPrincipalId], references: [id])
+
+  @@map("attendance_adjustments")
+}
+
+model AttendanceDevice {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(50) @map("code")
+  name String? @db.VarChar(150) @map("name")
+  deviceType String? @db.VarChar(50) @map("device_type")
+  location String? @db.VarChar(255) @map("location")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  deviceAttendanceRecords AttendanceRecord[] @relation
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("attendance_devices")
+}
+
+model LeaveType {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  isPaid Boolean? @default(true) @map("is_paid")
+  requiresAttachment Boolean? @default(false) @map("requires_attachment")
+  color String? @db.VarChar(20) @map("color")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  leaveTypeLeavePolicies LeavePolicy[] @relation
+  leaveTypeLeaveBalances LeaveBalance[] @relation
+  leaveTypeLeaveRequests LeaveRequest[] @relation
+
+  @@unique([tenantId, code])
+  @@map("leave_types")
+}
+
+model LeavePolicy {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  leaveTypeId String @db.Uuid @map("leave_type_id")
+  employmentTypeId String? @db.Uuid @map("employment_type_id")
+  annualDays Decimal? @db.Decimal(5, 2) @map("annual_days")
+  maxConsecutiveDays Int? @map("max_consecutive_days")
+  carryForwardLimit Decimal? @db.Decimal(5, 2) @map("carry_forward_limit")
+  requiresApproval Boolean? @default(true) @map("requires_approval")
+  effectiveFrom DateTime? @db.Date @map("effective_from")
+  effectiveTo DateTime? @db.Date @map("effective_to")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+  employmentType EmploymentType? @relation(fields: [employmentTypeId], references: [id])
+
+  @@map("leave_policies")
+}
+
+model LeaveBalance {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  leaveTypeId String @db.Uuid @map("leave_type_id")
+  leaveYear Int @map("leave_year")
+  entitledDays Decimal? @db.Decimal(5, 2) @map("entitled_days")
+  usedDays Decimal? @db.Decimal(5, 2) @map("used_days")
+  pendingDays Decimal? @db.Decimal(5, 2) @map("pending_days")
+  remainingDays Decimal? @db.Decimal(5, 2) @map("remaining_days")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+  leaveBalanceLeaveTransactions LeaveTransaction[] @relation
+
+  @@unique([employmentId, leaveTypeId, leaveYear])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  leaveTypeId String @db.Uuid @map("leave_type_id")
+  workflowInstanceId String? @db.Uuid @map("workflow_instance_id")
+  startDate DateTime @db.Date @map("start_date")
+  endDate DateTime @db.Date @map("end_date")
+  totalDays Decimal @db.Decimal(5, 2) @map("total_days")
+  reason String? @db.Text @map("reason")
+  status LeaveRequestStatus? @map("status")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+  workflowInstance WorkflowInstance? @relation(fields: [workflowInstanceId], references: [id])
+  leaveRequestLeaveTransactions LeaveTransaction[] @relation
+
+  @@map("leave_requests")
+}
+
+model LeaveTransaction {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  leaveBalanceId String @db.Uuid @map("leave_balance_id")
+  leaveRequestId String? @db.Uuid @map("leave_request_id")
+  transactionType String? @db.VarChar(30) @map("transaction_type")
+  days Decimal? @db.Decimal(5, 2) @map("days")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  leaveBalance LeaveBalance @relation(fields: [leaveBalanceId], references: [id])
+  leaveRequest LeaveRequest? @relation(fields: [leaveRequestId], references: [id])
+
+  @@map("leave_transactions")
+}
+
+model SalaryStructure {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  isActive Boolean? @default(true) @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  salaryStructureEmployeeSalaryAssignments EmployeeSalaryAssignment[] @relation
+
+  @@unique([tenantId, code])
+  @@map("salary_structures")
+}
+
+model SalaryComponent {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  componentType SalaryComponentType? @map("component_type")
+  calculationType String? @db.VarChar(30) @map("calculation_type")
+  defaultAmount Decimal? @db.Decimal(18, 2) @map("default_amount")
+  taxable Boolean? @default(true) @map("taxable")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  salaryComponentPayrollItems PayrollItem[] @relation
+
+  @@map("salary_components")
+}
+
+model EmployeeSalaryAssignment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  salaryStructureId String @db.Uuid @map("salary_structure_id")
+  effectiveFrom DateTime? @db.Date @map("effective_from")
+  effectiveTo DateTime? @db.Date @map("effective_to")
+  baseSalary Decimal? @db.Decimal(18, 2) @map("base_salary")
+  currency String? @db.VarChar(10) @map("currency")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id], map: "employee_salary_assignments_employment_id_fkey_1")
+  salaryStructure SalaryStructure @relation(fields: [salaryStructureId], references: [id])
+  employmentEmployeeSalaryAssignment EmployeeSalaryAssignment @relation(name: "EmployeeSalaryAssignment_employmentEmployeeSalaryAssignment", fields: [employmentId], references: [id], map: "employee_salary_assignments_employment_id_fkey_2")
+  employmentEmployeeSalaryAssignments EmployeeSalaryAssignment[] @relation("EmployeeSalaryAssignment_employmentEmployeeSalaryAssignment")
+
+  @@map("employee_salary_assignments")
+}
+
+model PayrollPeriod {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(50) @map("code")
+  startDate DateTime? @db.Date @map("start_date")
+  endDate DateTime? @db.Date @map("end_date")
+  paymentDate DateTime? @db.Date @map("payment_date")
+  status PayrollStatus? @map("status")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  payrollPeriodPayrolls Payroll[] @relation
+
+  @@map("payroll_periods")
+}
+
+model Payroll {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  payrollPeriodId String @db.Uuid @map("payroll_period_id")
+  employmentId String @db.Uuid @map("employment_id")
+  grossSalary Decimal? @db.Decimal(18, 2) @map("gross_salary")
+  totalAllowance Decimal? @db.Decimal(18, 2) @map("total_allowance")
+  totalDeduction Decimal? @db.Decimal(18, 2) @map("total_deduction")
+  netSalary Decimal? @db.Decimal(18, 2) @map("net_salary")
+  status PayrollStatus? @map("status")
+  payslipFileId String? @db.Uuid @map("payslip_file_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  payrollPeriod PayrollPeriod @relation(fields: [payrollPeriodId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  payslipFile File? @relation(fields: [payslipFileId], references: [id])
+  payrollItems PayrollItem[] @relation
+
+  @@map("payrolls")
+}
+
+model PayrollItem {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  payrollId String @db.Uuid @map("payroll_id")
+  salaryComponentId String @db.Uuid @map("salary_component_id")
+  amount Decimal? @db.Decimal(18, 2) @map("amount")
+  remark String? @db.Text @map("remark")
+
+  payroll Payroll @relation(fields: [payrollId], references: [id])
+  salaryComponent SalaryComponent @relation(fields: [salaryComponentId], references: [id])
+
+  @@map("payroll_items")
+}
+
+model JobRequisition {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  title String @db.VarChar(200) @map("title")
+  departmentId String @db.Uuid @map("department_id")
+  positionId String @db.Uuid @map("position_id")
+  requestedByEmploymentId String? @db.Uuid @map("requested_by_employment_id")
+  quantity Int? @default(1) @map("quantity")
+  status RequisitionStatus? @map("status")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  department OrganizationUnit @relation(fields: [departmentId], references: [id])
+  position Position @relation(fields: [positionId], references: [id])
+  requestedByEmployment Employment? @relation(fields: [requestedByEmploymentId], references: [id])
+  requisitionJobPostings JobPosting[] @relation
+
+  @@map("job_requisitions")
+}
+
+model JobPosting {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  requisitionId String @db.Uuid @map("requisition_id")
+  title String? @db.VarChar(200) @map("title")
+  description String? @db.Text @map("description")
+  publishedAt DateTime? @db.Timestamptz @map("published_at")
+  expiredAt DateTime? @db.Timestamptz @map("expired_at")
+  isActive Boolean? @default(true) @map("is_active")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  requisition JobRequisition @relation(fields: [requisitionId], references: [id])
+  jobPostingJobApplications JobApplication[] @relation
+
+  @@map("job_postings")
+}
+
+model Candidate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  fullName String? @db.VarChar(255) @map("full_name")
+  email String? @db.VarChar(255) @map("email")
+  phone String? @db.VarChar(50) @map("phone")
+  source String? @db.VarChar(100) @map("source")
+  resumeFileId String? @db.Uuid @map("resume_file_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  resumeFile File? @relation(fields: [resumeFileId], references: [id])
+  jobApplications JobApplication[] @relation
+
+  @@map("candidates")
+}
+
+model JobApplication {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  candidateId String @db.Uuid @map("candidate_id")
+  jobPostingId String @db.Uuid @map("job_posting_id")
+  status ApplicationStatus? @map("status")
+  appliedAt DateTime? @db.Timestamptz @map("applied_at")
+  currentStage String? @db.VarChar(100) @map("current_stage")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  jobPosting JobPosting @relation(fields: [jobPostingId], references: [id])
+  applicationInterviews Interview[] @relation
+  applicationJobOffers JobOffer[] @relation
+  applicationHiringRecords HiringRecord[] @relation
+
+  @@map("job_applications")
+}
+
+model Interview {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  applicationId String @db.Uuid @map("application_id")
+  interviewerEmploymentId String? @db.Uuid @map("interviewer_employment_id")
+  scheduledAt DateTime? @db.Timestamptz @map("scheduled_at")
+  location String? @db.VarChar(255) @map("location")
+  meetingUrl String? @db.Text @map("meeting_url")
+  result String? @db.VarChar(100) @map("result")
+  status InterviewStatus? @map("status")
+
+  application JobApplication @relation(fields: [applicationId], references: [id])
+  interviewerEmployment Employment? @relation(fields: [interviewerEmploymentId], references: [id])
+
+  @@map("interviews")
+}
+
+model JobOffer {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  applicationId String @db.Uuid @map("application_id")
+  offeredSalary Decimal? @db.Decimal(18, 2) @map("offered_salary")
+  currency String? @db.VarChar(10) @map("currency")
+  startDate DateTime? @db.Date @map("start_date")
+  status OfferStatus? @map("status")
+  offerFileId String? @db.Uuid @map("offer_file_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  application JobApplication @relation(fields: [applicationId], references: [id])
+  offerFile File? @relation(fields: [offerFileId], references: [id])
+
+  @@map("job_offers")
+}
+
+model HiringRecord {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  applicationId String @db.Uuid @map("application_id")
+  employeeId String? @db.Uuid @map("employee_id")
+  employmentId String? @db.Uuid @map("employment_id")
+  hiredAt DateTime? @db.Timestamptz @map("hired_at")
+
+  application JobApplication @relation(fields: [applicationId], references: [id])
+  employee Employee? @relation(fields: [employeeId], references: [id])
+  employment Employment? @relation(fields: [employmentId], references: [id])
+
+  @@map("hiring_records")
+}
+
+model PerformanceCycle {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  startDate DateTime? @db.Date @map("start_date")
+  endDate DateTime? @db.Date @map("end_date")
+  isActive Boolean? @default(true) @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  performanceCyclePerformanceGoals PerformanceGoal[] @relation
+  performanceCyclePerformanceReviews PerformanceReview[] @relation
+
+  @@unique([tenantId, code])
+  @@map("performance_cycles")
+}
+
+model PerformanceRating {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String? @db.VarChar(20) @map("code")
+  name String? @db.VarChar(100) @map("name")
+  score Decimal? @db.Decimal(5, 2) @map("score")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  overallRatingPerformanceReviews PerformanceReview[] @relation
+  ratingPerformanceReviewItems PerformanceReviewItem[] @relation
+
+  @@map("performance_ratings")
+}
+
+model PerformanceGoal {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  performanceCycleId String @db.Uuid @map("performance_cycle_id")
+  title String? @db.VarChar(255) @map("title")
+  description String? @db.Text @map("description")
+  targetValue Decimal? @db.Decimal(18, 2) @map("target_value")
+  weight Decimal? @db.Decimal(5, 2) @map("weight")
+  dueDate DateTime? @db.Date @map("due_date")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  performanceCycle PerformanceCycle @relation(fields: [performanceCycleId], references: [id])
+  goalPerformanceGoalProgress PerformanceGoalProgress[] @relation
+  goalPerformanceReviewItems PerformanceReviewItem[] @relation
+
+  @@map("performance_goals")
+}
+
+model PerformanceGoalProgress {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  goalId String @db.Uuid @map("goal_id")
+  progress Decimal? @db.Decimal(5, 2) @map("progress")
+  note String? @db.Text @map("note")
+  updatedByPrincipalId String? @db.Uuid @map("updated_by_principal_id")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  goal PerformanceGoal @relation(fields: [goalId], references: [id])
+  updatedByPrincipal Principal? @relation(fields: [updatedByPrincipalId], references: [id])
+
+  @@map("performance_goal_progress")
+}
+
+model PerformanceReview {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  reviewerEmploymentId String? @db.Uuid @map("reviewer_employment_id")
+  performanceCycleId String @db.Uuid @map("performance_cycle_id")
+  workflowInstanceId String? @db.Uuid @map("workflow_instance_id")
+  overallRatingId String? @db.Uuid @map("overall_rating_id")
+  overallScore Decimal? @db.Decimal(5, 2) @map("overall_score")
+  status ReviewStatus? @map("status")
+  comment String? @db.Text @map("comment")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(name: "PerformanceReview_employment", fields: [employmentId], references: [id])
+  reviewerEmployment Employment? @relation(name: "PerformanceReview_reviewerEmployment", fields: [reviewerEmploymentId], references: [id])
+  performanceCycle PerformanceCycle @relation(fields: [performanceCycleId], references: [id])
+  workflowInstance WorkflowInstance? @relation(fields: [workflowInstanceId], references: [id])
+  overallRating PerformanceRating? @relation(fields: [overallRatingId], references: [id])
+  performanceReviewPerformanceReviewItems PerformanceReviewItem[] @relation
+
+  @@map("performance_reviews")
+}
+
+model PerformanceReviewItem {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  performanceReviewId String @db.Uuid @map("performance_review_id")
+  goalId String? @db.Uuid @map("goal_id")
+  criteria String? @db.VarChar(255) @map("criteria")
+  ratingId String? @db.Uuid @map("rating_id")
+  score Decimal? @db.Decimal(5, 2) @map("score")
+  comment String? @db.Text @map("comment")
+
+  performanceReview PerformanceReview @relation(fields: [performanceReviewId], references: [id])
+  goal PerformanceGoal? @relation(fields: [goalId], references: [id])
+  rating PerformanceRating? @relation(fields: [ratingId], references: [id])
+
+  @@map("performance_review_items")
+}
+
+model TrainingCourse {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(200) @map("name")
+  category String? @db.VarChar(100) @map("category")
+  durationHours Decimal? @db.Decimal(6, 2) @map("duration_hours")
+  description String? @db.Text @map("description")
+  isActive Boolean? @default(true) @map("is_active")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  courseTrainingSessions TrainingSession[] @relation
+
+  @@unique([tenantId, code])
+  @@map("training_courses")
+}
+
+model TrainingSession {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  courseId String @db.Uuid @map("course_id")
+  instructorEmploymentId String? @db.Uuid @map("instructor_employment_id")
+  startDate DateTime? @db.Date @map("start_date")
+  endDate DateTime? @db.Date @map("end_date")
+  location String? @db.VarChar(255) @map("location")
+  capacity Int? @map("capacity")
+  status TrainingStatus? @map("status")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  course TrainingCourse @relation(fields: [courseId], references: [id])
+  instructorEmployment Employment? @relation(fields: [instructorEmploymentId], references: [id])
+  sessionTrainingEnrollments TrainingEnrollment[] @relation
+
+  @@map("training_sessions")
+}
+
+model TrainingEnrollment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  employmentId String @db.Uuid @map("employment_id")
+  sessionId String @db.Uuid @map("session_id")
+  enrolledAt DateTime? @db.Timestamptz @map("enrolled_at")
+  status EnrollmentStatus? @map("status")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  session TrainingSession @relation(fields: [sessionId], references: [id])
+  enrollmentTrainingResult TrainingResult? @relation
+  enrollmentTrainingCertificates TrainingCertificate[] @relation
+
+  @@map("training_enrollments")
+}
+
+model TrainingResult {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  enrollmentId String @db.Uuid @unique @map("enrollment_id")
+  score Decimal? @db.Decimal(5, 2) @map("score")
+  passed Boolean? @map("passed")
+  feedback String? @db.Text @map("feedback")
+  evaluatedByEmploymentId String? @db.Uuid @map("evaluated_by_employment_id")
+  evaluatedAt DateTime? @db.Timestamptz @map("evaluated_at")
+
+  enrollment TrainingEnrollment @relation(fields: [enrollmentId], references: [id])
+  evaluatedByEmployment Employment? @relation(fields: [evaluatedByEmploymentId], references: [id])
+
+  @@map("training_results")
+}
+
+model TrainingCertificate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  enrollmentId String @db.Uuid @map("enrollment_id")
+  certificateNo String? @db.VarChar(100) @map("certificate_no")
+  issuedDate DateTime? @db.Date @map("issued_date")
+  expiryDate DateTime? @db.Date @map("expiry_date")
+  fileId String? @db.Uuid @map("file_id")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  enrollment TrainingEnrollment @relation(fields: [enrollmentId], references: [id])
+  file File? @relation(fields: [fileId], references: [id])
+
+  @@map("training_certificates")
+}
+
+model AssetCategory {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  code String @db.VarChar(50) @map("code")
+  name String @db.VarChar(150) @map("name")
+  description String? @db.Text @map("description")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  categoryAssets Asset[] @relation
+
+  @@unique([tenantId, code])
+  @@map("asset_categories")
+}
+
+model Asset {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  categoryId String @db.Uuid @map("category_id")
+  assetCode String @db.VarChar(100) @map("asset_code")
+  assetName String? @db.VarChar(200) @map("asset_name")
+  serialNumber String? @db.VarChar(200) @map("serial_number")
+  manufacturer String? @db.VarChar(150) @map("manufacturer")
+  model String? @db.VarChar(150) @map("model")
+  purchaseDate DateTime? @db.Date @map("purchase_date")
+  purchasePrice Decimal? @db.Decimal(18, 2) @map("purchase_price")
+  warrantyExpiry DateTime? @db.Date @map("warranty_expiry")
+  currentStatus AssetStatus? @map("current_status")
+  metadata Json? @db.JsonB @map("metadata")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+  updatedAt DateTime? @db.Timestamptz @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  category AssetCategory @relation(fields: [categoryId], references: [id])
+  assetAssignments AssetAssignment[] @relation
+  assetMaintenances AssetMaintenance[] @relation
+  assetDisposals AssetDisposal[] @relation
+
+  @@unique([tenantId, assetCode])
+  @@index([serialNumber])
+  @@map("assets")
+}
+
+model AssetAssignment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  assetId String @db.Uuid @map("asset_id")
+  employmentId String @db.Uuid @map("employment_id")
+  assignedByPrincipalId String? @db.Uuid @map("assigned_by_principal_id")
+  assignedAt DateTime @db.Timestamptz @map("assigned_at")
+  expectedReturnAt DateTime? @db.Timestamptz @map("expected_return_at")
+  actualReturnAt DateTime? @db.Timestamptz @map("actual_return_at")
+  assignmentStatus AssignmentStatus? @map("assignment_status")
+  note String? @db.Text @map("note")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+  employment Employment @relation(fields: [employmentId], references: [id])
+  assignedByPrincipal Principal? @relation(fields: [assignedByPrincipalId], references: [id])
+  assignmentAssetReturn AssetReturn? @relation
+
+  @@map("asset_assignments")
+}
+
+model AssetReturn {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  assignmentId String @db.Uuid @unique @map("assignment_id")
+  returnedByPrincipalId String? @db.Uuid @map("returned_by_principal_id")
+  returnedAt DateTime? @db.Timestamptz @map("returned_at")
+  conditionNote String? @db.Text @map("condition_note")
+  damageCost Decimal? @db.Decimal(18, 2) @map("damage_cost")
+  createdAt DateTime? @db.Timestamptz @map("created_at")
+
+  assignment AssetAssignment @relation(fields: [assignmentId], references: [id])
+  returnedByPrincipal Principal? @relation(fields: [returnedByPrincipalId], references: [id])
+
+  @@map("asset_returns")
+}
+
+model AssetMaintenance {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  assetId String @db.Uuid @map("asset_id")
+  maintenanceType String? @db.VarChar(100) @map("maintenance_type")
+  vendor String? @db.VarChar(255) @map("vendor")
+  cost Decimal? @db.Decimal(18, 2) @map("cost")
+  startedAt DateTime? @db.Timestamptz @map("started_at")
+  completedAt DateTime? @db.Timestamptz @map("completed_at")
+  note String? @db.Text @map("note")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@map("asset_maintenances")
+}
+
+model AssetDisposal {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @map("id")
+  tenantId String @db.Uuid @map("tenant_id")
+  assetId String @db.Uuid @map("asset_id")
+  disposedAt DateTime? @db.Timestamptz @map("disposed_at")
+  disposalMethod String? @db.VarChar(100) @map("disposal_method")
+  disposalValue Decimal? @db.Decimal(18, 2) @map("disposal_value")
+  reason String? @db.Text @map("reason")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@map("asset_disposals")
+}
