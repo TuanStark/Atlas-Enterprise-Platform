@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+
+changed=$(git diff --cached --name-only)
+
+backend_changed=false
+frontend_changed=false
+
+echo "$changed" | grep "^erp_platform_be/" >/dev/null && backend_changed=true
+echo "$changed" | grep "^erp_platform_fe/" >/dev/null && frontend_changed=true
+
+if [ "$backend_changed" = true ]; then
+    echo "========== Backend =========="
+    npm --prefix erp_platform_be run format || exit 1
+    npm --prefix erp_platform_be run lint || exit 1
+fi
+
+if [ "$frontend_changed" = true ]; then
+    echo "========== Frontend =========="
+    npm --prefix erp_platform_fe run format || exit 1
+    npm --prefix erp_platform_fe run lint || exit 1
+fi
+
+echo "✅ Pre-commit passed"

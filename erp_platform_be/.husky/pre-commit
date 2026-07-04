@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-npm --prefix erp_platform_be run format
-npm --prefix erp_platform_be run lint
-npm --prefix erp_platform_be run typecheck
-npm --prefix erp_platform_be test
