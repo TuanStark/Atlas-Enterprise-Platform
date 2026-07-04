@@ -1,4 +1,9 @@
 export interface Pagination {
-    page: number;
-    limit: number;
+    readonly page: number;
+    readonly limit: number;
 }
+
+export interface CursorPagination {
+    readonly cursor?: string;
+    readonly limit: number;
+}

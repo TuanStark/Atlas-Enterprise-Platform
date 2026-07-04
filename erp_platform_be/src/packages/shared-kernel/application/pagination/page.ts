@@ -1,20 +1,33 @@
+import { PageMeta, CursorPageMeta } from '../result/pagination-meta';
+
 export class Page<T> {
+    public readonly totalPages: number;
+    public readonly hasNextPage: boolean;
+    public readonly hasPreviousPage: boolean;
+    public readonly meta: PageMeta;
+
     constructor(
         public readonly items: ReadonlyArray<T>,
         public readonly totalItems: number,
         public readonly page: number,
         public readonly limit: number,
-    ) { }
-
-    get totalPages(): number {
-        return Math.ceil(this.totalItems / this.limit);
-    }
-
-    get hasNextPage(): boolean {
-        return this.page < this.totalPages;
-    }
-
-    get hasPreviousPage(): boolean {
-        return this.page > 1;
+    ) {
+        this.meta = new PageMeta(totalItems, page, limit);
+        this.totalPages = this.meta.totalPages;
+        this.hasNextPage = this.meta.hasNextPage;
+        this.hasPreviousPage = this.meta.hasPreviousPage;
     }
 }
+
+export class CursorPage<T> {
+    public readonly meta: CursorPageMeta;
+
+    constructor(
+        public readonly items: ReadonlyArray<T>,
+        limit: number,
+        hasNextPage: boolean,
+        nextCursor?: string,
+    ) {
+        this.meta = new CursorPageMeta(limit, hasNextPage, nextCursor);
+    }
+}
