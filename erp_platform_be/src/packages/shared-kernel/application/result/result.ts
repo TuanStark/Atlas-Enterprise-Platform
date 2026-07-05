@@ -1,114 +1,166 @@
-import { ErrorDetail } from "./error-code";
+import { ErrorDetail } from './error-code';
+import { ResultMeta } from './result-meta';
 
-export class Result<T, E = ErrorDetail[]> {
+export class Result<T = void> {
     private constructor(
-        public readonly isSuccess: boolean,
-        private readonly _value?: T,
-        private readonly _errors?: E,
+        public readonly success: boolean,
+        public readonly statusCode: number,
+        public readonly code: string,
+        public readonly message: string,
+        public readonly data?: T,
+        public readonly meta?: ResultMeta,
+        public readonly errors: ErrorDetail[] = [],
     ) { }
 
-    public static success<T, E = ErrorDetail[]>(value: T): Result<T, E>;
-    public static success<E = ErrorDetail[]>(): Result<void, E>;
-    public static success<T, E = ErrorDetail[]>(value?: T): Result<T, E> {
-        return new Result<T, E>(true, value, undefined);
+    /**
+     * Creates a successful Result.
+     *
+     * @param data Optional payload of type T.
+     * @param options Configuration options for the result (status code, code, message, and meta).
+     * @returns A successful Result instance.
+     */
+    public static success<T = void>(
+        data?: T,
+        options?: {
+            statusCode?: number;
+            code?: string;
+            message?: string;
+            meta?: ResultMeta;
+        },
+    ): Result<T> {
+        return new Result<T>(
+            true,
+            options?.statusCode ?? 200,
+            options?.code ?? 'SUCCESS',
+            options?.message ?? 'Success.',
+            data,
+            options?.meta,
+            [],
+        );
     }
 
-    public static failure<T = void, E = ErrorDetail[]>(errors: E): Result<T, E> {
-        return new Result<T, E>(false, undefined, errors);
+    /**
+     * Creates a failure Result.
+     *
+     * @param options Configuration options for the failure (status code, business error code, message, error details, and meta).
+     * @returns A failed Result instance.
+     */
+    public static failure<T = any>(options: {
+        statusCode: number;
+        code: string;
+        message: string;
+        errors?: ErrorDetail[];
+        meta?: ResultMeta;
+    }): Result<T> {
+        return new Result<T>(
+            false,
+            options.statusCode,
+            options.code,
+            options.message,
+            undefined,
+            options.meta,
+            options.errors ?? [],
+        );
     }
 
-    public get isFailure(): boolean {
-        return !this.isSuccess;
+    /**
+     * Type guard that checks if the result is successful.
+     * Narrows the type to guarantee that `success` is true and `data` is defined (if T is not void).
+     */
+    public isSuccess(): this is Result<T> & { success: true; data: T } {
+        return this.success;
     }
 
-    public isSuccessResult(): this is Result<T, never> & { readonly value: T } {
-        return this.isSuccess;
+    /**
+     * Type guard that checks if the result is a failure.
+     * Narrows the type to guarantee that `success` is false and `errors` contains ErrorDetail[].
+     */
+    public isFailure(): this is Result<T> & {
+        success: false;
+        errors: ErrorDetail[];
+    } {
+        return !this.success;
     }
 
-    public isFailureResult(): this is Result<never, E> & { readonly errors: E } {
-        return !this.isSuccess;
-    }
-
-    public get value(): T {
-        if (!this.isSuccess) {
-            throw new Error('Cannot retrieve the value of a failed result.');
+    /**
+     * Unwraps the data. Throws an error if the Result is a failure.
+     * Useful when you want to convert the Result back into an exception-throwing flow at boundary limits.
+     *
+     * @throws Error if the result is a failure.
+     * @returns The wrapped data of type T.
+     */
+    public unwrap(): T {
+        if (this.isFailure()) {
+            throw new Error(
+                `Cannot unwrap failure result: ${this.message} (${this.code})`,
+            );
         }
-        return this._value as T;
+        return this.data as T;
     }
 
-    public get errors(): E {
-        if (this.isSuccess) {
-            throw new Error('Cannot retrieve the errors of a successful result.');
+    /**
+     * Unwraps the data, returning a fallback value if the Result is a failure.
+     *
+     * @param fallback The default value to return if result is a failure.
+     * @returns The data of type T or the fallback value.
+     */
+    public unwrapOr(fallback: T): T {
+        if (this.isFailure()) {
+            return fallback;
         }
-        return this._errors as E;
+        return this.data as T;
     }
 
-    public get errorList(): ReadonlyArray<ErrorDetail> {
-        if (this.isSuccess || !this._errors) {
-            return [];
+    /**
+     * Maps the successful Result's data to a new value/type using the mapping function.
+     * Propagates failure states directly without executing the mapping function.
+     *
+     * @param fn The mapping function to transform T to U.
+     * @returns A new Result of type U.
+     */
+    public map<U>(fn: (data: T) => U): Result<U> {
+        if (this.isFailure()) {
+            return Result.failure<U>({
+                statusCode: this.statusCode,
+                code: this.code,
+                message: this.message,
+                errors: this.errors,
+                meta: this.meta,
+            });
         }
-        if (Array.isArray(this._errors)) {
-            return this._errors;
-        }
-        return [this._errors as any];
+        return Result.success<U>(fn(this.data as T), {
+            statusCode: this.statusCode,
+            code: this.code,
+            message: this.message,
+            meta: this.meta,
+        });
     }
 
-    public map<U>(fn: (val: T) => U): Result<U, E> {
-        if (this.isFailure) {
-            return Result.failure<U, E>(this.errors);
-        }
-        return Result.success<U, E>(fn(this.value));
-    }
+    /**
+     * Combines multiple Results into a single Result.
+     * If all results are successful, returns a success Result containing an array of all data payloads.
+     * If one or more results fail, aggregates all of their errors into a single failure Result.
+     *
+     * @param results Array of Result objects to combine.
+     * @returns A combined Result containing an array of successful values, or aggregated errors.
+     */
+    public static combine(results: Result<unknown>[]): Result<unknown[]> {
+        const failures = results.filter((r) => r.isFailure());
+        if (failures.length > 0) {
+            const errors = failures.reduce<ErrorDetail[]>((acc, current) => {
+                return acc.concat(current.errors);
+            }, []);
 
-    public flatMap<U>(fn: (val: T) => Result<U, E>): Result<U, E> {
-        if (this.isFailure) {
-            return Result.failure<U, E>(this.errors);
-        }
-        return fn(this.value);
-    }
-
-    public unwrapOr(defaultValue: T): T {
-        return this.isSuccess ? this.value : defaultValue;
-    }
-
-    public match<U>(
-        onSuccess: (val: T) => U,
-        onFailure: (errors: E) => U,
-    ): U {
-        return this.isSuccess ? onSuccess(this.value) : onFailure(this.errors);
-    }
-
-    public static combine<Results extends Result<any, ErrorDetail[]>[]>(
-        results: Results,
-    ): Result<any[], ErrorDetail[]> {
-        const errors: ErrorDetail[] = [];
-        const values: any[] = [];
-
-        for (const result of results) {
-            if (result.isFailure) {
-                errors.push(...result.errorList);
-            } else {
-                values.push(result.value);
-            }
+            const firstFailure = failures[0];
+            return Result.failure<unknown[]>({
+                statusCode: firstFailure.statusCode,
+                code: firstFailure.code,
+                message: 'Multiple operations failed.',
+                errors,
+            });
         }
 
-        if (errors.length > 0) {
-            return Result.failure<any[], ErrorDetail[]>(errors);
-        }
-
-        return Result.success<any[], ErrorDetail[]>(values);
-    }
-
-    public toJSON() {
-        if (this.isSuccess) {
-            return {
-                success: true,
-                data: this._value !== undefined ? this._value : null,
-            };
-        }
-        return {
-            success: false,
-            errors: this.errorList,
-        };
+        const data = results.map((r) => r.data);
+        return Result.success<unknown[]>(data);
     }
 }
