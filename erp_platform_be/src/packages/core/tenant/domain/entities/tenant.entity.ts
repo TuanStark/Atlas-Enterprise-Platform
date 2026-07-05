@@ -1,5 +1,3 @@
-
-
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { TenantCode } from '../value-objects/tenant-code.vo';
 import { TenantName } from '../value-objects/tenant-name.vo';
@@ -31,18 +29,11 @@ export interface TenantProps {
 }
 
 export class Tenant extends AggregateRoot<TenantProps> {
-  private constructor(
-    props: TenantProps,
-  ) {
+  private constructor(props: TenantProps) {
     super(props.id, props);
   }
 
-  public static create(
-    props: Omit<
-      TenantProps,
-      'id' | 'createdAt' | 'version'
-    >,
-  ): Tenant {
+  public static create(props: Omit<TenantProps, 'id' | 'createdAt' | 'version'>): Tenant {
     return new Tenant({
       ...props,
       id: Identifier.create(),
@@ -51,9 +42,7 @@ export class Tenant extends AggregateRoot<TenantProps> {
     });
   }
 
-  public static restore(
-    props: TenantProps,
-  ): Tenant {
+  public static restore(props: TenantProps): Tenant {
     return new Tenant(props);
   }
 
@@ -137,73 +126,55 @@ export class Tenant extends AggregateRoot<TenantProps> {
     this.touch();
   }
 
-  public changeName(
-    name: TenantName,
-  ): void {
+  public changeName(name: TenantName): void {
     this.props.name = name;
 
     this.touch();
   }
 
-  public changeLegalName(
-    legalName?: string,
-  ): void {
+  public changeLegalName(legalName?: string): void {
     this.props.legalName = legalName;
 
     this.touch();
   }
 
-  public changeEmail(
-    email?: string,
-  ): void {
+  public changeEmail(email?: string): void {
     this.props.email = email;
 
     this.touch();
   }
 
-  public changePhone(
-    phone?: string,
-  ): void {
+  public changePhone(phone?: string): void {
     this.props.phone = phone;
 
     this.touch();
   }
 
-  public changeTaxCode(
-    taxCode?: string,
-  ): void {
+  public changeTaxCode(taxCode?: string): void {
     this.props.taxCode = taxCode;
 
     this.touch();
   }
 
-  public changeTimezone(
-    timezone?: string,
-  ): void {
+  public changeTimezone(timezone?: string): void {
     this.props.timezone = timezone;
 
     this.touch();
   }
 
-  public changeLocale(
-    locale?: string,
-  ): void {
+  public changeLocale(locale?: string): void {
     this.props.locale = locale;
 
     this.touch();
   }
 
-  public changeCurrency(
-    currency?: string,
-  ): void {
+  public changeCurrency(currency?: string): void {
     this.props.currency = currency;
 
     this.touch();
   }
 
-  public updateMetadata(
-    metadata?: Record<string, unknown>,
-  ): void {
+  public updateMetadata(metadata?: Record<string, unknown>): void {
     this.props.metadata = metadata;
 
     this.touch();
@@ -218,6 +189,34 @@ export class Tenant extends AggregateRoot<TenantProps> {
   private touch(): void {
     this.props.updatedAt = new Date();
 
+    this.props.version++;
+  }
+
+  public update(props: {
+    name: TenantName;
+    legalName?: string;
+    taxCode?: string;
+    email?: string;
+    phone?: string;
+    timezone?: string;
+    locale?: string;
+    currency?: string;
+    metadata?: Record<string, unknown>;
+  }): void {
+    this.props.name = props.name;
+    this.props.legalName = props.legalName;
+    this.props.taxCode = props.taxCode;
+    this.props.email = props.email;
+    this.props.phone = props.phone;
+    this.props.timezone = props.timezone;
+    this.props.locale = props.locale;
+    this.props.currency = props.currency;
+    this.props.metadata = props.metadata;
+
+    this.touch();
+  }
+
+  private incrementVersion(): void {
     this.props.version++;
   }
 }

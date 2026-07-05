@@ -1,4 +1,5 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
+import { HttpStatus, Inject } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Result } from '@shared-kernel/application';
 import { TenantErrorCode, TenantSuccessCode, TenantMessages } from '../../../domain';
 import * as repositories from '../../../domain/repositories';
@@ -7,9 +8,12 @@ import { TenantMapper } from '../../mappers';
 
 import { CreateTenantCommand } from './create-tenant.command';
 
-@Injectable()
-export class CreateTenantHandler {
-  constructor(private readonly tenantRepository: repositories.TenantRepository) {}
+@CommandHandler(CreateTenantCommand)
+export class CreateTenantHandler implements ICommandHandler<CreateTenantCommand> {
+  constructor(
+    @Inject(repositories.TENANT_REPOSITORY)
+    private readonly tenantRepository: repositories.TenantRepository,
+  ) {}
 
   async execute(command: CreateTenantCommand): Promise<Result<void>> {
     const dto = command.dto;
