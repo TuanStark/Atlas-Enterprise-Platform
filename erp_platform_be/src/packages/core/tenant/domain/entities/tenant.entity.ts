@@ -61,8 +61,52 @@ export class Tenant extends AggregateRoot<TenantProps> {
     return this.props.name;
   }
 
+  get legalName(): string | undefined {
+    return this.props.legalName;
+  }
+
+  get taxCode(): string | undefined {
+    return this.props.taxCode;
+  }
+
+  get email(): string | undefined {
+    return this.props.email;
+  }
+
+  get phone(): string | undefined {
+    return this.props.phone;
+  }
+
+  get timezone(): string | undefined {
+    return this.props.timezone;
+  }
+
+  get locale(): string | undefined {
+    return this.props.locale;
+  }
+
+  get currency(): string | undefined {
+    return this.props.currency;
+  }
+
   get status(): TenantStatus {
     return this.props.status;
+  }
+
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+
+  get updatedAt(): Date | undefined {
+    return this.props.updatedAt;
+  }
+
+  get version(): number {
+    return this.props.version;
+  }
+
+  get deletedAt(): Date | undefined {
+    return this.props.deletedAt;
   }
 
   // ---------- Behaviors ----------
@@ -91,6 +135,12 @@ export class Tenant extends AggregateRoot<TenantProps> {
     this.touch();
   }
 
+  public changeTaxCode(taxCode?: string): void {
+    this.props.taxCode = taxCode;
+
+    this.touch();
+  }
+
   public changeEmail(email?: string): void {
     this.props.email = email;
 
@@ -99,6 +149,24 @@ export class Tenant extends AggregateRoot<TenantProps> {
 
   public changePhone(phone?: string): void {
     this.props.phone = phone;
+
+    this.touch();
+  }
+
+  public changeTimezone(timezone?: string): void {
+    this.props.timezone = timezone;
+
+    this.touch();
+  }
+
+  public changeLocale(locale?: string): void {
+    this.props.locale = locale;
+
+    this.touch();
+  }
+
+  public changeCurrency(currency?: string): void {
+    this.props.currency = currency;
 
     this.touch();
   }
