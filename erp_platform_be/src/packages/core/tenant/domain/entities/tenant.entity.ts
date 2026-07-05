@@ -1,8 +1,9 @@
+
+
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { TenantCode } from '../value-objects/tenant-code.vo';
 import { TenantName } from '../value-objects/tenant-name.vo';
 import { AggregateRoot } from '@shared-kernel/domain/aggregate-root';
-import { TenantCreatedEvent } from '../events/tenant-created.event';
 
 export enum TenantStatus {
   ACTIVE = 'ACTIVE',
@@ -30,24 +31,29 @@ export interface TenantProps {
 }
 
 export class Tenant extends AggregateRoot<TenantProps> {
-  private constructor(props: TenantProps) {
+  private constructor(
+    props: TenantProps,
+  ) {
     super(props.id, props);
   }
 
-  public static create(props: Omit<TenantProps, 'id' | 'createdAt' | 'version'>): Tenant {
-    const tenant = new Tenant({
+  public static create(
+    props: Omit<
+      TenantProps,
+      'id' | 'createdAt' | 'version'
+    >,
+  ): Tenant {
+    return new Tenant({
       ...props,
       id: Identifier.create(),
       version: 1,
       createdAt: new Date(),
     });
-
-    tenant.addDomainEvent(new TenantCreatedEvent(tenant.id));
-
-    return tenant;
   }
 
-  public static restore(props: TenantProps): Tenant {
+  public static restore(
+    props: TenantProps,
+  ): Tenant {
     return new Tenant(props);
   }
 
@@ -77,6 +83,10 @@ export class Tenant extends AggregateRoot<TenantProps> {
     return this.props.phone;
   }
 
+  get logoFileId(): Identifier | undefined {
+    return this.props.logoFileId;
+  }
+
   get timezone(): string | undefined {
     return this.props.timezone;
   }
@@ -93,16 +103,20 @@ export class Tenant extends AggregateRoot<TenantProps> {
     return this.props.status;
   }
 
+  get metadata(): Record<string, unknown> | undefined {
+    return this.props.metadata;
+  }
+
+  get version(): number {
+    return this.props.version;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
 
   get updatedAt(): Date | undefined {
     return this.props.updatedAt;
-  }
-
-  get version(): number {
-    return this.props.version;
   }
 
   get deletedAt(): Date | undefined {
@@ -123,55 +137,73 @@ export class Tenant extends AggregateRoot<TenantProps> {
     this.touch();
   }
 
-  public changeName(name: TenantName): void {
+  public changeName(
+    name: TenantName,
+  ): void {
     this.props.name = name;
 
     this.touch();
   }
 
-  public changeLegalName(legalName?: string): void {
+  public changeLegalName(
+    legalName?: string,
+  ): void {
     this.props.legalName = legalName;
 
     this.touch();
   }
 
-  public changeTaxCode(taxCode?: string): void {
-    this.props.taxCode = taxCode;
-
-    this.touch();
-  }
-
-  public changeEmail(email?: string): void {
+  public changeEmail(
+    email?: string,
+  ): void {
     this.props.email = email;
 
     this.touch();
   }
 
-  public changePhone(phone?: string): void {
+  public changePhone(
+    phone?: string,
+  ): void {
     this.props.phone = phone;
 
     this.touch();
   }
 
-  public changeTimezone(timezone?: string): void {
+  public changeTaxCode(
+    taxCode?: string,
+  ): void {
+    this.props.taxCode = taxCode;
+
+    this.touch();
+  }
+
+  public changeTimezone(
+    timezone?: string,
+  ): void {
     this.props.timezone = timezone;
 
     this.touch();
   }
 
-  public changeLocale(locale?: string): void {
+  public changeLocale(
+    locale?: string,
+  ): void {
     this.props.locale = locale;
 
     this.touch();
   }
 
-  public changeCurrency(currency?: string): void {
+  public changeCurrency(
+    currency?: string,
+  ): void {
     this.props.currency = currency;
 
     this.touch();
   }
 
-  public updateMetadata(metadata?: Record<string, unknown>): void {
+  public updateMetadata(
+    metadata?: Record<string, unknown>,
+  ): void {
     this.props.metadata = metadata;
 
     this.touch();
