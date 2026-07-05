@@ -1,7 +1,7 @@
 import { DomainException } from './domain.exception';
 
 export class ValidationException extends DomainException {
-    constructor(message: string) {
-        super(message);
-    }
+  constructor(message: string) {
+    super(message);
+  }
 }

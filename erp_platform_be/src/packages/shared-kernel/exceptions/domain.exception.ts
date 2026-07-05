@@ -1,11 +1,11 @@
 export abstract class DomainException extends Error {
-    protected constructor(message: string) {
-        super(message);
+  protected constructor(message: string) {
+    super(message);
 
-        this.name = new.target.name;
+    this.name = new.target.name;
 
-        Object.setPrototypeOf(this, new.target.prototype);
+    Object.setPrototypeOf(this, new.target.prototype);
 
-        Error.captureStackTrace?.(this, new.target);
-    }
+    Error.captureStackTrace?.(this, new.target);
+  }
 }

@@ -1,37 +1,31 @@
 export class DateUtil {
-    private constructor() { }
+  private constructor() {}
 
-    public static now(): Date {
-        return new Date();
-    }
+  public static now(): Date {
+    return new Date();
+  }
 
-    public static addDays(
-        date: Date,
-        days: number,
-    ): Date {
-        const result = new Date(date);
+  public static addDays(date: Date, days: number): Date {
+    const result = new Date(date);
 
-        result.setDate(result.getDate() + days);
+    result.setDate(result.getDate() + days);
 
-        return result;
-    }
+    return result;
+  }
 
-    public static addMonths(
-        date: Date,
-        months: number,
-    ): Date {
-        const result = new Date(date);
+  public static addMonths(date: Date, months: number): Date {
+    const result = new Date(date);
 
-        result.setMonth(result.getMonth() + months);
+    result.setMonth(result.getMonth() + months);
 
-        return result;
-    }
+    return result;
+  }
 
-    public static isPast(date: Date): boolean {
-        return date.getTime() < Date.now();
-    }
+  public static isPast(date: Date): boolean {
+    return date.getTime() < Date.now();
+  }
 
-    public static isFuture(date: Date): boolean {
-        return date.getTime() > Date.now();
-    }
+  public static isFuture(date: Date): boolean {
+    return date.getTime() > Date.now();
+  }
 }
