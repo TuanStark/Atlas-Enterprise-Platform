@@ -5,8 +5,6 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 export interface TenantRepository extends Repository<Tenant> {
   findByCode(code: TenantCode): Promise<Tenant | null>;
-
   existsByCode(code: TenantCode): Promise<boolean>;
-
   existsById(id: Identifier): Promise<boolean>;
 }
