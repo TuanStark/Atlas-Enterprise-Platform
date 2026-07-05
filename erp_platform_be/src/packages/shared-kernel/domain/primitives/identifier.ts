@@ -1,34 +1,28 @@
-import { randomUUID } from 'node:crypto';
-import { validate as isUuid } from 'uuid';
-import { InvalidIdentifierException } from '../exceptions/invalid-identifier.exception';
+import { randomUUID } from 'crypto';
+import { Guard } from '../../utils';
 
-
-export class Identifier {
+export class Identifier<T = unknown> {
     private constructor(
         private readonly value: string,
     ) { }
 
-    static generate(): Identifier {
-        return new Identifier(randomUUID());
+    public static create<T>(value?: string): Identifier<T> {
+        const id = value ?? randomUUID();
+
+        Guard.againstEmptyString(id, 'identifier');
+
+        return new Identifier<T>(id);
     }
 
-    static from(value: string): Identifier {
-        if (!isUuid(value)) {
-            throw new InvalidIdentifierException(value);
-        }
-
-        return new Identifier(value);
-    }
-
-    equals(other: Identifier): boolean {
-        return this.value === other.value;
-    }
-
-    toString(): string {
+    public getValue(): string {
         return this.value;
     }
 
-    toJSON(): string {
+    public equals(other: Identifier<T>): boolean {
+        return this.value === other.value;
+    }
+
+    public toString(): string {
         return this.value;
     }
 }

@@ -1,6 +1,6 @@
 import { Entity } from './entity';
 import { Identifier } from './primitives/identifier';
-import type { DomainEvent } from './domain-event';
+import type { DomainEvent } from './events/domain-event';
 
 export abstract class AggregateRoot<Props> extends Entity<Props> {
     private readonly domainEvents: DomainEvent[] = [];

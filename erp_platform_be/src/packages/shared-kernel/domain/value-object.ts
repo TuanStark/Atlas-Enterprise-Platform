@@ -14,4 +14,8 @@ export abstract class ValueObject<Props> {
 
         return equal(this.props, other.props);
     }
+
+    public get value(): Props {
+        return this.props;
+    }
 }
