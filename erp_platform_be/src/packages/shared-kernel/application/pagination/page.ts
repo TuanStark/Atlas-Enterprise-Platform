@@ -17,6 +17,15 @@ export class Page<T> {
     this.hasNextPage = this.meta.hasNextPage;
     this.hasPreviousPage = this.meta.hasPreviousPage;
   }
+
+  public static of<T>(
+    items: ReadonlyArray<T>,
+    totalItems: number,
+    page: number,
+    limit: number,
+  ): Page<T> {
+    return new Page<T>(items, totalItems, page, limit);
+  }
 }
 
 export class CursorPage<T> {

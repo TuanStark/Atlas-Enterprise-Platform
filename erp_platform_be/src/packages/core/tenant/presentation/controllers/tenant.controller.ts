@@ -59,6 +59,9 @@ export class TenantController {
   @ApiOperation({
     summary: 'List tenants',
   })
+  @ApiOkResponse({
+    type: [TenantDto],
+  })
   async list(): Promise<Result<TenantDto[]>> {
     return this.queryBus.execute(new ListTenantsQuery());
   }
@@ -66,6 +69,9 @@ export class TenantController {
   @Put(':id')
   @ApiOperation({
     summary: 'Update tenant',
+  })
+  @ApiOkResponse({
+    type: TenantDto,
   })
   async update(@Param('id') id: string, @Body() dto: UpdateTenantDto): Promise<Result<TenantDto>> {
     return this.commandBus.execute(new UpdateTenantCommand(id, dto));
@@ -75,6 +81,9 @@ export class TenantController {
   @ApiOperation({
     summary: 'Activate tenant',
   })
+  @ApiOkResponse({
+    description: 'Tenant activated',
+  })
   async activate(@Param('id') id: string): Promise<Result<void>> {
     return this.commandBus.execute(new ActivateTenantCommand(id));
   }
@@ -82,6 +91,9 @@ export class TenantController {
   @Patch(':id/deactivate')
   @ApiOperation({
     summary: 'Deactivate tenant',
+  })
+  @ApiOkResponse({
+    description: 'Tenant deactivated',
   })
   async deactivate(@Param('id') id: string): Promise<Result<void>> {
     return this.commandBus.execute(new DeactivateTenantCommand(id));
