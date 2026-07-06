@@ -13,6 +13,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Page, Result } from '@shared-kernel/application';
+import { BaseCrudControllerHelper } from '@shared-kernel/presentation/controllers/base-crud.controller';
 import { GetPrincipalQuery, ListPrincipalQuery } from '../../application/queries';
 import { CreatePrincipalCommand } from '@core/principal/application/commands/create-principal/create-principal.command';
 import { UpdatePrincipalCommand } from '@core/principal/application/commands/update-principal/update-principal.command';
@@ -26,11 +27,10 @@ import {
 
 @ApiTags('Principals')
 @Controller('principals')
-export class PrincipalController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+export class PrincipalController extends BaseCrudControllerHelper {
+  constructor(commandBus: CommandBus, queryBus: QueryBus) {
+    super(commandBus, queryBus);
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -40,7 +40,7 @@ export class PrincipalController {
     @Body()
     dto: CreatePrincipalDto,
   ): Promise<Result<void>> {
-    return this.commandBus.execute(new CreatePrincipalCommand(dto));
+    return this.executeCreate(CreatePrincipalCommand, dto);
   }
 
   @Get(':id')
@@ -50,14 +50,14 @@ export class PrincipalController {
     @Param('id')
     id: string,
   ): Promise<Result<PrincipalDto>> {
-    return this.queryBus.execute(new GetPrincipalQuery(id));
+    return this.executeGet(GetPrincipalQuery, id);
   }
 
   @Get()
   @ApiOperation({ summary: 'List principals' })
   @ApiOkResponse({ type: [PrincipalDto] })
   list(): Promise<Result<Page<PrincipalDto>>> {
-    return this.queryBus.execute(new ListPrincipalQuery());
+    return this.executeList<Page<PrincipalDto>>(ListPrincipalQuery);
   }
 
   @Put(':id')
@@ -70,7 +70,7 @@ export class PrincipalController {
     @Body()
     dto: UpdatePrincipalDto,
   ): Promise<Result<PrincipalDto>> {
-    return this.commandBus.execute(new UpdatePrincipalCommand(id, dto));
+    return this.executeUpdate(UpdatePrincipalCommand, id, dto);
   }
 
   @Patch(':id/activate')
@@ -80,7 +80,7 @@ export class PrincipalController {
     @Param('id')
     id: string,
   ): Promise<Result<void>> {
-    return this.commandBus.execute(new ActivatePrincipalCommand(id));
+    return this.executeActivate(ActivatePrincipalCommand, id);
   }
 
   @Patch(':id/suspend')
@@ -90,6 +90,6 @@ export class PrincipalController {
     @Param('id')
     id: string,
   ): Promise<Result<void>> {
-    return this.commandBus.execute(new SuspendPrincipalCommand(id));
+    return this.executeSuspend(SuspendPrincipalCommand, id);
   }
 }
