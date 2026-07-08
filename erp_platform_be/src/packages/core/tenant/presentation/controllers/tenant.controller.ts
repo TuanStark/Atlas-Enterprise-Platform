@@ -21,6 +21,7 @@ import {
   UpdateTenantCommand,
   ActivateTenantCommand,
   DeactivateTenantCommand,
+  DeleteTenantCommand,
   GetTenantQuery,
   ListTenantsQuery,
 } from '@core/tenant/application';
@@ -97,5 +98,16 @@ export class TenantController extends BaseCrudControllerHelper {
   })
   async deactivate(@Param('id') id: string): Promise<Result<void>> {
     return this.executeSuspend(DeactivateTenantCommand, id);
+  }
+
+  @Patch(':id/delete')
+  @ApiOperation({
+    summary: 'Delete tenant',
+  })
+  @ApiOkResponse({
+    description: 'Tenant deleted',
+  })
+  async delete(@Param('id') id: string): Promise<Result<void>> {
+    return this.executeDelete(DeleteTenantCommand, id);
   }
 }

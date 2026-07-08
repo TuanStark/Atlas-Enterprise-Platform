@@ -8,6 +8,7 @@ import {
   UpdateTenantHandler,
   ActivateTenantHandler,
   DeactivateTenantHandler,
+  DeleteTenantHandler,
   GetTenantHandler,
   ListTenantsHandler,
 } from './application';
@@ -21,6 +22,7 @@ const CommandHandlers = [
   UpdateTenantHandler,
   ActivateTenantHandler,
   DeactivateTenantHandler,
+  DeleteTenantHandler,
 ];
 
 const QueryHandlers = [GetTenantHandler, ListTenantsHandler];

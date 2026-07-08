@@ -7,6 +7,8 @@ export * from './commands/activate-tenant/activate-tenant.command';
 export * from './commands/activate-tenant/activate-tenant.handler';
 export * from './commands/deactivate-tenant/deactivate-tenant.command';
 export * from './commands/deactivate-tenant/deactivate-tenant.handler';
+export * from './commands/delete-tenant/delete-tenant.command';
+export * from './commands/delete-tenant/delete-tenant.handler';
 
 // Queries
 export * from './queries/get-tenant/get-tenant.query';

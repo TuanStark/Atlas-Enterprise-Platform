@@ -8,6 +8,7 @@ export enum TenantSuccessCode {
   UPDATED = 'TENANT_UPDATED',
   ACTIVATED = 'TENANT_ACTIVATED',
   DEACTIVATED = 'TENANT_DEACTIVATED',
+  DELETED = 'TENANT_DELETED',
 }
 
 export const TenantMessages = {
@@ -20,5 +21,6 @@ export const TenantMessages = {
     UPDATED: 'Tenant updated successfully.',
     ACTIVATED: 'Tenant activated successfully.',
     DEACTIVATED: 'Tenant deactivated successfully.',
+    DELETED: 'Tenant deleted successfully.',
   },
 } as const;

@@ -11,4 +11,3 @@ import { PrincipalModule } from './packages/core/principal/principal.module';
   providers: [AppService],
 })
 export class AppModule {}
-

@@ -48,4 +48,11 @@ export abstract class BaseCrudControllerHelper {
   ): Promise<Result<void>> {
     return this.commandBus.execute(new CommandClass(id));
   }
+
+  protected async executeDelete(
+    CommandClass: new (id: string) => any,
+    id: string,
+  ): Promise<Result<void>> {
+    return this.commandBus.execute(new CommandClass(id));
+  }
 }
