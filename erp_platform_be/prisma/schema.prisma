@@ -10,6 +10,8 @@ datasource db {
   provider = "postgresql"
 }
 
+
+
 enum TenantStatus {
   active
   inactive
