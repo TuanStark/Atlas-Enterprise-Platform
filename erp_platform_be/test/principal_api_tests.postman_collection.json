@@ -1,0 +1,753 @@
+{
+    "info": {
+        "_postman_id": "8f8702b8-9366-4e59-a54f-56165e3170b6",
+        "name": "Atlas Enterprise Platform - Principal API QA Suite",
+        "description": "Comprehensive Postman QA suite for testing the Principal Domain endpoints of Atlas Enterprise Platform, covering Happy Path flow, validation constraints, and database edge cases.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Setup & Happy Path Flow",
+            "item": [
+                {
+                    "name": "Setup - Create Dynamic Tenant",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const randomCode = \"TNT_\" + Math.random().toString(36).substring(2, 8).toUpperCase();",
+                                    "pm.collectionVariables.set(\"dynamic_tenant_code\", randomCode);"
+                                ],
+                                "type": "javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response is success result envelope\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.code).to.eql(\"TENANT_CREATED\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"code\": \"{{dynamic_tenant_code}}\",\n    \"name\": \"QA Test Tenant (Dynamic)\",\n    \"legalName\": \"QA Tester Corp Ltd\",\n    \"taxCode\": \"TX-999234\",\n    \"email\": \"qa_tenant@example.com\",\n    \"phone\": \"+84987654321\",\n    \"timezone\": \"Asia/Ho_Chi_Minh\",\n    \"locale\": \"vi-VN\",\n    \"currency\": \"VND\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/tenants",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenants"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Setup - Extract Tenant ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Extract Tenant ID successfully\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.data).to.be.an('array');",
+                                    "    ",
+                                    "    const targetCode = pm.collectionVariables.get(\"dynamic_tenant_code\");",
+                                    "    const matchedTenant = jsonData.data.find(t => t.code === targetCode);",
+                                    "    ",
+                                    "    pm.expect(matchedTenant).to.not.be.undefined;",
+                                    "    pm.collectionVariables.set(\"tenant_id\", matchedTenant.id);",
+                                    "    console.log(\"Saved Tenant ID:\", matchedTenant.id);",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/tenants",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenants"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Principal",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response conforms to Result<void> structure\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.statusCode).to.eql(201);",
+                                    "    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_CREATED\");",
+                                    "    pm.expect(jsonData.message).to.contain(\"successfully\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tenantId\": \"{{tenant_id}}\",\n    \"type\": \"USER\",\n    \"displayName\": \"Senior QA Automation Principal\",\n    \"metadata\": {\n        \"framework\": \"Postman\",\n        \"version\": \"v10\",\n        \"isAutomated\": true\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "List Principals & Extract ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Extract Principal ID from list\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    ",
+                                    "    let principalArray = [];",
+                                    "    if (jsonData.data && Array.isArray(jsonData.data)) {",
+                                    "        principalArray = jsonData.data;",
+                                    "    } else if (jsonData.data && jsonData.data.items && Array.isArray(jsonData.data.items)) {",
+                                    "        principalArray = jsonData.data.items;",
+                                    "    }",
+                                    "    ",
+                                    "    pm.expect(principalArray).to.not.be.empty;",
+                                    "    const matched = principalArray.find(p => p.displayName === \"Senior QA Automation Principal\");",
+                                    "    pm.expect(matched).to.not.be.undefined;",
+                                    "    pm.collectionVariables.set(\"principal_id\", matched.id);",
+                                    "    console.log(\"Saved Principal ID:\", matched.id);",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Principal By ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Validate Principal Data Schema\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_FOUND\");",
+                                    "    ",
+                                    "    const principal = jsonData.data;",
+                                    "    pm.expect(principal.id).to.eql(pm.collectionVariables.get(\"principal_id\"));",
+                                    "    pm.expect(principal.tenantId).to.eql(pm.collectionVariables.get(\"tenant_id\"));",
+                                    "    pm.expect(principal.type).to.eql(\"USER\");",
+                                    "    pm.expect(principal.status).to.eql(\"ACTIVE\");",
+                                    "    pm.expect(principal.displayName).to.eql(\"Senior QA Automation Principal\");",
+                                    "    pm.expect(principal.metadata.isAutomated).to.be.true;",
+                                    "    pm.expect(principal.createdAt).to.not.be.null;",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Principal",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify Principal Updates correctly\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_UPDATED\");",
+                                    "    ",
+                                    "    const principal = jsonData.data;",
+                                    "    pm.expect(principal.displayName).to.eql(\"Senior QA Automation Principal (Updated)\");",
+                                    "    pm.expect(principal.metadata.isAutomated).to.be.true;",
+                                    "    pm.expect(principal.metadata.revision).to.eql(2);",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"displayName\": \"Senior QA Automation Principal (Updated)\",\n    \"metadata\": {\n        \"framework\": \"Postman\",\n        \"version\": \"v10\",\n        \"isAutomated\": true,\n        \"revision\": 2\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Suspend Principal",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify status code is PRINCIPAL_SUSPENDED\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_SUSPENDED\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}/suspend",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}",
+                                "suspend"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify Suspended Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Verify status is SUSPENDED\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data.status).to.eql(\"SUSPENDED\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Activate Principal",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify status code is PRINCIPAL_ACTIVATED\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_ACTIVATED\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}/activate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}",
+                                "activate"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify Activated Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Verify status is ACTIVE\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data.status).to.eql(\"ACTIVE\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "2. Failure & Edge Cases",
+            "item": [
+                {
+                    "name": "Create Principal - Missing tenantId",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify validation error envelope\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "    pm.expect(jsonData.code).to.eql(\"BAD_REQUEST\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"type\": \"USER\",\n    \"displayName\": \"No Tenant Principal\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Principal - Invalid tenantId format (non-UUID)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify validation message contains UUID\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.contain(\"uuid\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tenantId\": \"not-a-valid-uuid\",\n    \"type\": \"USER\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Principal - Invalid type",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify validation error code\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tenantId\": \"{{tenant_id}}\",\n    \"type\": \"INVALID_PRINCIPAL_TYPE\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Principal - Non-existent Tenant UUID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 500 or 400\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify DB fails gracefully\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tenantId\": \"4d42b1cf-0000-0000-0000-000000000000\",\n    \"type\": \"USER\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Principal - Non-existent ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify result envelope for not found error\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_NOT_FOUND\");",
+                                    "    pm.expect(jsonData.message).to.eql(\"Principal not found.\");",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/4d42b1cf-0000-0000-0000-000000000000",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "4d42b1cf-0000-0000-0000-000000000000"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Principal - Invalid fields",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify validation failure\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"displayName\": 123456\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/principals/{{principal_id}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "principals",
+                                "{{principal_id}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "tenant_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "principal_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "dynamic_tenant_code",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
