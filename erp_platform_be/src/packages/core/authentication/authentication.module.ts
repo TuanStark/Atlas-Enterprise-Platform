@@ -14,30 +14,30 @@ import { IDENTITY_SERVICE } from '@core/identity';
 import { IdentityServiceImpl } from '@core/identity/infrastructure/services/identity.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        CqrsModule,
-        IdentityModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: {
-                issuer: 'erp-platform',
-            },
-        }),
-    ],
+  imports: [
+    PrismaModule,
+    CqrsModule,
+    IdentityModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: {
+        issuer: 'erp-platform',
+      },
+    }),
+  ],
 
-    controllers: [AuthController],
+  controllers: [AuthController],
 
-    providers: [
-        LoginHandler,
-        LogoutHandler,
-        RefreshTokenHandler,
-        {
-            provide: JWT_TOKEN_SERVICE,
-            useClass: JwtTokenServiceImpl,
-        },
-    ],
+  providers: [
+    LoginHandler,
+    LogoutHandler,
+    RefreshTokenHandler,
+    {
+      provide: JWT_TOKEN_SERVICE,
+      useClass: JwtTokenServiceImpl,
+    },
+  ],
 
-    exports: [JWT_TOKEN_SERVICE],
+  exports: [JWT_TOKEN_SERVICE],
 })
-export class AuthenticationModule { }
+export class AuthenticationModule {}

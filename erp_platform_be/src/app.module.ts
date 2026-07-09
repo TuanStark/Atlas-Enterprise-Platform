@@ -11,13 +11,7 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { ResultTransformInterceptor } from './common/interceptors/result-transform.interceptor';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TenantModule,
-    PrincipalModule,
-    IdentityModule,
-    AuthenticationModule,
-  ],
+  imports: [ConfigModule, TenantModule, PrincipalModule, IdentityModule, AuthenticationModule],
   controllers: [AppController],
   providers: [
     AppService,
@@ -32,4 +26,3 @@ import { ResultTransformInterceptor } from './common/interceptors/result-transfo
   ],
 })
 export class AppModule {}
-

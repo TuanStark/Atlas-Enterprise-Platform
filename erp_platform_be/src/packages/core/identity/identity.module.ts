@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY, IDENTITY_SERVICE } from './domain/index';
+import {
+  USER_REPOSITORY,
+  CREDENTIAL_REPOSITORY,
+  REFRESH_TOKEN_REPOSITORY,
+  IDENTITY_SERVICE,
+} from './domain/index';
 import { PrismaModule } from 'src/database/prisma.module';
 import { IdentityController } from './presentation/controllers/identity.controller';
 import { CreateUserHandler } from './application/commands/create-user/create-user.handler';
@@ -65,6 +70,13 @@ import { IdentityServiceImpl } from './infrastructure/services/identity.service'
     },
   ],
 
-  exports: [USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY, IDENTITY_FACADE, PASSWORD_HASHER, IDENTITY_SERVICE],
+  exports: [
+    USER_REPOSITORY,
+    CREDENTIAL_REPOSITORY,
+    REFRESH_TOKEN_REPOSITORY,
+    IDENTITY_FACADE,
+    PASSWORD_HASHER,
+    IDENTITY_SERVICE,
+  ],
 })
 export class IdentityModule {}
