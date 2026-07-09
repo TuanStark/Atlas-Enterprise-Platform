@@ -1,6 +1,7 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { DomainException } from '../../packages/shared-kernel/exceptions/domain.exception';
+import { Prisma } from '@prisma/client';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -41,6 +42,34 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else {
         message = 'An unexpected error occurred.';
       }
+    }
+    else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      this.logger.error(`Prisma Error: ${exception.code} - ${exception.message}`);
+
+      switch (exception.code) {
+        case 'P2002':
+          statusCode = HttpStatus.CONFLICT;
+          message = 'Existing Data';
+          break;
+        case 'P2025':
+          statusCode = HttpStatus.NOT_FOUND;
+          message = 'Not Found';
+          break;
+        case 'P2003':
+          statusCode = HttpStatus.BAD_REQUEST;
+          message = 'Invalid Data Reference';
+          break;
+        default:
+          statusCode = HttpStatus.BAD_REQUEST;
+          message = 'Data Error';
+      }
+    }
+    else {
+      this.logger.error(
+        `Unhandled Exception: ${ctx.getRequest<Request>().method} ${ctx.getRequest<Request>().url}`,
+        exception instanceof Error ? exception.stack : exception,
+      );
+      message = 'Internal Server Error';
     }
 
     response.status(statusCode).json({
