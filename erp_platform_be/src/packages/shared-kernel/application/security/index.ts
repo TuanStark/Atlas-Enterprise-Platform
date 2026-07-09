@@ -1,2 +1,3 @@
 export * from './password-hasher.interface';
 export * from './bcrypt-password-hasher';
+export * from './jwt-token';
