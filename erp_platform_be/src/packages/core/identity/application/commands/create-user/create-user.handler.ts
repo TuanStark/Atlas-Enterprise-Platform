@@ -17,7 +17,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
     private readonly passwordHasher: PasswordHasher,
     @Inject(TRANSACTION_RUNNER)
     private readonly transaction: TransactionRunner,
-  ) { }
+  ) {}
 
   async execute(command: CreateUserCommand): Promise<Result<void>> {
     const email = domain.Email.create(command.dto.email);

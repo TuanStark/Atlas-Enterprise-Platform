@@ -1,9 +1,5 @@
-import {
-    Pagination,
-} from '@shared-kernel/application';
+import { Pagination } from '@shared-kernel/application';
 
 export class ListUserQuery {
-    constructor(
-        public readonly pagination?: Pagination,
-    ) { }
+  constructor(public readonly pagination?: Pagination) {}
 }

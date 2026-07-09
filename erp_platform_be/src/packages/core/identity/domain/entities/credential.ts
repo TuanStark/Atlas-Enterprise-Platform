@@ -46,6 +46,26 @@ export class Credential extends AggregateRoot<CredentialProps> {
     return this.props.type;
   }
 
+  get passwordChangedAt() {
+    return this.props.passwordChangedAt;
+  }
+
+  get expiresAt() {
+    return this.props.expiresAt;
+  }
+
+  get createdAt() {
+    return this.props.createdAt;
+  }
+
+  get updatedAt() {
+    return this.props.updatedAt;
+  }
+
+  get version() {
+    return this.props.version;
+  }
+
   changePassword(hash: PasswordHash) {
     this.props.passwordHash = hash;
     this.props.passwordChangedAt = new Date();

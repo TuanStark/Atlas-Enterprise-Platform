@@ -43,4 +43,12 @@ export class RefreshToken extends AggregateRoot<RefreshTokenProps> {
   get principalId() {
     return this.props.principalId;
   }
+
+  get expiresAt() {
+    return this.props.expiresAt;
+  }
+
+  get createdAt() {
+    return this.props.createdAt;
+  }
 }
