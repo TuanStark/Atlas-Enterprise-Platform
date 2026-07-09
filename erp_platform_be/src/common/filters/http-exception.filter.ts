@@ -1,9 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { DomainException } from '../../packages/shared-kernel/exceptions/domain.exception';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -29,11 +31,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         }
       }
     } else if (exception instanceof DomainException) {
-      statusCode = HttpStatus.BAD_REQUEST;
+      statusCode = exception.statusCode;
       code = exception.name.toUpperCase();
       message = exception.message;
     } else if (exception instanceof Error) {
-      message = exception.message;
+      this.logger.error(`[SystemError] ${exception.message}`, exception.stack);
+      if (process.env.NODE_ENV === 'development') {
+        message = exception.message;
+      } else {
+        message = 'An unexpected error occurred.';
+      }
     }
 
     response.status(statusCode).json({
@@ -46,3 +53,4 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     });
   }
 }
+

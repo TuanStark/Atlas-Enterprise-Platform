@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY } from './domain/index';
+import { USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY, IDENTITY_SERVICE } from './domain/index';
 import { PrismaModule } from 'src/database/prisma.module';
 import { IdentityController } from './presentation/controllers/identity.controller';
 import { CreateUserHandler } from './application/commands/create-user/create-user.handler';
@@ -17,6 +17,9 @@ import { PrismaCredentialRepository } from './infrastructure/persistence/prisma-
 import { PrismaRefreshTokenRepository } from './infrastructure/persistence/prisma-refresh-token.repository';
 import { IDENTITY_FACADE } from './application/facades/identity.facade';
 import { IdentityFacadeImpl } from './application/facades/identity.facade.impl';
+import { PASSWORD_HASHER } from '@shared-kernel/application';
+import { BcryptPasswordHasher } from '@shared-kernel/application/security';
+import { IdentityServiceImpl } from './infrastructure/services/identity.service';
 
 @Module({
   imports: [PrismaModule, CqrsModule],
@@ -50,8 +53,18 @@ import { IdentityFacadeImpl } from './application/facades/identity.facade.impl';
       provide: IDENTITY_FACADE,
       useClass: IdentityFacadeImpl,
     },
+
+    {
+      provide: PASSWORD_HASHER,
+      useClass: BcryptPasswordHasher,
+    },
+
+    {
+      provide: IDENTITY_SERVICE,
+      useClass: IdentityServiceImpl,
+    },
   ],
 
-  exports: [USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY, IDENTITY_FACADE],
+  exports: [USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY, IDENTITY_FACADE, PASSWORD_HASHER, IDENTITY_SERVICE],
 })
 export class IdentityModule {}
