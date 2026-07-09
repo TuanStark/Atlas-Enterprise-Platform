@@ -20,9 +20,10 @@ export class Credential extends AggregateRoot<CredentialProps> {
     super(props.id, props);
   }
 
-  static create(props: Omit<CredentialProps, 'createdAt' | 'updatedAt' | 'version'>) {
+  static create(props: Omit<CredentialProps, 'id' | 'createdAt' | 'updatedAt' | 'version'>) {
     return new Credential({
       ...props,
+      id: Identifier.create(),
       createdAt: new Date(),
       updatedAt: new Date(),
       version: 1,
@@ -47,15 +48,12 @@ export class Credential extends AggregateRoot<CredentialProps> {
 
   changePassword(hash: PasswordHash) {
     this.props.passwordHash = hash;
-
     this.props.passwordChangedAt = new Date();
-
     this.touch();
   }
 
   private touch() {
     this.props.updatedAt = new Date();
-
     this.props.version++;
   }
 }

@@ -1,3 +1,5 @@
 export * from './result';
 export * from './use-cases';
 export * from './pagination';
+export * from './transaction';
+export * from './security/password-hasher.interface';
