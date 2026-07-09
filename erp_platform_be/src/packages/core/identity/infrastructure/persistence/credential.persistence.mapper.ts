@@ -26,7 +26,7 @@ export class CredentialPersistenceMapper {
   }
 
   static toPersistence(credential: Credential) {
-    let prismaType: PrismaCredentialType = 'password';
+    const prismaType: PrismaCredentialType = 'password';
 
     return {
       principalId: credential.principalId.getValue(),

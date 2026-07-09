@@ -14,7 +14,7 @@ export class ListUserHandler implements IQueryHandler<ListUserQuery> {
 
   async execute(query: ListUserQuery) {
     const users = await this.repository.findAll();
-    const items = users.map(UserMapper.toDto);
+    const items = users.map((user) => UserMapper.toDto(user));
     return Result.success(
       Page.of(
         items,

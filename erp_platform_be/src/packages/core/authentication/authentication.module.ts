@@ -10,8 +10,6 @@ import { RefreshTokenHandler } from './application/commands/refresh-token/refres
 import { JwtTokenServiceImpl } from './infrastructure/jwt/jwt-token.service';
 import { PrismaModule } from 'src/database/prisma.module';
 import { IdentityModule } from '../identity/identity.module';
-import { IDENTITY_SERVICE } from '@core/identity';
-import { IdentityServiceImpl } from '@core/identity/infrastructure/services/identity.service';
 
 @Module({
   imports: [

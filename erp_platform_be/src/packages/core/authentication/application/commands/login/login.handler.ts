@@ -9,9 +9,8 @@ import {
   UserErrorCode,
   UserMessages,
   RefreshToken,
-  IDENTITY_SERVICE,
 } from '@core/identity/domain';
-import type { RefreshTokenRepository, IdentityService } from '@core/identity/domain';
+import type { RefreshTokenRepository } from '@core/identity/domain';
 import { LoginResponseDto } from '../../dto/login-response.dto';
 import { LoginCommand } from './login.command';
 import * as identity from '@core/identity';

@@ -159,7 +159,7 @@ export class PrismaUserRepository implements UserRepository {
       ...this.includeRelations,
     });
 
-    return entities.map(UserPersistenceMapper.toDomain);
+    return entities.map((entity) => UserPersistenceMapper.toDomain(entity));
   }
 
   async findByStatus(status: UserStatus): Promise<User[]> {
@@ -180,7 +180,7 @@ export class PrismaUserRepository implements UserRepository {
       ...this.includeRelations,
     });
 
-    return entities.map(UserPersistenceMapper.toDomain);
+    return entities.map((entity) => UserPersistenceMapper.toDomain(entity));
   }
 
   async exists(id: Identifier): Promise<boolean> {
@@ -216,6 +216,6 @@ export class PrismaUserRepository implements UserRepository {
       ...this.includeRelations,
     });
 
-    return entities.map(UserPersistenceMapper.toDomain);
+    return entities.map((entity) => UserPersistenceMapper.toDomain(entity));
   }
 }

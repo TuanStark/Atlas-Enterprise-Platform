@@ -11,9 +11,9 @@ import { Result } from '../../packages/shared-kernel/application/result/result';
 
 @Injectable()
 export class ResultTransformInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
-      map((result) => {
+      map((result: unknown) => {
         if (result instanceof Result && !result.success) {
           throw new HttpException(
             {
