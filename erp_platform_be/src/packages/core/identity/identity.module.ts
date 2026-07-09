@@ -15,6 +15,9 @@ import { GetUserByEmailHandler } from './application/queries/get-user-by-email/g
 import { PrismaUserRepository } from './infrastructure/persistence/prisma-user.repository';
 import { PrismaCredentialRepository } from './infrastructure/persistence/prisma-credential.repository';
 import { PrismaRefreshTokenRepository } from './infrastructure/persistence/prisma-refresh-token.repository';
+import { IDENTITY_FACADE } from './application/facades/identity.facade';
+import { IdentityFacadeImpl } from './application/facades/identity.facade.impl';
+
 @Module({
   imports: [PrismaModule, CqrsModule],
   controllers: [IdentityController],
@@ -42,8 +45,13 @@ import { PrismaRefreshTokenRepository } from './infrastructure/persistence/prism
       provide: REFRESH_TOKEN_REPOSITORY,
       useClass: PrismaRefreshTokenRepository,
     },
+
+    {
+      provide: IDENTITY_FACADE,
+      useClass: IdentityFacadeImpl,
+    },
   ],
 
-  exports: [USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY],
+  exports: [USER_REPOSITORY, CREDENTIAL_REPOSITORY, REFRESH_TOKEN_REPOSITORY, IDENTITY_FACADE],
 })
 export class IdentityModule {}

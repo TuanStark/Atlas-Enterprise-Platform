@@ -1,95 +1,51 @@
 import { HttpStatus, Inject } from '@nestjs/common';
-
+import { ConfigService } from '@nestjs/config';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-
+import { Result, JWT_TOKEN_SERVICE, TRANSACTION_RUNNER } from '@shared-kernel/application';
+import type { JwtTokenService, TransactionRunner } from '@shared-kernel/application';
 import {
-  Result,
-  PASSWORD_HASHER,
-  JWT_TOKEN_SERVICE,
-  TRANSACTION_RUNNER,
-} from '@shared-kernel/application';
-
-import type {
-  PasswordHasher,
-  JwtTokenService,
-  TransactionRunner,
-} from '@shared-kernel/application';
-
-import {
-  USER_REPOSITORY,
-  CREDENTIAL_REPOSITORY,
   REFRESH_TOKEN_REPOSITORY,
   Email,
   UserErrorCode,
   UserMessages,
   RefreshToken,
+  IDENTITY_SERVICE,
 } from '@core/identity/domain';
-
-import type {
-  UserRepository,
-  CredentialRepository,
-  RefreshTokenRepository,
-} from '@core/identity/domain';
-
+import type { RefreshTokenRepository, IdentityService } from '@core/identity/domain';
 import { LoginResponseDto } from '../../dto/login-response.dto';
-
 import { LoginCommand } from './login.command';
-
+import * as identity from '@core/identity';
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
   constructor(
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
-    @Inject(CREDENTIAL_REPOSITORY)
-    private readonly credentialRepository: CredentialRepository,
+    @Inject(IDENTITY_SERVICE)
+    private readonly identityService: IdentityService,
     @Inject(REFRESH_TOKEN_REPOSITORY)
     private readonly refreshTokenRepository: RefreshTokenRepository,
-    @Inject(PASSWORD_HASHER)
-    private readonly passwordHasher: PasswordHasher,
     @Inject(JWT_TOKEN_SERVICE)
     private readonly jwtService: JwtTokenService,
     @Inject(TRANSACTION_RUNNER)
     private readonly transaction: TransactionRunner,
+    private readonly configService: ConfigService,
+    @Inject(identity.IDENTITY_FACADE)
+    private readonly identityFacade: identity.IdentityFacade,
   ) {}
 
   async execute(command: LoginCommand): Promise<Result<LoginResponseDto>> {
-    const email = Email.create(command.dto.email);
-
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this.identityFacade.authenticate(
+      Email.create(command.dto.email),
+      command.dto.password,
+    );
 
     if (!user) {
       return Result.failure({
         statusCode: HttpStatus.UNAUTHORIZED,
-        code: UserErrorCode.INVALID_PASSWORD,
-        message: UserMessages.ERROR.INVALID_PASSWORD,
-      });
-    }
-
-    const credential = await this.credentialRepository.findByPrincipalId(user.principalId);
-
-    if (!credential) {
-      return Result.failure({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        code: UserErrorCode.INVALID_PASSWORD,
-        message: UserMessages.ERROR.INVALID_PASSWORD,
-      });
-    }
-
-    const valid = await this.passwordHasher.verify(
-      command.dto.password,
-      credential.passwordHash.value,
-    );
-
-    if (!valid) {
-      return Result.failure({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        code: UserErrorCode.INVALID_PASSWORD,
+        code: UserErrorCode.NOT_FOUND,
         message: UserMessages.ERROR.INVALID_PASSWORD,
       });
     }
 
     const accessToken = await this.jwtService.generateAccessToken(user.principalId.getValue());
-
     const refreshToken = await this.jwtService.generateRefreshToken(user.principalId.getValue());
 
     const expiresAt = new Date();
@@ -108,7 +64,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
     return Result.success({
       accessToken,
       refreshToken,
-      expiresIn: 3600,
+      expiresIn: this.configService.get<number>('JWT.ACCESS_TOKEN_EXPIRATION') ?? 3600,
     });
   }
 }
