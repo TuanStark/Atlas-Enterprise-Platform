@@ -6,115 +6,115 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 @Injectable()
 export class PrismaRoleRepository implements RoleRepository {
-    constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
-    async save(role: Role): Promise<void> {
-        await this.prisma.$transaction(async (tx) => {
-            await tx.role.create({
-                data: {
-                    id: role.id.getValue(),
-                    ...RolePersistenceMapper.toPersistence(role),
-                    createdAt: role.createdAt,
-                },
-            });
+  async save(role: Role): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.role.create({
+        data: {
+          id: role.id.getValue(),
+          ...RolePersistenceMapper.toPersistence(role),
+          createdAt: role.createdAt,
+        },
+      });
 
-            if (role.permissions.length) {
-                await tx.rolePermission.createMany({
-                    data: role.permissions.map((permission) => ({
-                        roleId: role.id.getValue(),
-                        permissionId: permission.permissionId.getValue(),
-                    })),
-                });
-            }
+      if (role.permissions.length) {
+        await tx.rolePermission.createMany({
+          data: role.permissions.map((permission) => ({
+            roleId: role.id.getValue(),
+            permissionId: permission.permissionId.getValue(),
+          })),
         });
-    }
+      }
+    });
+  }
 
-    async update(role: Role): Promise<void> {
-        await this.prisma.$transaction(async (tx) => {
-            await tx.role.update({
-                where: {
-                    id: role.id.getValue(),
-                },
-                data: RolePersistenceMapper.toPersistence(role),
-            });
-            await tx.rolePermission.deleteMany({
-                where: {
-                    roleId: role.id.getValue(),
-                },
-            });
+  async update(role: Role): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.role.update({
+        where: {
+          id: role.id.getValue(),
+        },
+        data: RolePersistenceMapper.toPersistence(role),
+      });
+      await tx.rolePermission.deleteMany({
+        where: {
+          roleId: role.id.getValue(),
+        },
+      });
 
-            if (role.permissions.length) {
-                await tx.rolePermission.createMany({
-                    data: role.permissions.map((permission) => ({
-                        roleId: role.id.getValue(),
-                        permissionId: permission.permissionId.getValue(),
-                    })),
-                });
-            }
+      if (role.permissions.length) {
+        await tx.rolePermission.createMany({
+          data: role.permissions.map((permission) => ({
+            roleId: role.id.getValue(),
+            permissionId: permission.permissionId.getValue(),
+          })),
         });
-    }
+      }
+    });
+  }
 
-    async delete(role: Role): Promise<void> {
-        await this.prisma.$transaction(async (tx) => {
-            await tx.rolePermission.deleteMany({
-                where: {
-                    roleId: role.id.getValue(),
-                },
-            });
-            await tx.role.delete({
-                where: {
-                    id: role.id.getValue(),
-                },
-            });
-        });
-    }
+  async delete(role: Role): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.rolePermission.deleteMany({
+        where: {
+          roleId: role.id.getValue(),
+        },
+      });
+      await tx.role.delete({
+        where: {
+          id: role.id.getValue(),
+        },
+      });
+    });
+  }
 
-    async findById(id: Identifier): Promise<Role | null> {
-        const entity = await this.prisma.role.findUnique({
-            where: {
-                id: id.getValue(),
-            },
-            include: {
-                rolePermissions: true,
-            },
-        });
+  async findById(id: Identifier): Promise<Role | null> {
+    const entity = await this.prisma.role.findUnique({
+      where: {
+        id: id.getValue(),
+      },
+      include: {
+        rolePermissions: true,
+      },
+    });
 
-        return entity ? RolePersistenceMapper.toDomain(entity) : null;
-    }
+    return entity ? RolePersistenceMapper.toDomain(entity) : null;
+  }
 
-    async findByCode(code: RoleCode): Promise<Role | null> {
-        const entity = await this.prisma.role.findFirst({
-            where: {
-                code: code.value,
-            },
-            include: {
-                rolePermissions: true,
-            },
-        });
+  async findByCode(code: RoleCode): Promise<Role | null> {
+    const entity = await this.prisma.role.findFirst({
+      where: {
+        code: code.value,
+      },
+      include: {
+        rolePermissions: true,
+      },
+    });
 
-        return entity ? RolePersistenceMapper.toDomain(entity) : null;
-    }
+    return entity ? RolePersistenceMapper.toDomain(entity) : null;
+  }
 
-    async existsByCode(code: RoleCode): Promise<boolean> {
-        const count = await this.prisma.role.count({
-            where: {
-                code: code.value,
-            },
-        });
+  async existsByCode(code: RoleCode): Promise<boolean> {
+    const count = await this.prisma.role.count({
+      where: {
+        code: code.value,
+      },
+    });
 
-        return count > 0;
-    }
+    return count > 0;
+  }
 
-    async findAll(): Promise<Role[]> {
-        const entities = await this.prisma.role.findMany({
-            orderBy: {
-                createdAt: 'asc',
-            },
-            include: {
-                rolePermissions: true,
-            },
-        });
+  async findAll(): Promise<Role[]> {
+    const entities = await this.prisma.role.findMany({
+      orderBy: {
+        createdAt: 'asc',
+      },
+      include: {
+        rolePermissions: true,
+      },
+    });
 
-        return entities.map((entity) => RolePersistenceMapper.toDomain(entity));
-    }
+    return entities.map((entity) => RolePersistenceMapper.toDomain(entity));
+  }
 }

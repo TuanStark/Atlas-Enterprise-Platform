@@ -76,7 +76,12 @@ export class Role extends AggregateRoot<RoleProps> {
     this.props.updatedAt = new Date();
   }
 
-  static create(props: { tenantId: Identifier; code: RoleCode; name: string; description?: string }) {
+  static create(props: {
+    tenantId: Identifier;
+    code: RoleCode;
+    name: string;
+    description?: string;
+  }) {
     return new Role(Identifier.create(), {
       ...props,
       permissions: [],
