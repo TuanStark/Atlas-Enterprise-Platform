@@ -1,24 +1,29 @@
-import { Entity } from '@shared-kernel/domain/entity';
+import { EffectType } from '@prisma/client';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
+import { ValueObject } from '@shared-kernel/domain/value-object';
 
-interface RolePermissionProps {
+export interface RolePermissionProps {
   permissionId: Identifier;
-  createdAt: Date;
+  effect: EffectType;
 }
 
-export class RolePermission extends Entity<RolePermissionProps> {
-  get permissionId() {
-    return this.props.permissionId;
+export class RolePermission extends ValueObject<RolePermissionProps> {
+  private constructor(props: RolePermissionProps) {
+    super(props);
   }
 
-  static create(permissionId: Identifier) {
-    return new RolePermission(Identifier.create(), {
+  static create(permissionId: Identifier, effect: EffectType = EffectType.allow): RolePermission {
+    return new RolePermission({
       permissionId,
-      createdAt: new Date(),
+      effect,
     });
   }
 
-  static rehydrate(id: Identifier, props: RolePermissionProps) {
-    return new RolePermission(id, props);
+  get permissionId(): Identifier {
+    return this.props.permissionId;
+  }
+
+  get effect(): EffectType {
+    return this.props.effect;
   }
 }

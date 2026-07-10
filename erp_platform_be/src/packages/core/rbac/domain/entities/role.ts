@@ -8,6 +8,7 @@ interface RoleProps {
   code: RoleCode;
   name: string;
   description?: string;
+  isSystem: boolean;
   permissions: RolePermission[];
   createdAt: Date;
   updatedAt: Date;
@@ -30,7 +31,7 @@ export class Role extends AggregateRoot<RoleProps> {
     return this.props.description;
   }
 
-  get permissions() {
+  get permissions(): readonly RolePermission[] {
     return [...this.props.permissions];
   }
 
@@ -40,6 +41,10 @@ export class Role extends AggregateRoot<RoleProps> {
 
   get updatedAt() {
     return this.props.updatedAt;
+  }
+
+  get isSystem(): boolean {
+    return this.props.isSystem;
   }
 
   rename(name: string) {
@@ -72,21 +77,23 @@ export class Role extends AggregateRoot<RoleProps> {
     return this.props.permissions.some((p) => p.permissionId.equals(permissionId));
   }
 
+  restorePermissions(permissions: RolePermission[]): void {
+    this.props.permissions = [...permissions];
+  }
+
+  replacePermissions(permissions: RolePermission[]): void {
+    this.props.permissions = [...permissions];
+    this.touch();
+  }
+
   private touch() {
     this.props.updatedAt = new Date();
   }
 
-  static create(props: {
-    tenantId: Identifier;
-    code: RoleCode;
-    name: string;
-    description?: string;
-  }) {
+  static create(props: Omit<RoleProps, 'permissions'>): Role {
     return new Role(Identifier.create(), {
       ...props,
       permissions: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
   }
 

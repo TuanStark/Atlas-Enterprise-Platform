@@ -1,6 +1,7 @@
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { Role, RoleCode, RolePermission } from '../domain';
+import { Role, RoleCode } from '../domain';
 import { Role as PrismaRole, RolePermission as PrismaRolePermission } from '@prisma/client';
+import { RolePermissionPersistenceMapper } from './role-permission.persistence.mapper';
 
 type PrismaRoleWithRelations = PrismaRole & {
   rolePermissions: PrismaRolePermission[];
@@ -13,26 +14,25 @@ export class RolePersistenceMapper {
       code: role.code.value,
       name: role.name,
       description: role.description ?? null,
+      isSystem: role.isSystem,
       updatedAt: new Date(),
     };
   }
 
-  static toDomain(raw: PrismaRoleWithRelations): Role {
-    const permissions = (raw.rolePermissions || []).map((rp) =>
-      RolePermission.rehydrate(Identifier.create(rp.roleId + '_' + rp.permissionId), {
-        permissionId: Identifier.create(rp.permissionId),
-        createdAt: new Date(),
-      }),
+  static toDomain(role: PrismaRoleWithRelations): Role {
+    const permissions = (role.rolePermissions || []).map((p) =>
+      RolePermissionPersistenceMapper.toDomain(p),
     );
 
-    return Role.rehydrate(Identifier.create(raw.id), {
-      tenantId: Identifier.create(raw.tenantId),
-      code: RoleCode.create(raw.code || ''),
-      name: raw.name || '',
-      description: raw.description ?? undefined,
+    return Role.rehydrate(Identifier.create(role.id), {
+      tenantId: Identifier.create(role.tenantId),
+      code: RoleCode.create(role.code ?? ''),
+      name: role.name ?? '',
+      description: role.description ?? undefined,
+      isSystem: role.isSystem ?? false,
       permissions,
-      createdAt: raw.createdAt || new Date(),
-      updatedAt: raw.updatedAt || new Date(),
+      createdAt: role.createdAt ?? new Date(),
+      updatedAt: role.updatedAt ?? new Date(),
     });
   }
 }

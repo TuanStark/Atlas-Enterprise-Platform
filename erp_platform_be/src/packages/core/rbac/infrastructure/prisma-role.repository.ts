@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Role, RoleCode, RoleRepository } from '../domain';
 import { PrismaService } from 'src/database/prisma.service';
 import { RolePersistenceMapper } from './role.persistence.mapper';
+import { RolePermissionPersistenceMapper } from './role-permission.persistence.mapper';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 @Injectable()
@@ -20,10 +21,9 @@ export class PrismaRoleRepository implements RoleRepository {
 
       if (role.permissions.length) {
         await tx.rolePermission.createMany({
-          data: role.permissions.map((permission) => ({
-            roleId: role.id.getValue(),
-            permissionId: permission.permissionId.getValue(),
-          })),
+          data: role.permissions.map((permission) =>
+            RolePermissionPersistenceMapper.toPersistence(role.id, permission),
+          ),
         });
       }
     });
@@ -45,10 +45,9 @@ export class PrismaRoleRepository implements RoleRepository {
 
       if (role.permissions.length) {
         await tx.rolePermission.createMany({
-          data: role.permissions.map((permission) => ({
-            roleId: role.id.getValue(),
-            permissionId: permission.permissionId.getValue(),
-          })),
+          data: role.permissions.map((permission) =>
+            RolePermissionPersistenceMapper.toPersistence(role.id, permission),
+          ),
         });
       }
     });
@@ -79,7 +78,11 @@ export class PrismaRoleRepository implements RoleRepository {
       },
     });
 
-    return entity ? RolePersistenceMapper.toDomain(entity) : null;
+    if (!entity) {
+      return null;
+    }
+
+    return RolePersistenceMapper.toDomain(entity);
   }
 
   async findByCode(code: RoleCode): Promise<Role | null> {

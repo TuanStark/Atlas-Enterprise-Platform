@@ -11,6 +11,9 @@ export class RoleMapper {
       code: RoleCode.create(dto.code),
       name: dto.name,
       description: dto.description,
+      isSystem: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 
