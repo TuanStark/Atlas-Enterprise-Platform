@@ -8,6 +8,6 @@ export interface RoleRepository {
   delete(role: Role): Promise<void>;
   findById(id: Identifier): Promise<Role | null>;
   findByCode(code: RoleCode): Promise<Role | null>;
-  existsByCode(code: RoleCode): Promise<boolean>;
+  existsByCode(tenantId: Identifier, code: RoleCode): Promise<boolean>;
   findAll(): Promise<Role[]>;
 }

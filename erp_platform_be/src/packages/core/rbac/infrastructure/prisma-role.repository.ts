@@ -7,7 +7,7 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 @Injectable()
 export class PrismaRoleRepository implements RoleRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async save(role: Role): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
@@ -98,13 +98,13 @@ export class PrismaRoleRepository implements RoleRepository {
     return entity ? RolePersistenceMapper.toDomain(entity) : null;
   }
 
-  async existsByCode(code: RoleCode): Promise<boolean> {
+  async existsByCode(tenantId: Identifier, code: RoleCode): Promise<boolean> {
     const count = await this.prisma.role.count({
       where: {
+        tenantId: tenantId.getValue(),
         code: code.value,
       },
     });
-
     return count > 0;
   }
 
