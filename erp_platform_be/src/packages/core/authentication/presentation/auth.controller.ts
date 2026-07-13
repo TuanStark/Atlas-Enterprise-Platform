@@ -5,8 +5,10 @@ import { LoginDto, RefreshTokenDto, LoginResponseDto } from '../application/dto'
 import { LoginCommand } from '../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../application/commands/refresh-token/refresh-token.command';
 import { LogoutCommand } from '../application/commands/logout/logout.command';
+import { Public } from '@core/rbac/presentation/decorators/public.decorator';
 
 @ApiTags('Auth')
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly commandBus: CommandBus) {}

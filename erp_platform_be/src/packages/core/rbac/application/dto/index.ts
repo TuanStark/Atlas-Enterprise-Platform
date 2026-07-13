@@ -5,3 +5,5 @@ export * from './create-role.dto';
 export * from './role.dto';
 export * from './update-role.dto';
 export * from './assign-permission.dto';
+export * from './assign-role.dto';
+export * from './principal-role.dto';

@@ -9,5 +9,6 @@ export interface RoleRepository {
   findById(id: Identifier): Promise<Role | null>;
   findByCode(code: RoleCode): Promise<Role | null>;
   existsByCode(tenantId: Identifier, code: RoleCode): Promise<boolean>;
+  findByTenantId(tenantId: Identifier): Promise<Role[]>;
   findAll(): Promise<Role[]>;
 }

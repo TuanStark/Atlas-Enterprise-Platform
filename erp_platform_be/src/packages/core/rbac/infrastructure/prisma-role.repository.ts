@@ -108,6 +108,21 @@ export class PrismaRoleRepository implements RoleRepository {
     return count > 0;
   }
 
+  async findByTenantId(tenantId: Identifier): Promise<Role[]> {
+    const entities = await this.prisma.role.findMany({
+      where: {
+        tenantId: tenantId.getValue(),
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      include: {
+        rolePermissions: true,
+      },
+    });
+    return entities.map((entity) => RolePersistenceMapper.toDomain(entity));
+  }
+
   async findAll(): Promise<Role[]> {
     const entities = await this.prisma.role.findMany({
       orderBy: {
