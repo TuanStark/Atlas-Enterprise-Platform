@@ -5,6 +5,7 @@ import { RoleController } from './presentation/controller/role.controller';
 import { PrincipalRoleController } from './presentation/controller/principal-role.controller';
 import { PrismaModule } from 'src/database/prisma.module';
 import { AuthorizationGuard } from './infrastructure/guards/authorization.guard';
+import { AuthenticationModule } from '../authentication/authentication.module';
 import {
   CreatePermissionHandler,
   DeletePermissionHandler,
@@ -25,7 +26,7 @@ import { PrismaPermissionRepository, PrismaRoleRepository, PrismaPrincipalRoleRe
 import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-cache';
 
 @Module({
-  imports: [CqrsModule, PrismaModule],
+  imports: [CqrsModule, PrismaModule, AuthenticationModule],
   controllers: [PermissionController, RoleController, PrincipalRoleController],
   providers: [
     CreatePermissionHandler,
