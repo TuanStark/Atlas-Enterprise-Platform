@@ -6,3 +6,4 @@ export * from './conflict.exception';
 export * from './unauthorized.exception';
 export * from './forbidden.exception';
 export * from './invalid-identifier.exception';
+export * from './entity-already-exists.exception';
