@@ -36,7 +36,7 @@ export class AuthorizationGuard implements CanActivate {
     @Optional()
     private readonly permissionCache: PermissionCache | null,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -66,7 +66,14 @@ export class AuthorizationGuard implements CanActivate {
 
     const principal = await this.prisma.principal.findUnique({
       where: { id: payload.sub },
-      select: { id: true, tenantId: true, status: true },
+      include: {
+        user: true,
+        principalRoles: {
+          include: {
+            role: true,
+          },
+        },
+      },
     });
 
     if (!principal) {
@@ -77,7 +84,26 @@ export class AuthorizationGuard implements CanActivate {
       throw new UnauthorizedException('Principal is not active.');
     }
 
+    const principalIdentifier = Identifier.create(principal.id);
+    let resolved = (await this.permissionCache?.get(principal.id)) ?? null;
+
+    if (!resolved) {
+      resolved = await this.permissionResolver.resolvePermissions(principalIdentifier);
+      await this.permissionCache?.set(principal.id, resolved);
+    }
+
     request.principal = principal;
+    request.context = {
+      tenantId: principal.tenantId,
+      principalId: principal.id,
+      username: principal.user?.username ?? '',
+      email: principal.user?.email ?? undefined,
+      roles: principal.principalRoles
+        .map((pr) => pr.role.code)
+        .filter((code): code is string => !!code),
+      permissions: resolved.filter((p) => p.effect === EffectType.allow).map((p) => p.code),
+    };
+
     request.principalId = principal.id;
     request.tenantId = principal.tenantId;
 
@@ -88,14 +114,6 @@ export class AuthorizationGuard implements CanActivate {
 
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
-    }
-
-    const principalIdentifier = Identifier.create(principal.id);
-    let resolved = (await this.permissionCache?.get(principal.id)) ?? null;
-
-    if (!resolved) {
-      resolved = await this.permissionResolver.resolvePermissions(principalIdentifier);
-      await this.permissionCache?.set(principal.id, resolved);
     }
 
     for (const required of requiredPermissions) {

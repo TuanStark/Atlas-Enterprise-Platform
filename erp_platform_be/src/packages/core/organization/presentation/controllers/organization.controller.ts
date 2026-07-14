@@ -23,7 +23,8 @@ import {
 } from '@core/organization/dto';
 import { ListOrganizationsQuery } from '@core/organization/application/queries/list-organizations/list-organizations.query';
 import { GetOrganizationQuery } from '@core/organization/application/queries/get-organization/get-organization.query';
-import { CurrentTenant } from '@core/identity/presentation/decorators/current-tenant.decorator';
+import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
+import type { RequestContext } from '@shared-kernel/application/request-context';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -42,11 +43,8 @@ export class OrganizationController {
     type: String,
     description: 'ID of the created organization',
   })
-  create(
-    @CurrentTenant() tenantId: string,
-    @Body() dto: CreateOrganizationDto,
-  ) {
-    dto.tenantId = tenantId;
+  create(@CurrentContext() context: RequestContext, @Body() dto: CreateOrganizationDto) {
+    dto.tenantId = context.tenantId;
     return this.commandBus.execute(new CreateOrganizationCommand(dto));
   }
 
@@ -57,8 +55,8 @@ export class OrganizationController {
   @ApiOkResponse({
     type: [OrganizationDto],
   })
-  list(@CurrentTenant() tenantId: string) {
-    return this.queryBus.execute(new ListOrganizationsQuery(tenantId));
+  list(@CurrentContext() context: RequestContext) {
+    return this.queryBus.execute(new ListOrganizationsQuery(context.tenantId));
   }
 
   @Get(':id')
@@ -68,11 +66,8 @@ export class OrganizationController {
   @ApiOkResponse({
     type: OrganizationDto,
   })
-  get(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
-    return this.queryBus.execute(new GetOrganizationQuery(tenantId, id));
+  get(@Param('id') id: string, @CurrentContext() context: RequestContext) {
+    return this.queryBus.execute(new GetOrganizationQuery(context.tenantId, id));
   }
 
   @Patch(':id')
@@ -84,10 +79,10 @@ export class OrganizationController {
   })
   update(
     @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
+    @CurrentContext() context: RequestContext,
     @Body() dto: UpdateOrganizationDto,
   ) {
-    return this.commandBus.execute(new UpdateOrganizationCommand(tenantId, id, dto));
+    return this.commandBus.execute(new UpdateOrganizationCommand(context.tenantId, id, dto));
   }
 
   @Delete(':id')
@@ -97,10 +92,7 @@ export class OrganizationController {
   @ApiOkResponse({
     description: 'Organization deleted successfully',
   })
-  delete(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
-    return this.commandBus.execute(new DeleteOrganizationCommand(tenantId, id));
+  delete(@Param('id') id: string, @CurrentContext() context: RequestContext) {
+    return this.commandBus.execute(new DeleteOrganizationCommand(context.tenantId, id));
   }
 }
