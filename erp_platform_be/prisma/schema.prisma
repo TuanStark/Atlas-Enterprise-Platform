@@ -791,6 +791,7 @@ model Organization {
   code        String    @map("code") @db.VarChar(50)
   name        String    @map("name") @db.VarChar(255)
   description String?   @map("description") @db.Text
+  isActive    Boolean?  @default(true) @map("is_active")
   createdAt   DateTime? @map("created_at") @db.Timestamptz
   updatedAt   DateTime? @map("updated_at") @db.Timestamptz
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz

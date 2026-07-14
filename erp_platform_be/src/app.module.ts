@@ -11,6 +11,7 @@ import { AuthorizationModule } from './packages/core/rbac/rbac.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { ResultTransformInterceptor } from './common/interceptors/result-transform.interceptor';
 import { AuthorizationGuard } from './packages/core/rbac/infrastructure/guards/authorization.guard';
+import { OrganizationModule } from '@core/organization/organization.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthorizationGuard } from './packages/core/rbac/infrastructure/guards/a
     IdentityModule,
     AuthenticationModule,
     AuthorizationModule,
+    OrganizationModule
   ],
   controllers: [AppController],
   providers: [
@@ -38,4 +40,4 @@ import { AuthorizationGuard } from './packages/core/rbac/infrastructure/guards/a
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
