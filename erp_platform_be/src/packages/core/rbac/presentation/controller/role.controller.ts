@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Result } from '@shared-kernel/application';
@@ -9,6 +9,7 @@ import {
   AssignPermissionDto,
   CreateRoleCommand,
   GetRoleQuery,
+  ListRoleQuery,
   AssignPermissionToRoleCommand,
 } from '../../application';
 
@@ -32,6 +33,20 @@ export class RoleController extends BaseCrudControllerHelper {
     dto: CreateRoleDto,
   ): Promise<Result<void>> {
     return this.executeCreate(CreateRoleCommand, dto);
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'List roles',
+  })
+  @ApiOkResponse({
+    type: [RoleDto],
+  })
+  async list(
+    @Query('tenantId')
+    tenantId: string,
+  ): Promise<Result<RoleDto[]>> {
+    return this.queryBus.execute(new ListRoleQuery(tenantId));
   }
 
   @Get(':id')

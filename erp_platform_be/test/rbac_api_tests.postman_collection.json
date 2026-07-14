@@ -1,0 +1,975 @@
+{
+	"info": {
+		"_postman_id": "9d901b0f-b258-4591-9cb6-96b0c26279f0",
+		"name": "Atlas Enterprise Platform - RBAC API QA Suite",
+		"description": "Comprehensive Postman QA suite for testing the RBAC (Role-Based Access Control) Domain endpoints of Atlas Enterprise Platform, covering permissions, roles, and principal role assignments.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. Setup & Auth",
+			"item": [
+				{
+					"name": "0.1 Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Extract Access Token successfully\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.accessToken).to.not.be.undefined;",
+									"    pm.collectionVariables.set(\"accessToken\", jsonData.data.accessToken);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@erp.com\",\n    \"password\": \"Admin123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "0.2 Create Dynamic Tenant",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomCode = \"TNT_\" + Math.random().toString(36).substring(2, 8).toUpperCase();",
+									"pm.collectionVariables.set(\"dynamic_tenant_code\", randomCode);"
+								],
+								"type": "javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"{{dynamic_tenant_code}}\",\n    \"name\": \"QA RBAC Tenant (Dynamic)\",\n    \"legalName\": \"QA RBAC Corp\",\n    \"taxCode\": \"TX-8888\",\n    \"email\": \"qa_rbac@example.com\",\n    \"phone\": \"+849999999\",\n    \"timezone\": \"Asia/Ho_Chi_Minh\",\n    \"locale\": \"vi-VN\",\n    \"currency\": \"VND\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/tenants",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "0.3 List Tenants & Extract ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Extract Tenant ID\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    ",
+									"    const targetCode = pm.collectionVariables.get(\"dynamic_tenant_code\");",
+									"    const matchedTenant = jsonData.data.find(t => t.code === targetCode);",
+									"    ",
+									"    pm.expect(matchedTenant).to.not.be.undefined;",
+									"    pm.collectionVariables.set(\"tenant_id\", matchedTenant.id);",
+									"    console.log(\"Saved Tenant ID:\", matchedTenant.id);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tenants",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "0.4 Create Principal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tenantId\": \"{{tenant_id}}\",\n    \"type\": \"USER\",\n    \"displayName\": \"QA Test Principal\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/principals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"principals"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "0.5 List Principals & Extract ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Extract Principal ID\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    ",
+									"    let principalArray = [];",
+									"    if (jsonData.data && Array.isArray(jsonData.data)) {",
+									"        principalArray = jsonData.data;",
+									"    } else if (jsonData.data && jsonData.data.items && Array.isArray(jsonData.data.items)) {",
+									"        principalArray = jsonData.data.items;",
+									"    }",
+									"    ",
+									"    const matched = principalArray.find(p => p.displayName === \"QA Test Principal\");",
+									"    pm.expect(matched).to.not.be.undefined;",
+									"    pm.collectionVariables.set(\"principal_id\", matched.id);",
+									"    console.log(\"Saved Principal ID:\", matched.id);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/principals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"principals"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "1. Permissions Management",
+			"item": [
+				{
+					"name": "1.1 Create Permission",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const suffix = Math.random().toString(36).substring(2, 8).toLowerCase();",
+									"pm.collectionVariables.set(\"dynamic_permission_code\", `test:perm_${suffix}`);"
+								],
+								"type": "javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"{{dynamic_permission_code}}\",\n    \"name\": \"QA Custom Permission\",\n    \"description\": \"A custom permission created during API tests\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2 Create Permission to Delete",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const suffix = Math.random().toString(36).substring(2, 8).toLowerCase();",
+									"pm.collectionVariables.set(\"dynamic_permission_code_to_delete\", `test:del_${suffix}`);"
+								],
+								"type": "javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"{{dynamic_permission_code_to_delete}}\",\n    \"name\": \"QA Delete Permission\",\n    \"description\": \"Permission to be deleted during tests\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.3 List Permissions & Extract IDs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Extract Permission IDs\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    ",
+									"    const targetCode = pm.collectionVariables.get(\"dynamic_permission_code\");",
+									"    const deleteCode = pm.collectionVariables.get(\"dynamic_permission_code_to_delete\");",
+									"    ",
+									"    const matchedPerm = jsonData.data.find(p => p.code === targetCode);",
+									"    const matchedDel = jsonData.data.find(p => p.code === deleteCode);",
+									"    ",
+									"    pm.expect(matchedPerm).to.not.be.undefined;",
+									"    pm.expect(matchedDel).to.not.be.undefined;",
+									"    ",
+									"    pm.collectionVariables.set(\"permission_id\", matchedPerm.id);",
+									"    pm.collectionVariables.set(\"permission_id_to_delete\", matchedDel.id);",
+									"    console.log(\"Saved Permission ID:\", matchedPerm.id);",
+									"    console.log(\"Saved Delete Permission ID:\", matchedDel.id);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.4 Get Permission by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Confirm Permission properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.code).to.eql(pm.collectionVariables.get(\"dynamic_permission_code\"));",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/permissions/{{permission_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions",
+								"{{permission_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.5 Update Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"QA Custom Permission (Updated)\",\n    \"description\": \"Updated custom permission description\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/permissions/{{permission_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions",
+								"{{permission_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.6 Delete Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/permissions/{{permission_id_to_delete}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions",
+								"{{permission_id_to_delete}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Roles Management",
+			"item": [
+				{
+					"name": "2.1 Create Role",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const suffix = Math.random().toString(36).substring(2, 8).toUpperCase();",
+									"pm.collectionVariables.set(\"dynamic_role_code\", `ROLE_${suffix}`);"
+								],
+								"type": "javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tenantId\": \"{{tenant_id}}\",\n    \"code\": \"{{dynamic_role_code}}\",\n    \"name\": \"QA Test Role\",\n    \"description\": \"Role created for QA purposes\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2 List Roles & Extract ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Extract Role ID\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    ",
+									"    const targetCode = pm.collectionVariables.get(\"dynamic_role_code\");",
+									"    const matchedRole = jsonData.data.find(r => r.code === targetCode);",
+									"    ",
+									"    pm.expect(matchedRole).to.not.be.undefined;",
+									"    pm.collectionVariables.set(\"role_id\", matchedRole.id);",
+									"    console.log(\"Saved Role ID:\", matchedRole.id);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/roles?tenantId={{tenant_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"roles"
+							],
+							"query": [
+								{
+									"key": "tenantId",
+									"value": "{{tenant_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3 Get Role by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Confirm Role properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.code).to.eql(pm.collectionVariables.get(\"dynamic_role_code\"));",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/roles/{{role_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"roles",
+								"{{role_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.4 Assign Permission to Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permissionId\": \"{{permission_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/roles/{{role_id}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"roles",
+								"{{role_id}}",
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Principal Roles",
+			"item": [
+				{
+					"name": "3.1 Assign Role to Principal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response code check\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.code).to.eql(\"PRINCIPAL_ROLE_ASSIGNED\");",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roleId\": \"{{role_id}}\",\n    \"scopeId\": \"{{scopeId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/principals/{{principal_id}}/roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"principals",
+								"{{principal_id}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 List Roles of Principal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Find assigned role in list\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    ",
+									"    const targetRoleId = pm.collectionVariables.get(\"role_id\");",
+									"    const matched = jsonData.data.find(pr => pr.roleId === targetRoleId);",
+									"    pm.expect(matched).to.not.be.undefined;",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/principals/{{principal_id}}/roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"principals",
+								"{{principal_id}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.3 Remove Role from Principal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/principals/{{principal_id}}/roles/{{role_id}}/scopes/{{scopeId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"principals",
+								"{{principal_id}}",
+								"roles",
+								"{{role_id}}",
+								"scopes",
+								"{{scopeId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "dynamic_tenant_code",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tenant_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "principal_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "dynamic_permission_code",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "dynamic_permission_code_to_delete",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "permission_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "permission_id_to_delete",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "dynamic_role_code",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "role_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "scopeId",
+			"value": "b4b4f21b-ffd0-4afa-8493-d0efde67416f",
+			"type": "string"
+		}
+	]
+}
