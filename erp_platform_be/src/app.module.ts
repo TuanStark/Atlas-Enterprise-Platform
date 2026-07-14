@@ -21,7 +21,7 @@ import { OrganizationModule } from '@core/organization/organization.module';
     IdentityModule,
     AuthenticationModule,
     AuthorizationModule,
-    OrganizationModule
+    OrganizationModule,
   ],
   controllers: [AppController],
   providers: [
@@ -40,4 +40,4 @@ import { OrganizationModule } from '@core/organization/organization.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

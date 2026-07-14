@@ -1,6 +1,7 @@
 import { IsBoolean, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateOrganizationDto {
+  @IsOptional()
   @IsUUID()
   tenantId: string;
 

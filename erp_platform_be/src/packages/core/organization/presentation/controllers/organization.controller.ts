@@ -8,7 +8,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -24,6 +23,7 @@ import {
 } from '@core/organization/dto';
 import { ListOrganizationsQuery } from '@core/organization/application/queries/list-organizations/list-organizations.query';
 import { GetOrganizationQuery } from '@core/organization/application/queries/get-organization/get-organization.query';
+import { CurrentTenant } from '@core/identity/presentation/decorators/current-tenant.decorator';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -42,7 +42,11 @@ export class OrganizationController {
     type: String,
     description: 'ID of the created organization',
   })
-  create(@Body() dto: CreateOrganizationDto) {
+  create(
+    @CurrentTenant() tenantId: string,
+    @Body() dto: CreateOrganizationDto,
+  ) {
+    dto.tenantId = tenantId;
     return this.commandBus.execute(new CreateOrganizationCommand(dto));
   }
 
@@ -53,7 +57,7 @@ export class OrganizationController {
   @ApiOkResponse({
     type: [OrganizationDto],
   })
-  list(@Query('tenantId') tenantId: string) {
+  list(@CurrentTenant() tenantId: string) {
     return this.queryBus.execute(new ListOrganizationsQuery(tenantId));
   }
 
@@ -64,7 +68,10 @@ export class OrganizationController {
   @ApiOkResponse({
     type: OrganizationDto,
   })
-  get(@Param('id') id: string, @Query('tenantId') tenantId: string) {
+  get(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
     return this.queryBus.execute(new GetOrganizationQuery(tenantId, id));
   }
 
@@ -77,7 +84,7 @@ export class OrganizationController {
   })
   update(
     @Param('id') id: string,
-    @Query('tenantId') tenantId: string,
+    @CurrentTenant() tenantId: string,
     @Body() dto: UpdateOrganizationDto,
   ) {
     return this.commandBus.execute(new UpdateOrganizationCommand(tenantId, id, dto));
@@ -90,7 +97,10 @@ export class OrganizationController {
   @ApiOkResponse({
     description: 'Organization deleted successfully',
   })
-  delete(@Param('id') id: string, @Query('tenantId') tenantId: string) {
+  delete(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
     return this.commandBus.execute(new DeleteOrganizationCommand(tenantId, id));
   }
 }

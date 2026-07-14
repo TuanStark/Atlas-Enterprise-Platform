@@ -36,10 +36,9 @@ export class AuthorizationGuard implements CanActivate {
     @Optional()
     private readonly permissionCache: PermissionCache | null,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // 1. Check @Public()
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -48,7 +47,6 @@ export class AuthorizationGuard implements CanActivate {
       return true;
     }
 
-    // 2. Extract & verify JWT
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
     if (!token) {
@@ -66,7 +64,6 @@ export class AuthorizationGuard implements CanActivate {
       throw new UnauthorizedException('Invalid token type.');
     }
 
-    // 3. Look up principal to get tenantId
     const principal = await this.prisma.principal.findUnique({
       where: { id: payload.sub },
       select: { id: true, tenantId: true, status: true },
@@ -80,11 +77,10 @@ export class AuthorizationGuard implements CanActivate {
       throw new UnauthorizedException('Principal is not active.');
     }
 
-    // 4. Attach to request
+    request.principal = principal;
     request.principalId = principal.id;
     request.tenantId = principal.tenantId;
 
-    // 5. Check @RequirePermission()
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -94,7 +90,6 @@ export class AuthorizationGuard implements CanActivate {
       return true;
     }
 
-    // 6. Resolve permissions (with cache)
     const principalIdentifier = Identifier.create(principal.id);
     let resolved = (await this.permissionCache?.get(principal.id)) ?? null;
 
@@ -103,7 +98,6 @@ export class AuthorizationGuard implements CanActivate {
       await this.permissionCache?.set(principal.id, resolved);
     }
 
-    // 7. Check all required permissions are allowed
     for (const required of requiredPermissions) {
       const found = resolved.find((p) => p.code === required);
       if (!found || found.effect === EffectType.deny) {
