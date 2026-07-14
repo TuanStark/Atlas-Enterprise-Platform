@@ -7,8 +7,8 @@ export interface OrganizationUnitTypeRepository {
   save(type: OrganizationUnitType): Promise<void>;
   update(type: OrganizationUnitType): Promise<void>;
   delete(type: OrganizationUnitType): Promise<void>;
-  findById(organizationId: Identifier, id: Identifier): Promise<OrganizationUnitType | null>;
-  findByCode(organizationId: Identifier, code: string): Promise<OrganizationUnitType | null>;
-  existsByCode(organizationId: Identifier, code: string): Promise<boolean>;
-  findAll(organizationId: Identifier): Promise<OrganizationUnitType[]>;
+  findById(id: Identifier): Promise<OrganizationUnitType | null>;
+  findByCode(code: string): Promise<OrganizationUnitType | null>;
+  existsByCode(code: string): Promise<boolean>;
+  findAll(): Promise<OrganizationUnitType[]>;
 }

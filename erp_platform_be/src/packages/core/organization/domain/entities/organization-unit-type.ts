@@ -2,12 +2,9 @@ import { AggregateRoot } from '@shared-kernel/domain/aggregate-root';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 export interface OrganizationUnitTypeProps {
-  organizationId: Identifier;
   code: string;
   name: string;
   description?: string;
-  isActive: boolean;
-  version: number;
 }
 
 export class OrganizationUnitType extends AggregateRoot<OrganizationUnitTypeProps> {
@@ -24,21 +21,10 @@ export class OrganizationUnitType extends AggregateRoot<OrganizationUnitTypeProp
       return;
     }
     this.props.name = name;
-    this.touch();
   }
 
-  activate() {
-    this.props.isActive = true;
-    this.touch();
-  }
-
-  deactivate() {
-    this.props.isActive = false;
-    this.touch();
-  }
-
-  get organizationId() {
-    return this.props.organizationId;
+  changeDescription(description?: string) {
+    this.props.description = description;
   }
 
   get code() {
@@ -51,17 +37,5 @@ export class OrganizationUnitType extends AggregateRoot<OrganizationUnitTypeProp
 
   get description() {
     return this.props.description;
-  }
-
-  get isActive() {
-    return this.props.isActive;
-  }
-
-  get version() {
-    return this.props.version;
-  }
-
-  private touch() {
-    this.props.version++;
   }
 }

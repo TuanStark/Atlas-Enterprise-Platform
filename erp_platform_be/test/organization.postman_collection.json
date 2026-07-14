@@ -1,0 +1,904 @@
+{
+  "info": {
+    "name": "Organization API - Complete",
+    "description": "Comprehensive endpoints to manage Organizations, Units, Unit Types, Calendars, and Assignments in Atlas Enterprise Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Organizations",
+      "item": [
+        {
+          "name": "Create Organization",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"ORG-001\",\n  \"name\": \"Tuan Stark Corporation\",\n  \"description\": \"Stark Industries Enterprise Division\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Organizations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organization by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Organization",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tuan Stark Industries\",\n  \"description\": \"Advanced technology systems\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Organization",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Organization Unit Types",
+      "item": [
+        {
+          "name": "Create Unit Type",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"DEP\",\n  \"name\": \"Department\",\n  \"description\": \"Functional department unit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organization-unit-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-unit-types"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Unit Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-unit-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-unit-types"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unit Type by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-unit-types/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-unit-types",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{unitTypeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Unit Type",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Division\",\n  \"description\": \"Major business division\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organization-unit-types/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-unit-types",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{unitTypeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Unit Type",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-unit-types/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-unit-types",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{unitTypeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Organization Units",
+      "item": [
+        {
+          "name": "Create Unit (Root)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitTypeId\": \"{{unitTypeId}}\",\n  \"code\": \"HQ-DEP\",\n  \"name\": \"Headquarters\",\n  \"sortOrder\": 1,\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Sub Unit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitTypeId\": \"{{unitTypeId}}\",\n  \"parentUnitId\": \"{{rootUnitId}}\",\n  \"code\": \"IT-DEP\",\n  \"name\": \"Information Technology\",\n  \"sortOrder\": 2,\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Units",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unit Tree",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units/tree",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units",
+                "tree"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unit by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{unitId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Unit",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"IT Department Global\",\n  \"sortOrder\": 5,\n  \"metadata\": {\n    \"costCenterCode\": \"CC-IT-999\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{unitId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Move Unit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parentUnitId\": \"{{newParentUnitId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units/:id/move",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units",
+                ":id",
+                "move"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{unitId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Unit",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/units/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "units",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{unitId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Organization Calendars",
+      "item": [
+        {
+          "name": "Create Calendar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main HQ Calendar\",\n  \"timezone\": \"Asia/Ho_Chi_Minh\",\n  \"workDays\": {\n    \"Monday\": true,\n    \"Tuesday\": true,\n    \"Wednesday\": true,\n    \"Thursday\": true,\n    \"Friday\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/calendars",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "calendars"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Calendars",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/calendars",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "calendars"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Calendar by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/calendars/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "calendars",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{calendarId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Calendar",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Stark HQ Calendar Updated\",\n  \"timezone\": \"America/New_York\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/calendars/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "calendars",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{calendarId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Calendar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/:organizationId/calendars/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                ":organizationId",
+                "calendars",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "organizationId",
+                  "value": "{{orgId}}"
+                },
+                {
+                  "key": "id",
+                  "value": "{{calendarId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Organization Assignments",
+      "item": [
+        {
+          "name": "Create Assignment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentId\": \"employment-uuid-here\",\n  \"departmentId\": \"{{unitId}}\",\n  \"positionId\": \"position-uuid-here\",\n  \"effectiveFrom\": \"2026-07-14\",\n  \"isPrimary\": true,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organization-assignments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-assignments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assignments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-assignments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-assignments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assignments by Employment ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-assignments/employment/:employmentId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-assignments",
+                "employment",
+                ":employmentId"
+              ],
+              "variable": [
+                {
+                  "key": "employmentId",
+                  "value": "employment-uuid-here"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assignment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-assignments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-assignments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{assignmentId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Assignment",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\",\n  \"effectiveTo\": \"2027-07-14\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organization-assignments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-assignments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{assignmentId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Assignment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organization-assignments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organization-assignments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{assignmentId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwtToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwtToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    },
+    {
+      "key": "orgId",
+      "value": "organization-uuid-here",
+      "type": "string"
+    },
+    {
+      "key": "unitTypeId",
+      "value": "unit-type-uuid-here",
+      "type": "string"
+    },
+    {
+      "key": "rootUnitId",
+      "value": "root-unit-uuid-here",
+      "type": "string"
+    },
+    {
+      "key": "unitId",
+      "value": "unit-uuid-here",
+      "type": "string"
+    },
+    {
+      "key": "newParentUnitId",
+      "value": "new-parent-unit-uuid-here",
+      "type": "string"
+    },
+    {
+      "key": "calendarId",
+      "value": "calendar-uuid-here",
+      "type": "string"
+    },
+    {
+      "key": "assignmentId",
+      "value": "assignment-uuid-here",
+      "type": "string"
+    }
+  ]
+}
