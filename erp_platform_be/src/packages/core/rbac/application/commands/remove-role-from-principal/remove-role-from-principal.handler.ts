@@ -19,7 +19,7 @@ export class RemoveRoleFromPrincipalHandler implements ICommandHandler<RemoveRol
     @Inject(PERMISSION_CACHE)
     @Optional()
     private readonly permissionCache: PermissionCache | null,
-  ) { }
+  ) {}
 
   async execute(command: RemoveRoleFromPrincipalCommand) {
     const principalId = Identifier.create(command.principalId);

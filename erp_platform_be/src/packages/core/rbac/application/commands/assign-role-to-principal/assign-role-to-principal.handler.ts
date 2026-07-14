@@ -24,7 +24,7 @@ export class AssignRoleToPrincipalHandler implements ICommandHandler<AssignRoleT
     @Inject(PERMISSION_CACHE)
     @Optional()
     private readonly permissionCache: PermissionCache | null,
-  ) { }
+  ) {}
 
   async execute(command: AssignRoleToPrincipalCommand) {
     const principalId = Identifier.create(command.principalId);

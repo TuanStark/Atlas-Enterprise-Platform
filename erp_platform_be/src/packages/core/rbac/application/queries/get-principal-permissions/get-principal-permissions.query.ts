@@ -1,3 +1,3 @@
 export class GetPrincipalPermissionsQuery {
-  constructor(public readonly principalId: string) { }
+  constructor(public readonly principalId: string) {}
 }

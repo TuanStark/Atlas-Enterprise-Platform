@@ -21,8 +21,19 @@ import {
   ListPrincipalRolesHandler,
   GetPrincipalPermissionsHandler,
 } from './application';
-import { PERMISSION_REPOSITORY, ROLE_REPOSITORY, PRINCIPAL_ROLE_REPOSITORY, PERMISSION_RESOLVER, PERMISSION_CACHE } from './domain';
-import { PrismaPermissionRepository, PrismaRoleRepository, PrismaPrincipalRoleRepository, PrismaPermissionResolver } from './infrastructure';
+import {
+  PERMISSION_REPOSITORY,
+  ROLE_REPOSITORY,
+  PRINCIPAL_ROLE_REPOSITORY,
+  PERMISSION_RESOLVER,
+  PERMISSION_CACHE,
+} from './domain';
+import {
+  PrismaPermissionRepository,
+  PrismaRoleRepository,
+  PrismaPrincipalRoleRepository,
+  PrismaPermissionResolver,
+} from './infrastructure';
 import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-cache';
 
 @Module({
@@ -65,6 +76,12 @@ import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-
     },
   ],
 
-  exports: [PERMISSION_REPOSITORY, ROLE_REPOSITORY, PRINCIPAL_ROLE_REPOSITORY, PERMISSION_RESOLVER, AuthorizationGuard],
+  exports: [
+    PERMISSION_REPOSITORY,
+    ROLE_REPOSITORY,
+    PRINCIPAL_ROLE_REPOSITORY,
+    PERMISSION_RESOLVER,
+    AuthorizationGuard,
+  ],
 })
 export class AuthorizationModule {}

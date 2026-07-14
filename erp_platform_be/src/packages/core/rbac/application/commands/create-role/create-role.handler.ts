@@ -12,7 +12,7 @@ export class CreateRoleHandler implements ICommandHandler<CreateRoleCommand> {
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly repository: RoleRepository,
-  ) { }
+  ) {}
 
   async execute(command: CreateRoleCommand) {
     const tenantId = Identifier.create(command.dto.tenantId);

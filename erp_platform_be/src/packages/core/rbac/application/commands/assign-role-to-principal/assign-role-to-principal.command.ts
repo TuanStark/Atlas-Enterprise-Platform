@@ -3,5 +3,5 @@ export class AssignRoleToPrincipalCommand {
     public readonly principalId: string,
     public readonly roleId: string,
     public readonly scopeId: string,
-  ) { }
+  ) {}
 }

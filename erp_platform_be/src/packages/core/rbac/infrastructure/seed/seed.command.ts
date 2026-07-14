@@ -8,7 +8,7 @@ import { PrismaService } from 'src/database/prisma.service';
   imports: [PrismaModule],
   providers: [RbacSeeder],
 })
-class SeedModule { }
+class SeedModule {}
 
 async function bootstrap() {
   const logger = new Logger('RbacSeed');

@@ -5,10 +5,22 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 const GLOBAL_SCOPE_CODE = 'GLOBAL';
 
 const PERMISSIONS = [
-  'role:create', 'role:read', 'role:update', 'role:delete',
-  'permission:create', 'permission:read', 'permission:update', 'permission:delete',
-  'principal:create', 'principal:read', 'principal:update', 'principal:delete',
-  'tenant:create', 'tenant:read', 'tenant:update', 'tenant:delete',
+  'role:create',
+  'role:read',
+  'role:update',
+  'role:delete',
+  'permission:create',
+  'permission:read',
+  'permission:update',
+  'permission:delete',
+  'principal:create',
+  'principal:read',
+  'principal:update',
+  'principal:delete',
+  'tenant:create',
+  'tenant:read',
+  'tenant:update',
+  'tenant:delete',
 ];
 
 interface RoleSeed {
@@ -33,8 +45,12 @@ const ROLES: RoleSeed[] = [
     description: 'Manages principals and roles.',
     isSystem: true,
     permissionCodes: [
-      'principal:create', 'principal:read', 'principal:update', 'principal:delete',
-      'role:read', 'role:update',
+      'principal:create',
+      'principal:read',
+      'principal:update',
+      'principal:delete',
+      'role:read',
+      'role:update',
     ],
   },
   {
@@ -42,12 +58,7 @@ const ROLES: RoleSeed[] = [
     name: 'Employee',
     description: 'Read-only access.',
     isSystem: true,
-    permissionCodes: [
-      'role:read',
-      'permission:read',
-      'principal:read',
-      'tenant:read',
-    ],
+    permissionCodes: ['role:read', 'permission:read', 'principal:read', 'tenant:read'],
   },
 ];
 
@@ -55,7 +66,7 @@ const ROLES: RoleSeed[] = [
 export class RbacSeeder {
   private readonly logger = new Logger(RbacSeeder.name);
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async seed(tenantId: string): Promise<void> {
     this.logger.log(`Seeding RBAC for tenant: ${tenantId}`);

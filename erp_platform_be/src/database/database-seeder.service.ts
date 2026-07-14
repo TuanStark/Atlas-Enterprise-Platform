@@ -103,10 +103,22 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     // 4. Seed Roles and Permissions
     const PERMISSIONS = [
-      'role:create', 'role:read', 'role:update', 'role:delete',
-      'permission:create', 'permission:read', 'permission:update', 'permission:delete',
-      'principal:create', 'principal:read', 'principal:update', 'principal:delete',
-      'tenant:create', 'tenant:read', 'tenant:update', 'tenant:delete',
+      'role:create',
+      'role:read',
+      'role:update',
+      'role:delete',
+      'permission:create',
+      'permission:read',
+      'permission:update',
+      'permission:delete',
+      'principal:create',
+      'principal:read',
+      'principal:update',
+      'principal:delete',
+      'tenant:create',
+      'tenant:read',
+      'tenant:update',
+      'tenant:delete',
     ];
 
     // Seed permissions
@@ -117,12 +129,16 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
       let resource = await this.prisma.resource.findUnique({ where: { code: resourceCode } });
       if (!resource) {
-        resource = await this.prisma.resource.create({ data: { id: randomUUID(), code: resourceCode, name: resourceCode } });
+        resource = await this.prisma.resource.create({
+          data: { id: randomUUID(), code: resourceCode, name: resourceCode },
+        });
       }
 
       let action = await this.prisma.action.findUnique({ where: { code: actionCode } });
       if (!action) {
-        action = await this.prisma.action.create({ data: { id: randomUUID(), code: actionCode, name: actionCode } });
+        action = await this.prisma.action.create({
+          data: { id: randomUUID(), code: actionCode, name: actionCode },
+        });
       }
 
       const existingPerm = await this.prisma.permission.findUnique({ where: { code } });

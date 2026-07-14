@@ -11,7 +11,7 @@ export class GetPrincipalPermissionsHandler implements IQueryHandler<GetPrincipa
   constructor(
     @Inject(PERMISSION_RESOLVER)
     private readonly resolver: PermissionResolver,
-  ) { }
+  ) {}
 
   async execute(query: GetPrincipalPermissionsQuery) {
     const principalId = Identifier.create(query.principalId);

@@ -7,7 +7,7 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 @Injectable()
 export class PrismaRoleRepository implements RoleRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async save(role: Role): Promise<void> {
     await this.prisma.$transaction(async (tx) => {

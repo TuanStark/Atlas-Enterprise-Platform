@@ -12,7 +12,7 @@ export class ListPrincipalRolesHandler implements IQueryHandler<ListPrincipalRol
   constructor(
     @Inject(PRINCIPAL_ROLE_REPOSITORY)
     private readonly repository: PrincipalRoleRepository,
-  ) { }
+  ) {}
 
   async execute(query: ListPrincipalRolesQuery) {
     const principalId = Identifier.create(query.principalId);

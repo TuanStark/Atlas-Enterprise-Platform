@@ -13,7 +13,14 @@ import { ResultTransformInterceptor } from './common/interceptors/result-transfo
 import { AuthorizationGuard } from './packages/core/rbac/infrastructure/guards/authorization.guard';
 
 @Module({
-  imports: [ConfigModule, TenantModule, PrincipalModule, IdentityModule, AuthenticationModule, AuthorizationModule],
+  imports: [
+    ConfigModule,
+    TenantModule,
+    PrincipalModule,
+    IdentityModule,
+    AuthenticationModule,
+    AuthorizationModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

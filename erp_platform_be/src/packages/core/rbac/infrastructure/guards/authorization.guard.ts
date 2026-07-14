@@ -36,7 +36,7 @@ export class AuthorizationGuard implements CanActivate {
     @Optional()
     private readonly permissionCache: PermissionCache | null,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // 1. Check @Public()
@@ -96,7 +96,7 @@ export class AuthorizationGuard implements CanActivate {
 
     // 6. Resolve permissions (with cache)
     const principalIdentifier = Identifier.create(principal.id);
-    let resolved = await this.permissionCache?.get(principal.id) ?? null;
+    let resolved = (await this.permissionCache?.get(principal.id)) ?? null;
 
     if (!resolved) {
       resolved = await this.permissionResolver.resolvePermissions(principalIdentifier);

@@ -45,9 +45,7 @@ export class PrincipalRoleController extends BaseCrudControllerHelper {
   @Get(':principalId/roles')
   @ApiOperation({ summary: 'List roles of principal' })
   @ApiOkResponse({ type: [PrincipalRoleDto] })
-  async listRoles(
-    @Param('principalId') principalId: string,
-  ): Promise<Result<PrincipalRoleDto[]>> {
+  async listRoles(@Param('principalId') principalId: string): Promise<Result<PrincipalRoleDto[]>> {
     return this.queryBus.execute(new ListPrincipalRolesQuery(principalId));
   }
 }

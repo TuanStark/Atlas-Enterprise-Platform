@@ -1,3 +1,3 @@
 export class ListPrincipalRolesQuery {
-  constructor(public readonly principalId: string) { }
+  constructor(public readonly principalId: string) {}
 }

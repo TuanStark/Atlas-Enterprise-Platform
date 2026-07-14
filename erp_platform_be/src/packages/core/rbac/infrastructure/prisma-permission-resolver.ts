@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { EffectType } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma.service';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { PermissionResolver, ResolvedPermission } from '../domain/repositories/permission-resolver.port';
+import {
+  PermissionResolver,
+  ResolvedPermission,
+} from '../domain/repositories/permission-resolver.port';
 
 @Injectable()
 export class PrismaPermissionResolver implements PermissionResolver {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async resolvePermissions(principalId: Identifier): Promise<ResolvedPermission[]> {
     const pid = principalId.getValue();

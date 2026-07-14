@@ -12,7 +12,7 @@ export class ListRoleHandler implements IQueryHandler<ListRoleQuery> {
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly repository: RoleRepository,
-  ) { }
+  ) {}
 
   async execute(query: ListRoleQuery) {
     const tenantId = Identifier.create(query.tenantId);

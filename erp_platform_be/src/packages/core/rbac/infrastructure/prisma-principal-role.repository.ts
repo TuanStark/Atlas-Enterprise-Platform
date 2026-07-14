@@ -6,7 +6,7 @@ import { PrincipalRolePersistenceMapper } from './principal-role.persistence.map
 
 @Injectable()
 export class PrismaPrincipalRoleRepository implements PrincipalRoleRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findByPrincipalId(principalId: Identifier): Promise<PrincipalRole[]> {
     const entities = await this.prisma.principalRole.findMany({
