@@ -3,6 +3,7 @@ import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { ORGANIZATION_UNIT_REPOSITORY } from '@core/organization/domain/repositories/organization-unit.repository';
 import type { OrganizationUnitRepository } from '@core/organization/domain/repositories/organization-unit.repository';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
+import { OrganizationUnitResponseMapper } from '../mappers/organization-unit.response.mapper';
 
 // Get
 export class GetOrganizationUnitQuery {
@@ -20,7 +21,11 @@ export class GetOrganizationUnitHandler implements IQueryHandler<GetOrganization
   ) {}
 
   async execute(query: GetOrganizationUnitQuery) {
-    return this.repository.findById(Identifier.create(query.orgId), Identifier.create(query.id));
+    const domain = await this.repository.findById(
+      Identifier.create(query.orgId),
+      Identifier.create(query.id),
+    );
+    return domain ? OrganizationUnitResponseMapper.toResponse(domain) : null;
   }
 }
 
@@ -37,7 +42,8 @@ export class ListOrganizationUnitsHandler implements IQueryHandler<ListOrganizat
   ) {}
 
   async execute(query: ListOrganizationUnitsQuery) {
-    return this.repository.findAll(Identifier.create(query.orgId));
+    const list = await this.repository.findAll(Identifier.create(query.orgId));
+    return list.map(OrganizationUnitResponseMapper.toResponse);
   }
 }
 

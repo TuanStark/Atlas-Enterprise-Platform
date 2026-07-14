@@ -3,6 +3,7 @@ import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { ORGANIZATION_CALENDAR_REPOSITORY } from '@core/organization/domain/repositories/organization-calendar.repository';
 import type { OrganizationCalendarRepository } from '@core/organization/domain/repositories/organization-calendar.repository';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
+import { OrganizationCalendarResponseMapper } from '../mappers/organization-calendar.response.mapper';
 
 // Get
 export class GetOrganizationCalendarQuery {
@@ -20,7 +21,11 @@ export class GetOrganizationCalendarHandler implements IQueryHandler<GetOrganiza
   ) {}
 
   async execute(query: GetOrganizationCalendarQuery) {
-    return this.repository.findById(Identifier.create(query.orgId), Identifier.create(query.id));
+    const domain = await this.repository.findById(
+      Identifier.create(query.orgId),
+      Identifier.create(query.id),
+    );
+    return domain ? OrganizationCalendarResponseMapper.toResponse(domain) : null;
   }
 }
 
@@ -37,6 +42,7 @@ export class ListOrganizationCalendarsHandler implements IQueryHandler<ListOrgan
   ) {}
 
   async execute(query: ListOrganizationCalendarsQuery) {
-    return this.repository.findAll(Identifier.create(query.orgId));
+    const list = await this.repository.findAll(Identifier.create(query.orgId));
+    return list.map(OrganizationCalendarResponseMapper.toResponse);
   }
 }

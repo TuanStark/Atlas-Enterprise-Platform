@@ -3,6 +3,7 @@ import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { ORGANIZATION_ASSIGNMENT_REPOSITORY } from '@core/organization/domain/repositories/organization-assignment.repository';
 import type { OrganizationAssignmentRepository } from '@core/organization/domain/repositories/organization-assignment.repository';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
+import { OrganizationAssignmentResponseMapper } from '../mappers/organization-assignment.response.mapper';
 
 // Get
 export class GetOrganizationAssignmentQuery {
@@ -20,7 +21,11 @@ export class GetOrganizationAssignmentHandler implements IQueryHandler<GetOrgani
   ) {}
 
   async execute(query: GetOrganizationAssignmentQuery) {
-    return this.repository.findById(Identifier.create(query.tenantId), Identifier.create(query.id));
+    const domain = await this.repository.findById(
+      Identifier.create(query.tenantId),
+      Identifier.create(query.id),
+    );
+    return domain ? OrganizationAssignmentResponseMapper.toResponse(domain) : null;
   }
 }
 
@@ -37,7 +42,8 @@ export class ListOrganizationAssignmentsHandler implements IQueryHandler<ListOrg
   ) {}
 
   async execute(query: ListOrganizationAssignmentsQuery) {
-    return this.repository.findAll(Identifier.create(query.tenantId));
+    const list = await this.repository.findAll(Identifier.create(query.tenantId));
+    return list.map(OrganizationAssignmentResponseMapper.toResponse);
   }
 }
 
@@ -57,9 +63,10 @@ export class ListAssignmentsByEmploymentHandler implements IQueryHandler<ListAss
   ) {}
 
   async execute(query: ListAssignmentsByEmploymentQuery) {
-    return this.repository.findByEmploymentId(
+    const list = await this.repository.findByEmploymentId(
       Identifier.create(query.tenantId),
       Identifier.create(query.employmentId),
     );
+    return list.map(OrganizationAssignmentResponseMapper.toResponse);
   }
 }
