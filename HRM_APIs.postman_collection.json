@@ -1,0 +1,985 @@
+{
+  "info": {
+    "name": "ERP Platform - HRM API Tests",
+    "description": "Postman collection for testing the HRM Module APIs (Phase 1: Employee, Employment, and Master Data).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.accessToken) {",
+                  "    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
+                  "    console.log(\"Saved jwt_token:\", jsonData.accessToken);",
+                  "}"
+                ],
+                "type": "javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@atlas.com\",\n  \"password\": \"Admin@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Master Data",
+      "item": [
+        {
+          "name": "Employment Types",
+          "item": [
+            {
+              "name": "Create Employment Type",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData) {",
+                      "    pm.environment.set(\"employmentTypeId\", jsonData);",
+                      "}"
+                    ],
+                    "type": "javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"FULL_TIME\",\n  \"name\": \"Full-Time Permanent\",\n  \"description\": \"Regular full-time employment\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/employment-types",
+                  "host": [
+                    "{{baseUrl}}"
+              ],
+                  "path": [
+                    "employment-types"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Employment Types",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/employment-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "employment-types"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Employment Type",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/employment-types/{{employmentTypeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "employment-types",
+                    "{{employmentTypeId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Employment Type",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Full-Time Regular\",\n  \"description\": \"Updated regular full-time employment description\",\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/employment-types/{{employmentTypeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "employment-types",
+                    "{{employmentTypeId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Employment Type",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/employment-types/{{employmentTypeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "employment-types",
+                    "{{employmentTypeId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Contract Types",
+          "item": [
+            {
+              "name": "Create Contract Type",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData) {",
+                      "    pm.environment.set(\"contractTypeId\", jsonData);",
+                      "}"
+                    ],
+                    "type": "javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"1_YEAR\",\n  \"name\": \"1-Year Definite Contract\",\n  \"durationMonth\": 12,\n  \"description\": \"Fixed-term employment contract for 12 months\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/contract-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "contract-types"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Contract Types",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/contract-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "contract-types"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Contract Type",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/contract-types/{{contractTypeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "contract-types",
+                    "{{contractTypeId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Contract Type",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"1-Year Fixed Contract\",\n  \"durationMonth\": 12,\n  \"description\": \"Updated description for 1-year contract\",\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/contract-types/{{contractTypeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "contract-types",
+                    "{{contractTypeId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Contract Type",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/contract-types/{{contractTypeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "contract-types",
+                    "{{contractTypeId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Job Titles",
+          "item": [
+            {
+              "name": "Create Job Title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData) {",
+                      "    pm.environment.set(\"jobTitleId\", jsonData);",
+                      "}"
+                    ],
+                    "type": "javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"SR_SE\",\n  \"name\": \"Senior Software Engineer\",\n  \"description\": \"Senior engineering role\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/job-titles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-titles"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Job Titles",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/job-titles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-titles"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Job Title",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/job-titles/{{jobTitleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-titles",
+                    "{{jobTitleId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Job Title",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Lead Software Engineer\",\n  \"description\": \"Updated software engineering role description\",\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/job-titles/{{jobTitleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-titles",
+                    "{{jobTitleId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Job Title",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/job-titles/{{jobTitleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-titles",
+                    "{{jobTitleId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Work Locations",
+          "item": [
+            {
+              "name": "Create Work Location",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData) {",
+                      "    pm.environment.set(\"workLocationId\", jsonData);",
+                      "}"
+                    ],
+                    "type": "javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"HN_OFFICE\",\n  \"name\": \"Hanoi Headquarter\",\n  \"address\": \"Keangnam Landmark 72, Hanoi\",\n  \"timezone\": \"Asia/Ho_Chi_Minh\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/work-locations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "work-locations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Work Locations",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/work-locations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "work-locations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Work Location",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/work-locations/{{workLocationId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "work-locations",
+                    "{{workLocationId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Work Location",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Hanoi Head Office\",\n  \"address\": \"Keangnam Tower 72, Hanoi, Vietnam\",\n  \"timezone\": \"Asia/Bangkok\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/work-locations/{{workLocationId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "work-locations",
+                    "{{workLocationId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Work Location",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/work-locations/{{workLocationId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "work-locations",
+                    "{{workLocationId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Create Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData) {",
+                  "    pm.environment.set(\"employeeId\", jsonData);",
+                  "}"
+                ],
+                "type": "javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeNo\": \"EMP-20260715\",\n  \"firstName\": \"Nguyen Van\",\n  \"lastName\": \"A\",\n  \"preferredName\": \"Alan\",\n  \"gender\": \"male\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"maritalStatus\": \"single\",\n  \"nationality\": \"Vietnamese\",\n  \"nationalId\": \"0123456789\",\n  \"passportNo\": \"B1234567\",\n  \"taxNumber\": \"987654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Nguyen Van\",\n  \"lastName\": \"Alan\",\n  \"preferredName\": \"Alan Nguyen\",\n  \"maritalStatus\": \"married\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Contacts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contacts\": [\n    {\n      \"contactType\": \"email\",\n      \"value\": \"alan.nguyen@atlas.com\",\n      \"isPrimary\": true\n    },\n    {\n      \"contactType\": \"phone\",\n      \"value\": \"+84987654321\",\n      \"isPrimary\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}",
+                "contacts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Addresses",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addresses\": [\n    {\n      \"addressType\": \"home\",\n      \"country\": \"Vietnam\",\n      \"state\": \"Hanoi\",\n      \"city\": \"Cau Giay\",\n      \"district\": \"Dich Vong\",\n      \"ward\": \"Ward 1\",\n      \"addressLine\": \"123 Tran Thai Tong\",\n      \"postalCode\": \"10000\",\n      \"isPrimary\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}/addresses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}",
+                "addresses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Emergency Contacts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emergencyContacts\": [\n    {\n      \"fullName\": \"Nguyen Van B\",\n      \"relationship\": \"brother\",\n      \"phone\": \"+84912345678\",\n      \"email\": \"brother@atlas.com\",\n      \"address\": \"Keangnam Landmark, Hanoi\",\n      \"priority\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}/emergency-contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}",
+                "emergency-contacts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Documents",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documents\": [\n    {\n      \"documentType\": \"national_id\",\n      \"documentNumber\": \"0123456789\",\n      \"issuedDate\": \"2020-05-15\",\n      \"expiryDate\": \"2030-05-15\",\n      \"issuedPlace\": \"Police Department\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}",
+                "documents"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Employments",
+      "item": [
+        {
+          "name": "Create Employment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData) {",
+                  "    pm.environment.set(\"employmentId\", jsonData);",
+                  "}"
+                ],
+                "type": "javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employmentTypeId\": \"{{employmentTypeId}}\",\n  \"employeeCode\": \"EMP-CODE-999\",\n  \"hireDate\": \"2026-07-15\",\n  \"probationStartDate\": \"2026-07-15\",\n  \"probationEndDate\": \"2026-09-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}/employments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}",
+                "employments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Employment History of Employee",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}/employments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}",
+                "employments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Employment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employments/{{employmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employments",
+                "{{employmentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Employment Status (Active)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\",\n  \"effectiveDate\": \"2026-09-16\",\n  \"reason\": \"Successfully passed probation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employments/{{employmentId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employments",
+                "{{employmentId}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contract to Employment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contractTypeId\": \"{{contractTypeId}}\",\n  \"contractNumber\": \"CONTRACT-NO-001\",\n  \"startDate\": \"2026-07-15\",\n  \"endDate\": \"2027-07-15\",\n  \"signedDate\": \"2026-07-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employments/{{employmentId}}/contracts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employments",
+                "{{employmentId}}",
+                "contracts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Terminate Employment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"terminationDate\": \"2026-12-31\",\n  \"reason\": \"Resigned with notice\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employments/{{employmentId}}/terminate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employments",
+                "{{employmentId}}",
+                "terminate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ]
+}
