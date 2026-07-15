@@ -12,6 +12,7 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { ResultTransformInterceptor } from './common/interceptors/result-transform.interceptor';
 import { AuthorizationGuard } from './packages/core/rbac/infrastructure/guards/authorization.guard';
 import { OrganizationModule } from '@core/organization/organization.module';
+import { HrmModule } from '@modules/hrm/hrm.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { OrganizationModule } from '@core/organization/organization.module';
     AuthenticationModule,
     AuthorizationModule,
     OrganizationModule,
+    HrmModule,
   ],
   controllers: [AppController],
   providers: [
