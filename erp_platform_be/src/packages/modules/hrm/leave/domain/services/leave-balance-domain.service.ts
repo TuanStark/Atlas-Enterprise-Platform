@@ -17,7 +17,7 @@ export class LeaveBalanceDomainService {
     private readonly policyRepo: LeavePolicyRepository,
     @Inject(LEAVE_BALANCE_REPOSITORY)
     private readonly balanceRepo: LeaveBalanceRepository,
-  ) { }
+  ) {}
 
   async initializeBalancesForEmployment(
     tenantId: Identifier,

@@ -12,18 +12,18 @@ export class GetAttendanceRecordQuery {
   constructor(
     public readonly tenantId: Identifier,
     public readonly id: Identifier,
-  ) { }
+  ) {}
 }
 
 export class ListAttendanceRecordsQuery {
-  constructor(public readonly tenantId: Identifier) { }
+  constructor(public readonly tenantId: Identifier) {}
 }
 
 export class ListAttendanceRecordsByEmploymentQuery {
   constructor(
     public readonly tenantId: Identifier,
     public readonly employmentId: Identifier,
-  ) { }
+  ) {}
 }
 
 // --- Query Handlers ---
@@ -31,7 +31,8 @@ export class ListAttendanceRecordsByEmploymentQuery {
 @QueryHandler(GetAttendanceRecordQuery)
 export class GetAttendanceRecordHandler
   extends BaseQueryHandler
-  implements IQueryHandler<GetAttendanceRecordQuery> {
+  implements IQueryHandler<GetAttendanceRecordQuery>
+{
   constructor(
     @Inject(repo.ATTENDANCE_RECORD_REPOSITORY)
     private readonly repository: repo.AttendanceRecordRepository,
@@ -54,7 +55,7 @@ export class ListAttendanceRecordsHandler implements IQueryHandler<ListAttendanc
   constructor(
     @Inject(repo.ATTENDANCE_RECORD_REPOSITORY)
     private readonly repository: repo.AttendanceRecordRepository,
-  ) { }
+  ) {}
 
   async execute(query: ListAttendanceRecordsQuery): Promise<AttendanceRecordReadModel[]> {
     const list = await this.repository.findAll(query.tenantId);
@@ -67,7 +68,7 @@ export class ListAttendanceRecordsByEmploymentHandler implements IQueryHandler<L
   constructor(
     @Inject(repo.ATTENDANCE_RECORD_REPOSITORY)
     private readonly repository: repo.AttendanceRecordRepository,
-  ) { }
+  ) {}
 
   async execute(
     query: ListAttendanceRecordsByEmploymentQuery,

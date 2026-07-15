@@ -14,18 +14,18 @@ export class GetLeaveRequestQuery {
   constructor(
     public readonly tenantId: Identifier,
     public readonly id: Identifier,
-  ) { }
+  ) {}
 }
 
 export class ListLeaveRequestsQuery {
-  constructor(public readonly tenantId: Identifier) { }
+  constructor(public readonly tenantId: Identifier) {}
 }
 
 export class ListLeaveRequestsByEmploymentQuery {
   constructor(
     public readonly tenantId: Identifier,
     public readonly employmentId: Identifier,
-  ) { }
+  ) {}
 }
 
 // --- Query Handlers ---
@@ -33,7 +33,8 @@ export class ListLeaveRequestsByEmploymentQuery {
 @QueryHandler(GetLeaveRequestQuery)
 export class GetLeaveRequestHandler
   extends BaseQueryHandler
-  implements IQueryHandler<GetLeaveRequestQuery> {
+  implements IQueryHandler<GetLeaveRequestQuery>
+{
   constructor(
     @Inject(repo.LEAVE_REQUEST_REPOSITORY)
     private readonly repository: repo.LeaveRequestRepository,
@@ -56,7 +57,7 @@ export class ListLeaveRequestsHandler implements IQueryHandler<ListLeaveRequests
   constructor(
     @Inject(repo.LEAVE_REQUEST_REPOSITORY)
     private readonly repository: repo.LeaveRequestRepository,
-  ) { }
+  ) {}
 
   async execute(query: ListLeaveRequestsQuery): Promise<LeaveRequestReadModel[]> {
     const list = await this.repository.findAll(query.tenantId);
@@ -69,7 +70,7 @@ export class ListLeaveRequestsByEmploymentHandler implements IQueryHandler<ListL
   constructor(
     @Inject(repo.LEAVE_REQUEST_REPOSITORY)
     private readonly repository: repo.LeaveRequestRepository,
-  ) { }
+  ) {}
 
   async execute(query: ListLeaveRequestsByEmploymentQuery): Promise<LeaveRequestReadModel[]> {
     const list = await this.repository.findByEmploymentId(query.tenantId, query.employmentId);

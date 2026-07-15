@@ -13,14 +13,14 @@ export class GetLeaveBalanceQuery {
   constructor(
     public readonly tenantId: Identifier,
     public readonly id: Identifier,
-  ) { }
+  ) {}
 }
 
 export class ListLeaveBalancesByEmploymentQuery {
   constructor(
     public readonly tenantId: Identifier,
     public readonly employmentId: Identifier,
-  ) { }
+  ) {}
 }
 
 // --- Query Handlers ---
@@ -28,7 +28,8 @@ export class ListLeaveBalancesByEmploymentQuery {
 @QueryHandler(GetLeaveBalanceQuery)
 export class GetLeaveBalanceHandler
   extends BaseQueryHandler
-  implements IQueryHandler<GetLeaveBalanceQuery> {
+  implements IQueryHandler<GetLeaveBalanceQuery>
+{
   constructor(
     @Inject(repo.LEAVE_BALANCE_REPOSITORY)
     private readonly repository: repo.LeaveBalanceRepository,
@@ -51,7 +52,7 @@ export class ListLeaveBalancesByEmploymentHandler implements IQueryHandler<ListL
   constructor(
     @Inject(repo.LEAVE_BALANCE_REPOSITORY)
     private readonly repository: repo.LeaveBalanceRepository,
-  ) { }
+  ) {}
 
   async execute(query: ListLeaveBalancesByEmploymentQuery): Promise<LeaveBalanceReadModel[]> {
     const list = await this.repository.findByEmploymentId(query.tenantId, query.employmentId);
