@@ -1,5 +1,5 @@
 import { httpClient, createApiClient } from '@shared/api';
-import type { LeaveRequest, LeaveType, LeaveBalance, CreateLeaveRequestDto } from '../types';
+import type { LeaveRequest, LeaveType, LeaveBalance } from '../types';
 
 const baseRequestApi = createApiClient<LeaveRequest>('/leave-requests');
 

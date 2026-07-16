@@ -1,20 +1,54 @@
 /* ============================================================
-   DashboardPage Styles
+   DashboardPage Styles — Modern Premium Redesign
    ============================================================ */
 
+.dashboard-page {
+  padding-bottom: var(--space-8);
+}
+
 .dashboard-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.dashboard-page__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  height: 40px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.dashboard-page__action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.35);
 }
 
 .dashboard-page__stat-card {
   border-radius: var(--radius-xl) !important;
   border: 1px solid var(--color-border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
   transition: all var(--transition-normal) !important;
+  background: #ffffff !important;
 }
 
 .dashboard-page__stat-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md) !important;
+  border-color: rgba(14, 165, 233, 0.2) !important;
 }
 
 .dashboard-page__stat-content {
@@ -29,9 +63,16 @@
 
 .dashboard-page__stat-value-row {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  margin-top: var(--space-1);
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.dashboard-page__stat-badge {
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .dashboard-page__stat-icon {
@@ -44,40 +85,60 @@
   flex-shrink: 0;
 }
 
-.dashboard-page__stat-trend {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-}
-
-.dashboard-page__stat-trend--up {
-  color: var(--color-success);
-  background: var(--color-success-light);
-}
-
-.dashboard-page__stat-trend--down {
-  color: var(--color-error);
-  background: var(--color-error-light);
-}
-
 .dashboard-page__card {
   border-radius: var(--radius-xl) !important;
   border: 1px solid var(--color-border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: #ffffff !important;
   height: 100%;
 }
 
-/* Override AntD card header */
+/* Override AntD card headers for premium look */
 .dashboard-page__card .ant-card-head {
-  border-bottom: 1px solid var(--color-border-light);
-  min-height: auto;
-  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border-light) !important;
+  min-height: auto !important;
+  padding: var(--space-4) var(--space-5) !important;
 }
 
 .dashboard-page__card .ant-card-head-title {
-  font-size: var(--font-size-base) !important;
-  font-weight: var(--font-weight-semibold) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--color-text-primary) !important;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-page__card .ant-card-body {
+  padding: var(--space-5) !important;
+}
+
+/* Legend items for Pie/Donut Chart */
+.dashboard-page__legend-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.dashboard-page__legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.legend-name {
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.legend-val {
+  font-weight: 600;
+  color: var(--color-text-primary);
 }

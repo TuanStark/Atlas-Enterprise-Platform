@@ -12,7 +12,7 @@ import type { Employee } from '@features/employee/types';
 import { Spin, Modal } from 'antd';
 
 const statusConfig: Record<string, { color: string; label: string }> = {
-  active: { color: 'green', label: 'Đang làm' },
+  active: { color: 'green', label: 'Chính thức' },
   probation: { color: 'orange', label: 'Thử việc' },
   suspended: { color: 'red', label: 'Tạm ngưng' },
   resigned: { color: 'default', label: 'Nghỉ việc' },
@@ -22,7 +22,7 @@ function EmployeeListPage() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
 
-  const { data: employees = [], isLoading, error } = useEmployees();
+  const { data: employees = [], isLoading } = useEmployees();
   const deleteMutation = useDeleteEmployee();
 
   const handleDelete = (id: string, e: any) => {
@@ -80,19 +80,21 @@ function EmployeeListPage() {
         const initials = `${record.lastName?.[0] || ''}${record.firstName?.[0] || ''}`;
         const code = record.employeeCode || (record as any).employeeNo || '-';
         return (
-          <Space>
+          <Space size={12}>
             <Avatar
-              size={36}
+              size={38}
               style={{
-                background: `hsl(${code.charCodeAt(code.length - 1) * 40 || 0}, 60%, 60%)`,
+                background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
                 fontSize: 13,
                 fontWeight: 600,
+                color: 'white',
+                boxShadow: '0 2px 8px rgba(14, 165, 233, 0.15)',
               }}
             >
               {initials || 'NV'}
             </Avatar>
             <div>
-              <Text strong style={{ fontSize: 13, display: 'block' }}>
+              <Text strong style={{ fontSize: 13, display: 'block', color: 'var(--color-text-primary)' }}>
                 {record.lastName} {record.firstName}
               </Text>
               <Text type="secondary" style={{ fontSize: 12 }}>
@@ -109,7 +111,7 @@ function EmployeeListPage() {
       width: 160,
       render: (_, record) => {
         const dept = record.employments?.find(e => e.isCurrent)?.departmentName || '-';
-        return <Text style={{ fontSize: 13 }}>{dept}</Text>;
+        return <Text style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>{dept}</Text>;
       },
     },
     {
@@ -118,7 +120,7 @@ function EmployeeListPage() {
       width: 180,
       render: (_, record) => {
         const title = record.employments?.find(e => e.isCurrent)?.jobTitleName || '-';
-        return <Text style={{ fontSize: 13 }}>{title}</Text>;
+        return <Text style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>{title}</Text>;
       },
     },
     {
@@ -136,7 +138,7 @@ function EmployeeListPage() {
       width: 120,
       render: (status: string) => {
         const config = statusConfig[status] || { color: 'default', label: status };
-        return <Tag color={config.color}>{config.label}</Tag>;
+        return <Tag color={config.color} style={{ borderRadius: 4, fontWeight: 500 }}>{config.label}</Tag>;
       },
     },
     {
@@ -182,17 +184,26 @@ function EmployeeListPage() {
       {/* Page Header */}
       <div className="employee-list-page__header">
         <div>
-          <Title level={4} style={{ marginBottom: 4 }}>
-            Danh sách nhân viên
+          <Title level={3} style={{ marginBottom: 4, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            Nhân viên
           </Title>
-          <Text type="secondary">Quản lý hồ sơ nhân viên trong tổ chức</Text>
+          <Text type="secondary" style={{ fontSize: 14 }}>Quản lý và cập nhật hồ sơ nhân sự của doanh nghiệp.</Text>
         </div>
-        <Space>
-          <Button icon={<Download size={14} />}>Xuất Excel</Button>
+        <Space size={12}>
+          <Button icon={<Download size={14} />} style={{ borderRadius: 8, height: 38 }}>
+            Xuất Excel
+          </Button>
           <Button
             type="primary"
             icon={<Plus size={14} />}
             onClick={() => navigate('/hrm/employees/new')}
+            style={{ 
+              borderRadius: 8, 
+              height: 38,
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
+              border: 'none',
+              fontWeight: 600
+            }}
           >
             Thêm nhân viên
           </Button>
@@ -200,18 +211,18 @@ function EmployeeListPage() {
       </div>
 
       {/* Table Card */}
-      <Card className="employee-list-page__card">
-        <div className="employee-list-page__toolbar">
+      <Card className="employee-list-page__card" style={{ borderRadius: 16, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="employee-list-page__toolbar" style={{ marginBottom: 20 }}>
           <Input
-            placeholder="Tìm kiếm nhân viên..."
+            placeholder="Tìm kiếm nhân viên theo tên hoặc mã..."
             prefix={<Search size={16} style={{ color: 'var(--color-text-tertiary)' }} />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 320 }}
+            style={{ width: 340, borderRadius: 8, height: 38 }}
             allowClear
           />
           <Text type="secondary" style={{ fontSize: 13 }}>
-            {filteredData.length} nhân viên
+            Tìm thấy <Text strong>{filteredData.length}</Text> nhân viên
           </Text>
         </div>
         <Table
@@ -220,7 +231,7 @@ function EmployeeListPage() {
           rowKey="id"
           scroll={{ x: 1100 }}
           pagination={{
-            pageSize: 20,
+            pageSize: 15,
             showSizeChanger: true,
             showTotal: (total) => `Tổng ${total} nhân viên`,
           }}

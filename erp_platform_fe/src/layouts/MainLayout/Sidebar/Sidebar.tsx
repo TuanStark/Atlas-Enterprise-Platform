@@ -138,7 +138,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
       collapsedWidth={72}
       collapsed={collapsed}
       trigger={null}
-      theme="dark"
+      theme="light"
       style={{
         overflow: 'auto',
         height: '100vh',
@@ -157,7 +157,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
 
       {/* Navigation Menu */}
       <Menu
-        theme="dark"
+        theme="light"
         mode="inline"
         selectedKeys={selectedKeys}
         defaultOpenKeys={openKeys}

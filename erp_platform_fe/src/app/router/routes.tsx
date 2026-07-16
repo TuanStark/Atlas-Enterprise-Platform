@@ -17,6 +17,7 @@ const LeaveRequestFormPage = lazy(() => import('@pages/hrm/leave/LeaveRequestFor
 const AttendanceListPage = lazy(() => import('@pages/hrm/attendance/AttendanceListPage'));
 const NotFoundPage = lazy(() => import('@pages/errors/NotFoundPage'));
 const ForbiddenPage = lazy(() => import('@pages/errors/ForbiddenPage'));
+const UnderConstructionPage = lazy(() => import('@pages/errors/UnderConstructionPage'));
 
 /**
  * Route Definitions — Organized by module, matching backend structure
@@ -57,6 +58,28 @@ export const routes: RouteObject[] = [
 
       // HRM — Attendance
       { path: '/hrm/attendance', element: <AttendanceListPage /> },
+
+      // HRM — Missing Pages (Mapped to Under Construction)
+      { path: '/hrm/payroll', element: <UnderConstructionPage /> },
+      { path: '/hrm/recruitment', element: <UnderConstructionPage /> },
+      { path: '/hrm/performance', element: <UnderConstructionPage /> },
+      { path: '/hrm/training', element: <UnderConstructionPage /> },
+      { path: '/hrm/shifts', element: <UnderConstructionPage /> },
+      { path: '/hrm/timesheet', element: <UnderConstructionPage /> },
+      { path: '/hrm/leave-calendar', element: <UnderConstructionPage /> },
+      { path: '/hrm/payroll-runs', element: <UnderConstructionPage /> },
+      { path: '/hrm/recruitment-board', element: <UnderConstructionPage /> },
+      { path: '/hrm/performance-cycles', element: <UnderConstructionPage /> },
+      { path: '/hrm/training-courses', element: <UnderConstructionPage /> },
+
+      // Organization
+      { path: '/organization', element: <UnderConstructionPage /> },
+
+      // Admin Management
+      { path: '/admin/users', element: <UnderConstructionPage /> },
+      { path: '/admin/roles', element: <UnderConstructionPage /> },
+      { path: '/admin/workflows', element: <UnderConstructionPage /> },
+      { path: '/admin/settings', element: <UnderConstructionPage /> },
     ],
   },
 

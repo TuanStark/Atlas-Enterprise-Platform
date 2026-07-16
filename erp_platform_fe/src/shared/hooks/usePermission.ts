@@ -39,5 +39,5 @@ interface PermissionGateProps {
 
 export function PermissionGate({ resource, action, children, fallback = null }: PermissionGateProps) {
   const hasPermission = useCanAccess(resource, action);
-  return hasPermission ? <>{children}</> : <>{fallback}</>;
+  return (hasPermission ? children : fallback) as any;
 }

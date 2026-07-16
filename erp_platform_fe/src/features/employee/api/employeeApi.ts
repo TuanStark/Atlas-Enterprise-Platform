@@ -1,7 +1,7 @@
 import { createApiClient } from '@shared/api';
 import { httpClient } from '@shared/api';
-import type { Employee, CreateEmployeeDto, UpdateEmployeeDto } from '../types';
-import type { PaginatedResponse, ListQueryParams } from '@shared/types';
+import type { Employee } from '../types';
+import type { ListQueryParams } from '@shared/types';
 
 /**
  * Employee API — Maps to backend EmployeeController
@@ -24,7 +24,7 @@ export const employeeApi = {
   ...baseApi,
 
   /** List employees with filtering */
-  async list(params?: ListQueryParams): Promise<Employee[]> {
+  async list(_params?: ListQueryParams): Promise<Employee[]> {
     const { data } = await httpClient.get<Employee[]>('/employees');
     return data;
   },
