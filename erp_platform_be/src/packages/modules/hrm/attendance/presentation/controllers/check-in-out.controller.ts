@@ -8,6 +8,7 @@ import { CheckInDto, CheckOutDto } from '../../application/dto/check-in-out.dto'
 import { CheckInCommand, CheckOutCommand } from '../../application/commands/check-in-out.commands';
 import {
   GetAttendanceRecordQuery,
+  ListAttendanceRecordsQuery,
   ListAttendanceRecordsByEmploymentQuery,
 } from '../../application/queries/attendance-record.queries';
 
@@ -54,6 +55,13 @@ export class CheckInOutController {
         Identifier.create(employmentId),
       ),
     );
+  }
+
+  @Get('attendance/records')
+  @ApiOperation({ summary: 'List all attendance records' })
+  @ApiOkResponse({ description: 'List of all attendance records' })
+  listAll(@CurrentContext() context: RequestContext) {
+    return this.queryBus.execute(new ListAttendanceRecordsQuery(Identifier.create(context.tenantId)));
   }
 
   @Get('attendance/records/:id')

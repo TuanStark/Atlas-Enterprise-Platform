@@ -1,0 +1,20 @@
+/* ============================================================
+   LoginPage Styles
+   ============================================================ */
+
+.login-page__options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -8px;
+}
+
+.login-page__forgot {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+}
+
+.login-page__forgot:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}

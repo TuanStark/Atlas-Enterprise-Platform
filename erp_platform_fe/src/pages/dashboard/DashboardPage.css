@@ -1,0 +1,83 @@
+/* ============================================================
+   DashboardPage Styles
+   ============================================================ */
+
+.dashboard-page__header {
+  margin-bottom: var(--space-6);
+}
+
+.dashboard-page__stat-card {
+  border-radius: var(--radius-xl) !important;
+  border: 1px solid var(--color-border-light) !important;
+  transition: all var(--transition-normal) !important;
+}
+
+.dashboard-page__stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.dashboard-page__stat-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.dashboard-page__stat-info {
+  flex: 1;
+}
+
+.dashboard-page__stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.dashboard-page__stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dashboard-page__stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.dashboard-page__stat-trend--up {
+  color: var(--color-success);
+  background: var(--color-success-light);
+}
+
+.dashboard-page__stat-trend--down {
+  color: var(--color-error);
+  background: var(--color-error-light);
+}
+
+.dashboard-page__card {
+  border-radius: var(--radius-xl) !important;
+  border: 1px solid var(--color-border-light) !important;
+  height: 100%;
+}
+
+/* Override AntD card header */
+.dashboard-page__card .ant-card-head {
+  border-bottom: 1px solid var(--color-border-light);
+  min-height: auto;
+  padding: var(--space-4) var(--space-6);
+}
+
+.dashboard-page__card .ant-card-head-title {
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
