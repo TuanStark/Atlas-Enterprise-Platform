@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Row, Col, Card, Statistic, Typography, List, Avatar, Tag, Space, Checkbox, Spin, Empty, Popconfirm } from 'antd';
+import { Row, Col, Card, Typography, List, Avatar, Tag, Space, Checkbox, Spin, Empty, Popconfirm } from 'antd';
 import {
   Users,
   TrendingUp,
@@ -9,8 +9,6 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
-  Calendar,
-  CheckCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -25,9 +23,7 @@ import {
   Tooltip,
 } from 'recharts';
 import './DashboardPage.css';
-
 const { Title, Text } = Typography;
-
 import { useEmployees } from '@features/employee/hooks/useEmployee';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
 import { useAttendanceRecords } from '@features/attendance/hooks/useAttendance';
@@ -59,7 +55,6 @@ function DashboardPage() {
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const newHires = employees.filter((e) => new Date(e.createdAt) >= thirtyDaysAgo).length;
 
   // Group real employees by department
   const deptCounts: Record<string, number> = {};
@@ -69,20 +64,20 @@ function DashboardPage() {
     deptCounts[deptName] = (deptCounts[deptName] || 0) + 1;
   });
 
-  const departmentData = Object.keys(deptCounts).length > 0 
+  const departmentData = Object.keys(deptCounts).length > 0
     ? Object.entries(deptCounts).map(([name, value]) => ({ name, value }))
     : [
-        { name: 'Engineering', value: 362 },
-        { name: 'Human Resources', value: 224 },
-        { name: 'Sales', value: 250 },
-        { name: 'Finance', value: 168 },
-        { name: 'Operations', value: 244 },
-      ];
+      { name: 'Kỹ thuật', value: 362 },
+      { name: 'Nhân sự', value: 224 },
+      { name: 'Kinh doanh', value: 250 },
+      { name: 'Tài chính', value: 168 },
+      { name: 'Vận hành', value: 244 },
+    ];
 
   const totalDeptValue = departmentData.reduce((acc, curr) => acc + curr.value, 0);
 
   // Headcount growth trend (12 months)
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
   const monthlyHires = new Array(12).fill(0);
   employees.forEach((emp) => {
     const date = new Date(emp.joinDate || emp.createdAt);
@@ -101,34 +96,34 @@ function DashboardPage() {
 
   const stats = [
     {
-      title: 'Total Employees',
-      value: totalEmployees || '1,248',
+      title: 'Tổng nhân viên',
+      value: totalEmployees || '1.248',
       icon: <Users size={20} />,
       trend: { value: '5.2%', isUp: true },
-      trendText: 'vs last month',
+      trendText: 'so với tháng trước',
       color: '#0a65ff',
       bgColor: '#f0f6ff',
     },
     {
-      title: 'Attendance Rate',
+      title: 'Tỷ lệ đi làm',
       value: '94.6%',
       icon: <TrendingUp size={20} />,
       trend: { value: '2.3%', isUp: true },
-      trendText: 'vs last week',
+      trendText: 'so với tuần trước',
       color: '#10b981',
       bgColor: '#ecfdf5',
     },
     {
-      title: 'Open Positions',
+      title: 'Vị trí tuyển dụng',
       value: 24,
       icon: <UserPlus size={20} />,
       trend: { value: '9.1%', isUp: true },
-      trendText: 'vs last month',
+      trendText: 'so với tháng trước',
       color: '#a855f7',
       bgColor: '#faf5ff',
     },
     {
-      title: 'Pending Approvals',
+      title: 'Yêu cầu chờ duyệt',
       value: pendingLeavesCount || '3',
       icon: <FileCheck size={20} />,
       trend: { value: pendingLeavesCount ? `${pendingLeavesCount} đơn` : 'Đang xử lý', isUp: pendingLeavesCount > 0 },
@@ -203,10 +198,10 @@ function DashboardPage() {
       <div className="dashboard-page__header">
         <div>
           <Title level={3} style={{ marginBottom: 4, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text-primary)' }}>
-            Welcome back, Spencer
+            Chào mừng trở lại, Spencer
           </Title>
           <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-            Here is what's happening in your organization today.
+            Dưới đây là tổng quan hoạt động của tổ chức hôm nay.
           </Text>
         </div>
         <button className="dashboard-page__action-btn" onClick={() => navigate('/hrm/employees/new')}>
@@ -252,7 +247,7 @@ function DashboardPage() {
       <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
         {/* Headcount by Department (Donut) */}
         <Col xs={24} lg={8}>
-          <Card title="Employees by Department" className="dashboard-page__card">
+          <Card title="Nhân sự theo phòng ban" className="dashboard-page__card">
             <div className="dashboard-page__chart-donut-container">
               <div className="dashboard-page__chart-donut-wrapper">
                 <ResponsiveContainer width="100%" height="100%">
@@ -270,15 +265,15 @@ function DashboardPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }} 
+                    <Tooltip
+                      contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Center Content */}
                 <div className="donut-center-label">
                   <span className="donut-center-value">{totalDeptValue}</span>
-                  <span className="donut-center-text">Total</span>
+                  <span className="donut-center-text">Tổng số</span>
                 </div>
               </div>
             </div>
@@ -298,38 +293,39 @@ function DashboardPage() {
 
         {/* Employee Growth (Area Chart) */}
         <Col xs={24} lg={10}>
-          <Card title="Monthly Headcount Trend" className="dashboard-page__card">
+          <Card title="Xu hướng nhân sự hàng tháng" className="dashboard-page__card">
             <div style={{ height: 260, marginTop: 10 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorHeadcount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0a65ff" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#0a65ff" stopOpacity={0.005}/>
+                      <stop offset="5%" stopColor="#0a65ff" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#0a65ff" stopOpacity={0.005} />
                     </linearGradient>
                   </defs>
-                  <XAxis 
-                    dataKey="month" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }} 
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
                     domain={['dataMin - 100', 'dataMax + 100']}
-                    style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }} 
+                    style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }}
                   />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }} 
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="Headcount" 
-                    stroke="#0a65ff" 
-                    strokeWidth={3} 
-                    fillOpacity={1} 
-                    fill="url(#colorHeadcount)" 
+                  <Area
+                    type="monotone"
+                    dataKey="Headcount"
+                    name="Số nhân sự"
+                    stroke="#0a65ff"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorHeadcount)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -339,17 +335,17 @@ function DashboardPage() {
 
         {/* To-Do List */}
         <Col xs={24} lg={6}>
-          <Card title="Action Items" className="dashboard-page__card">
+          <Card title="Công việc cần làm" className="dashboard-page__card">
             <List
               dataSource={todoList}
               renderItem={(item) => (
                 <List.Item style={{ padding: '12px 4px', borderBottom: '1px solid var(--color-border-light)' }}>
-                  <Checkbox 
-                    checked={item.checked} 
+                  <Checkbox
+                    checked={item.checked}
                     onChange={() => handleToggleTodo(item.id)}
-                    style={{ 
-                      textDecoration: item.checked ? 'line-through' : 'none', 
-                      color: item.checked ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', 
+                    style={{
+                      textDecoration: item.checked ? 'line-through' : 'none',
+                      color: item.checked ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
                       fontSize: 13,
                       fontWeight: item.checked ? 400 : 500
                     }}
