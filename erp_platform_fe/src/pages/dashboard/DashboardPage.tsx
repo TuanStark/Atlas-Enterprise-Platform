@@ -192,7 +192,7 @@ function DashboardPage() {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-        <Spin size="large" tip="Đang tải dữ liệu tổng quan..." color="var(--color-primary)" />
+        <Spin size="large" tip="Đang tải dữ liệu tổng quan..." />
       </div>
     );
   }
