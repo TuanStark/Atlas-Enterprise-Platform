@@ -2,7 +2,19 @@ import { Employee } from '../../domain/aggregates/employee.aggregate';
 import { EmployeeReadModel } from '../read-models/employee.read-model';
 
 export class EmployeeReadModelMapper {
-  static toReadModel(employee: Employee): EmployeeReadModel {
+  static toReadModel(
+    employee: Employee,
+    employments?: {
+      id: string;
+      departmentName: string;
+      positionName: string;
+      jobTitleName: string;
+      employmentType: string;
+      startDate: Date;
+      endDate?: Date;
+      isCurrent: boolean;
+    }[],
+  ): EmployeeReadModel {
     return {
       id: employee.id.toString(),
       tenantId: employee.tenantId.toString(),
@@ -56,6 +68,7 @@ export class EmployeeReadModelMapper {
         issuedPlace: d.issuedPlace,
         fileId: d.fileId,
       })),
+      employments,
       createdAt: employee.createdAt,
       updatedAt: employee.updatedAt,
     };

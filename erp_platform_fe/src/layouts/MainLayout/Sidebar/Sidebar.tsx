@@ -37,6 +37,8 @@ function getMenuItems(): MenuItem[] {
         { key: '/hrm/employees', label: 'Danh sách nhân viên' },
         { key: '/hrm/leave-requests', label: 'Yêu cầu nghỉ phép' },
         { key: '/hrm/attendance', label: 'Lịch sử chấm công' },
+        { key: '/hrm/timesheet', label: 'Bảng phân ca làm việc' },
+        { key: '/hrm/shifts', label: 'Danh mục ca làm việc' },
       ],
     },
     {

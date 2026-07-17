@@ -25,6 +25,9 @@ const LeaveCalendarPage = lazy(() => import('@pages/hrm/leave/LeaveCalendarPage'
 const PerformancePage = lazy(() => import('@pages/hrm/performance/PerformancePage'));
 const SettingsPage = lazy(() => import('@pages/admin/settings/SettingsPage'));
 
+const ShiftsPage = lazy(() => import('@pages/hrm/shifts/ShiftsPage'));
+const TimesheetPage = lazy(() => import('@pages/hrm/timesheet/TimesheetPage'));
+
 /**
  * Route Definitions — Organized by module, matching backend structure
  *
@@ -70,8 +73,8 @@ export const routes: RouteObject[] = [
       { path: '/hrm/recruitment', element: <RecruitmentPage /> },
       { path: '/hrm/performance', element: <PerformancePage /> },
       { path: '/hrm/training', element: <UnderConstructionPage /> },
-      { path: '/hrm/shifts', element: <UnderConstructionPage /> },
-      { path: '/hrm/timesheet', element: <UnderConstructionPage /> },
+      { path: '/hrm/shifts', element: <ShiftsPage /> },
+      { path: '/hrm/timesheet', element: <TimesheetPage /> },
       { path: '/hrm/leave-calendar', element: <LeaveCalendarPage /> },
       { path: '/hrm/payroll-runs', element: <UnderConstructionPage /> },
       { path: '/hrm/recruitment-board', element: <UnderConstructionPage /> },

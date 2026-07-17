@@ -25,6 +25,11 @@ export class GetEmployeeHandler
       query.employeeId.toString(),
     );
 
-    return EmployeeReadModelMapper.toReadModel(employee);
+    const employments = await this.repository.findEmploymentsByEmployeeIds(
+      query.tenantId,
+      [employee.id.toString()],
+    );
+
+    return EmployeeReadModelMapper.toReadModel(employee, employments);
   }
 }

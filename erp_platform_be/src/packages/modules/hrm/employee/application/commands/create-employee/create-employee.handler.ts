@@ -46,6 +46,39 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
       },
     });
 
+    // Auto-create initial Employment for the new employee
+    let empType = await this.prisma.employmentType.findFirst({
+      where: { tenantId: tenantId.toString() },
+    });
+    if (!empType) {
+      const { randomUUID } = require('crypto');
+      empType = await this.prisma.employmentType.create({
+        data: {
+          id: randomUUID(),
+          tenantId: tenantId.toString(),
+          code: 'STANDARD',
+          name: 'Standard',
+        },
+      });
+    }
+
+    const { randomUUID } = require('crypto');
+    await this.prisma.employment.create({
+      data: {
+        id: randomUUID(),
+        tenantId: tenantId.toString(),
+        employeeId: employee.id.toString(),
+        employmentTypeId: empType.id,
+        employeeCode: dto.employeeNo,
+        hireDate: (dto as any).joinDate ? new Date((dto as any).joinDate) : new Date(),
+        status: (dto as any).status === 'active' ? 'active' : 'probation',
+        metadata: {
+          departmentId: (dto as any).departmentId ?? '1',
+          jobTitleId: (dto as any).jobTitleId ?? '1',
+        },
+      },
+    });
+
     return employee.id;
   }
 }

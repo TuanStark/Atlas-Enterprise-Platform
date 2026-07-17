@@ -4,7 +4,7 @@ export class EmployeeNumber {
   private constructor(private readonly value: string) {}
 
   static create(value: string): EmployeeNumber {
-    if (!value.trim()) {
+    if (!value || typeof value !== 'string' || !value.trim()) {
       throw new BusinessRuleViolationException('Employee number is required.');
     }
 

@@ -30,6 +30,7 @@ function EmployeeFormPage() {
       const currentEmployment = employee.employments?.find(e => e.isCurrent) || employee.employments?.[0];
 
       form.setFieldsValue({
+        employeeNo: employee.employeeCode || (employee as any).employeeNo,
         lastName: employee.lastName,
         firstName: employee.firstName,
         email,
@@ -48,6 +49,7 @@ function EmployeeFormPage() {
     try {
       const values = await form.validateFields();
       const payload = {
+        employeeNo: values.employeeNo,
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
@@ -87,6 +89,11 @@ function EmployeeFormPage() {
         <Form form={form} layout="vertical" requiredMark="optional" size="large">
           <Divider orientationMargin={0} plain style={{ fontSize: 13, fontWeight: 600 }}>Thông tin cá nhân</Divider>
           <Row gutter={16}>
+            <Col xs={24} sm={24}>
+              <Form.Item name="employeeNo" label="Mã nhân viên" rules={[{ required: true, message: 'Vui lòng nhập mã nhân viên' }]}>
+                <Input placeholder="Ví dụ: NV001" disabled={isEdit} />
+              </Form.Item>
+            </Col>
             <Col xs={24} sm={12}>
               <Form.Item name="lastName" label="Họ" rules={[{ required: true, message: 'Vui lòng nhập họ' }]}>
                 <Input placeholder="Nguyễn" />

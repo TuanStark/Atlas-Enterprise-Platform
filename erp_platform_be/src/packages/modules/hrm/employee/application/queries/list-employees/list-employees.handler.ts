@@ -14,6 +14,22 @@ export class ListEmployeesHandler implements IQueryHandler<ListEmployeesQuery> {
 
   async execute(query: ListEmployeesQuery): Promise<EmployeeReadModel[]> {
     const employees = await this.repository.findAll(query.tenantId);
-    return employees.map(EmployeeReadModelMapper.toReadModel);
+    const employeeIds = employees.map((emp) => emp.id.toString());
+
+    const empRecords = await this.repository.findEmploymentsByEmployeeIds(
+      query.tenantId,
+      employeeIds,
+    );
+
+    const employmentsByEmployee = new Map<string, any[]>();
+    for (const e of empRecords) {
+      const list = employmentsByEmployee.get(e.employeeId) || [];
+      list.push(e);
+      employmentsByEmployee.set(e.employeeId, list);
+    }
+
+    return employees.map((employee) =>
+      EmployeeReadModelMapper.toReadModel(employee, employmentsByEmployee.get(employee.id.toString())),
+    );
   }
 }

@@ -21,6 +21,16 @@ export interface EmployeeReadModel {
   addresses: EmployeeAddressReadModel[];
   emergencyContacts: EmployeeEmergencyContactReadModel[];
   documents: EmployeeDocumentReadModel[];
+  employments?: {
+    id: string;
+    departmentName: string;
+    positionName: string;
+    jobTitleName: string;
+    employmentType: string;
+    startDate: Date;
+    endDate?: Date;
+    isCurrent: boolean;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }

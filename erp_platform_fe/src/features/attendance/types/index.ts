@@ -42,3 +42,37 @@ export interface CheckOutDto {
   deviceCode?: string;
   ipAddress?: string;
 }
+
+export interface Shift {
+  id: string;
+  code: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  breakMinutes?: number;
+  isFlexible?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ShiftAssignment {
+  id: string;
+  employmentId: string;
+  shiftId: string;
+  shift?: Shift;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  isPrimary?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  employment?: {
+    id: string;
+    employee?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      displayName: string;
+    };
+  };
+}
+

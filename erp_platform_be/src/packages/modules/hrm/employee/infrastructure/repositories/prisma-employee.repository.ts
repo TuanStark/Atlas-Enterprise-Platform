@@ -236,4 +236,65 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
 
     return records.map(EmployeePersistenceMapper.toDomain);
   }
+
+  async findEmploymentsByEmployeeIds(
+    tenantId: Identifier,
+    employeeIds: string[],
+  ): Promise<any[]> {
+    const empRecords = await this.prisma.employment.findMany({
+      where: {
+        employeeId: { in: employeeIds },
+        tenantId: tenantId.toString(),
+        deletedAt: null,
+      },
+      include: {
+        employmentType: true,
+        organizationAssignments: {
+          include: {
+            position: true,
+            jobTitle: true,
+          },
+        },
+      },
+    });
+
+    const deptIds = empRecords.flatMap((e) => e.organizationAssignments.map((oa) => oa.departmentId));
+    const departments = await this.prisma.organizationUnit.findMany({
+      where: { id: { in: deptIds } },
+    });
+    const deptMap = new Map(departments.map((d) => [d.id, d.name]));
+
+    const DEPARTMENTS: Record<string, string> = {
+      '1': 'Phòng IT',
+      '2': 'Phòng Nhân sự',
+      '3': 'Phòng Tài chính',
+      '4': 'Phòng Marketing',
+    };
+
+    const POSITIONS: Record<string, string> = {
+      '1': 'Senior Developer',
+      '2': 'Junior Developer',
+      '3': 'HR Manager',
+      '4': 'Accountant',
+    };
+
+    return empRecords.map((e) => {
+      const activeOa = e.organizationAssignments.find((oa) => oa.status === 'active') || e.organizationAssignments[0];
+      const meta = (e.metadata as any) || {};
+      const deptName = DEPARTMENTS[meta.departmentId] || (activeOa ? deptMap.get(activeOa.departmentId) : undefined) || '-';
+      const posName = POSITIONS[meta.jobTitleId] || activeOa?.position?.name || activeOa?.jobTitle?.name || '-';
+
+      return {
+        id: e.id,
+        employeeId: e.employeeId,
+        departmentName: deptName,
+        positionName: posName,
+        jobTitleName: posName,
+        employmentType: e.employmentType?.name || 'Standard',
+        startDate: e.hireDate,
+        endDate: e.terminationDate ?? undefined,
+        isCurrent: e.status === 'active' || e.status === 'probation',
+      };
+    });
+  }
 }
