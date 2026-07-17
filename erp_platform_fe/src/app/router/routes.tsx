@@ -19,6 +19,12 @@ const NotFoundPage = lazy(() => import('@pages/errors/NotFoundPage'));
 const ForbiddenPage = lazy(() => import('@pages/errors/ForbiddenPage'));
 const UnderConstructionPage = lazy(() => import('@pages/errors/UnderConstructionPage'));
 
+const PayrollPage = lazy(() => import('@pages/hrm/payroll/PayrollPage'));
+const RecruitmentPage = lazy(() => import('@pages/hrm/recruitment/RecruitmentPage'));
+const LeaveCalendarPage = lazy(() => import('@pages/hrm/leave/LeaveCalendarPage'));
+const PerformancePage = lazy(() => import('@pages/hrm/performance/PerformancePage'));
+const SettingsPage = lazy(() => import('@pages/admin/settings/SettingsPage'));
+
 /**
  * Route Definitions — Organized by module, matching backend structure
  *
@@ -60,13 +66,13 @@ export const routes: RouteObject[] = [
       { path: '/hrm/attendance', element: <AttendanceListPage /> },
 
       // HRM — Missing Pages (Mapped to Under Construction)
-      { path: '/hrm/payroll', element: <UnderConstructionPage /> },
-      { path: '/hrm/recruitment', element: <UnderConstructionPage /> },
-      { path: '/hrm/performance', element: <UnderConstructionPage /> },
+      { path: '/hrm/payroll', element: <PayrollPage /> },
+      { path: '/hrm/recruitment', element: <RecruitmentPage /> },
+      { path: '/hrm/performance', element: <PerformancePage /> },
       { path: '/hrm/training', element: <UnderConstructionPage /> },
       { path: '/hrm/shifts', element: <UnderConstructionPage /> },
       { path: '/hrm/timesheet', element: <UnderConstructionPage /> },
-      { path: '/hrm/leave-calendar', element: <UnderConstructionPage /> },
+      { path: '/hrm/leave-calendar', element: <LeaveCalendarPage /> },
       { path: '/hrm/payroll-runs', element: <UnderConstructionPage /> },
       { path: '/hrm/recruitment-board', element: <UnderConstructionPage /> },
       { path: '/hrm/performance-cycles', element: <UnderConstructionPage /> },
@@ -79,7 +85,7 @@ export const routes: RouteObject[] = [
       { path: '/admin/users', element: <UnderConstructionPage /> },
       { path: '/admin/roles', element: <UnderConstructionPage /> },
       { path: '/admin/workflows', element: <UnderConstructionPage /> },
-      { path: '/admin/settings', element: <UnderConstructionPage /> },
+      { path: '/admin/settings', element: <SettingsPage /> },
     ],
   },
 
