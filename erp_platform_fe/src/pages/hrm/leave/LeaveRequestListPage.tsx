@@ -115,16 +115,23 @@ function LeaveRequestListPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <Title level={4} style={{ marginBottom: 4 }}>Quản lý nghỉ phép</Title>
-          <Text type="secondary">Theo dõi và phê duyệt đơn xin nghỉ phép</Text>
+          <Title level={3} style={{ marginBottom: 4, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+            Quản lý nghỉ phép
+          </Title>
+          <Text type="secondary" style={{ fontSize: 14 }}>Theo dõi và phê duyệt đơn xin nghỉ phép của nhân viên.</Text>
         </div>
-        <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/hrm/leave-requests/new')}>
+        <Button
+          type="primary"
+          icon={<Plus size={14} />}
+          onClick={() => navigate('/hrm/leave-requests/new')}
+          style={{ height: 38, borderRadius: 8, fontWeight: 600 }}
+        >
           Tạo đơn nghỉ phép
         </Button>
       </div>
-      <Card style={{ borderRadius: 12, border: '1px solid var(--color-border-light)' }}>
+      <Card style={{ borderRadius: 16, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}>
         <Table columns={columns} dataSource={requests} rowKey="id" size="middle"
           pagination={{ pageSize: 20, showTotal: (total) => `Tổng ${total} đơn` }}
         />

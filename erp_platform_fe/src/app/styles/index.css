@@ -6,30 +6,30 @@
 
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
-  /* Primary Palette — Sky Blue / Teal Tech Accent */
-  --color-primary: #0ea5e9;
-  --color-primary-hover: #0284c7;
-  --color-primary-light: #f0f9ff;
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
+  /* Primary Palette — Royal Blue Tech Accent */
+  --color-primary: #0a65ff;
+  --color-primary-hover: #0052d4;
+  --color-primary-light: #f0f6ff;
+  --color-primary-50: #f0f6ff;
+  --color-primary-100: #e1eeff;
+  --color-primary-500: #0a65ff;
+  --color-primary-600: #0052d4;
+  --color-primary-700: #0043b3;
 
   /* Neutral Palette */
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #f8fafc;
   --color-bg-tertiary: #f1f5f9;
   --color-bg-sidebar: #ffffff;
-  --color-bg-sidebar-hover: #f1f5f9;
-  --color-bg-sidebar-active: #e0f2fe;
+  --color-bg-sidebar-hover: #f8fafc;
+  --color-bg-sidebar-active: #f0f6ff;
 
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
   --color-text-tertiary: #94a3b8;
-  --color-text-inverse: #0f172a;
+  --color-text-inverse: #ffffff;
   --color-text-sidebar: #64748b;
-  --color-text-sidebar-active: #0284c7;
+  --color-text-sidebar-active: #0a65ff;
 
   --color-border: #e2e8f0;
   --color-border-light: #f1f5f9;

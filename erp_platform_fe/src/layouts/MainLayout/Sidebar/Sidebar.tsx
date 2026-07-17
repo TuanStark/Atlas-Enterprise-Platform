@@ -14,6 +14,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -23,85 +24,48 @@ type MenuItem = Required<MenuProps>['items'][number];
 
 /**
  * Sidebar — Main navigation organized by backend module structure
- *
- * Menu items map 1:1 to backend modules:
- * - Dashboard (overview)
- * - HRM module (employees, leave, attendance, payroll, recruitment, performance, training)
- * - Organization module
- * - Admin module (users, roles, settings)
  */
-
 function getMenuItems(): MenuItem[] {
   return [
     {
       key: '/dashboard',
-      icon: <LayoutDashboard size={18} />,
-      label: 'Tổng quan',
+      icon: <LayoutDashboard size={16} />,
+      label: 'Dashboard',
     },
     {
       key: 'hrm',
-      icon: <Users size={18} />,
-      label: 'Nhân sự (HRM)',
+      icon: <Users size={16} />,
+      label: 'Employees',
       children: [
-        { key: '/hrm/employees', label: 'Nhân viên' },
-        { key: '/hrm/leave-requests', label: 'Nghỉ phép' },
-        { key: '/hrm/attendance', label: 'Chấm công' },
-        { key: '/hrm/payroll', label: 'Bảng lương' },
-        { key: '/hrm/recruitment', label: 'Tuyển dụng' },
-        { key: '/hrm/performance', label: 'Đánh giá' },
-        { key: '/hrm/training', label: 'Đào tạo' },
+        { key: '/hrm/employees', label: 'Employee List' },
+        { key: '/hrm/leave-requests', label: 'Leave Requests' },
+        { key: '/hrm/attendance', label: 'Attendance Records' },
       ],
     },
     {
-      key: 'time',
-      icon: <Clock size={18} />,
-      label: 'Thời gian',
-      children: [
-        { key: '/hrm/shifts', label: 'Ca làm việc' },
-        { key: '/hrm/timesheet', label: 'Bảng công' },
-      ],
+      key: '/hrm/payroll',
+      icon: <Wallet size={16} />,
+      label: 'Payroll',
+    },
+    {
+      key: '/hrm/recruitment',
+      icon: <UserPlus size={16} />,
+      label: 'Recruitment',
     },
     {
       key: '/hrm/leave-calendar',
-      icon: <CalendarDays size={18} />,
-      label: 'Lịch nghỉ',
+      icon: <CalendarDays size={16} />,
+      label: 'Leave Management',
     },
     {
-      key: '/hrm/payroll-runs',
-      icon: <Wallet size={18} />,
-      label: 'Tính lương',
+      key: '/hrm/performance',
+      icon: <Target size={16} />,
+      label: 'Performance',
     },
     {
-      key: '/hrm/recruitment-board',
-      icon: <UserPlus size={18} />,
-      label: 'Tuyển dụng',
-    },
-    {
-      key: '/hrm/performance-cycles',
-      icon: <Target size={18} />,
-      label: 'Hiệu suất',
-    },
-    {
-      key: '/hrm/training-courses',
-      icon: <GraduationCap size={18} />,
-      label: 'Đào tạo',
-    },
-    { type: 'divider' as const },
-    {
-      key: '/organization',
-      icon: <Building2 size={18} />,
-      label: 'Tổ chức',
-    },
-    {
-      key: 'admin',
-      icon: <Shield size={18} />,
-      label: 'Quản trị',
-      children: [
-        { key: '/admin/users', label: 'Người dùng' },
-        { key: '/admin/roles', label: 'Vai trò & Quyền' },
-        { key: '/admin/workflows', label: 'Quy trình' },
-        { key: '/admin/settings', label: 'Cấu hình' },
-      ],
+      key: '/admin/settings',
+      icon: <Shield size={16} />,
+      label: 'Settings',
     },
   ];
 }
@@ -134,13 +98,13 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
   return (
     <Sider
       className="sidebar"
-      width={260}
+      width={240}
       collapsedWidth={72}
       collapsed={collapsed}
       trigger={null}
       theme="light"
       style={{
-        overflow: 'auto',
+        overflow: 'hidden',
         height: '100vh',
         position: 'fixed',
         left: 0,
@@ -149,31 +113,59 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
         zIndex: 'var(--z-sticky)' as unknown as number,
       }}
     >
-      {/* Logo */}
-      <div className="sidebar__logo">
-        <div className="sidebar__logo-icon">A</div>
-        {!collapsed && <span className="sidebar__logo-text">Atlas ERP</span>}
+      <div className="sidebar__container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Logo */}
+        <div className="sidebar__logo">
+          <div className="sidebar__logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 18C9.33 18 4.67 19.33 4.67 22C6.24 23.55 8.5 24.5 11 24.5C13.5 24.5 15.76 23.55 17.33 22C17.33 19.33 12.67 18 12 18Z" fill="currentColor"/>
+              <circle cx="6" cy="9" r="1.5" fill="currentColor"/>
+              <circle cx="18" cy="9" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          {!collapsed && (
+            <div className="sidebar__logo-brand">
+              <span className="sidebar__logo-text">HRIMS</span>
+              <span className="sidebar__logo-subtext">Human Resource Information System</span>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Menu */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <Menu
+            theme="light"
+            mode="inline"
+            selectedKeys={selectedKeys}
+            defaultOpenKeys={openKeys}
+            items={getMenuItems()}
+            onClick={handleMenuClick}
+            className="sidebar__menu"
+          />
+        </div>
+
+        {/* Safety Badge */}
+        {!collapsed && (
+          <div className="sidebar__security-badge">
+            <div className="sidebar__security-icon">
+              <ShieldCheck size={16} />
+            </div>
+            <div className="sidebar__security-info">
+              <span className="sidebar__security-title">Your data is secure</span>
+              <span className="sidebar__security-desc">We keep your data safe and compliant.</span>
+            </div>
+          </div>
+        )}
+
+        {/* Collapse Toggle */}
+        <button
+          className="sidebar__collapse-btn"
+          onClick={() => onCollapse(!collapsed)}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
       </div>
-
-      {/* Navigation Menu */}
-      <Menu
-        theme="light"
-        mode="inline"
-        selectedKeys={selectedKeys}
-        defaultOpenKeys={openKeys}
-        items={getMenuItems()}
-        onClick={handleMenuClick}
-        className="sidebar__menu"
-      />
-
-      {/* Collapse Toggle */}
-      <button
-        className="sidebar__collapse-btn"
-        onClick={() => onCollapse(!collapsed)}
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
     </Sider>
   );
 }

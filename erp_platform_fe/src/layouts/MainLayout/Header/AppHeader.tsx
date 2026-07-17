@@ -1,4 +1,4 @@
-import { Layout, Avatar, Dropdown, Badge, Space, Typography } from 'antd';
+import { Layout, Avatar, Dropdown, Badge, Space, Typography, Input } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   Bell,
@@ -6,6 +6,9 @@ import {
   LogOut,
   User,
   Settings,
+  Search,
+  MessageSquare,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuth, useCurrentUser } from '@features/auth/hooks/useAuth';
 import './AppHeader.css';
@@ -20,8 +23,7 @@ interface AppHeaderProps {
 
 /**
  * AppHeader — Top navigation bar
- *
- * Contains: Sidebar toggle, breadcrumb area, notifications, user menu
+ * Contains: Sidebar toggle, search bar (⌘K), notifications, user profile info
  */
 export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
   const user = useCurrentUser();
@@ -53,32 +55,48 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
     }
   };
 
-  // Get user initials for avatar
-  const initials = user?.displayName
-    ? user.displayName
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : 'U';
+  const displayName = user?.displayName || 'Spencer';
+  const roleName = user?.email?.includes('admin') ? 'Admin' : 'Quản trị viên';
 
   return (
-    <Header className="app-header">
+    <Header className={`app-header ${collapsed ? 'app-header--collapsed' : ''}`}>
+      {/* Left side: toggle button and search box */}
       <div className="app-header__left">
         <button
           className="app-header__menu-btn"
           onClick={onToggleCollapse}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <MenuIcon size={20} />
+          <MenuIcon size={18} />
         </button>
+
+        <div className="app-header__search-container">
+          <Input
+            placeholder="Search reports, dashboards, exports..."
+            prefix={<Search size={14} style={{ color: 'var(--color-text-tertiary)', marginRight: 4 }} />}
+            suffix={<span className="app-header__search-shortcut">⌘ K</span>}
+            className="app-header__search-input"
+          />
+        </div>
       </div>
 
+      {/* Right side: quick actions, chat, notifications, user avatar */}
       <div className="app-header__right">
+        {/* Help icon */}
+        <button className="app-header__icon-btn" aria-label="Help">
+          <HelpCircle size={18} />
+        </button>
+
+        {/* Chat / Messages icon */}
+        <button className="app-header__icon-btn" aria-label="Messages">
+          <Badge count={2} size="small" offset={[-2, 2]} color="var(--color-primary)">
+            <MessageSquare size={18} />
+          </Badge>
+        </button>
+
         {/* Notifications */}
         <button className="app-header__icon-btn" aria-label="Notifications">
-          <Badge count={3} size="small" offset={[-2, 2]}>
+          <Badge count={3} size="small" offset={[-2, 2]} color="var(--color-primary)">
             <Bell size={18} />
           </Badge>
         </button>
@@ -91,21 +109,18 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
         >
           <Space className="app-header__user" role="button" tabIndex={0}>
             <Avatar
-              size={32}
+              size={36}
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
               style={{
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                fontSize: '13px',
-                fontWeight: 600,
+                border: '2px solid #e2e8f0',
               }}
-            >
-              {initials}
-            </Avatar>
+            />
             <div className="app-header__user-info">
-              <Text strong style={{ fontSize: 13, lineHeight: '18px' }}>
-                {user?.displayName || 'User'}
+              <Text strong style={{ fontSize: 13, lineHeight: '16px', display: 'block', color: 'var(--color-text-primary)' }}>
+                {displayName}
               </Text>
-              <Text type="secondary" style={{ fontSize: 11, lineHeight: '14px' }}>
-                {user?.email || ''}
+              <Text type="secondary" style={{ fontSize: 10, lineHeight: '12px', display: 'block' }}>
+                {roleName}
               </Text>
             </div>
           </Space>

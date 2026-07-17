@@ -19,7 +19,7 @@ export function MainLayout() {
   return (
     <Layout className="main-layout">
       <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
-      <Layout className="main-layout__body">
+      <Layout className={`main-layout__body ${collapsed ? 'main-layout__body--collapsed' : ''}`}>
         <AppHeader collapsed={collapsed} onToggleCollapse={() => setCollapsed(!collapsed)} />
         <Content className="main-layout__content">
           <div className="main-layout__content-inner">

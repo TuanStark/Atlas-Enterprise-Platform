@@ -9,11 +9,11 @@ import type { ThemeConfig } from 'antd';
 export const atlasTheme: ThemeConfig = {
   token: {
     // Primary
-    colorPrimary: '#4f46e5',
-    colorPrimaryHover: '#4338ca',
-    colorPrimaryActive: '#3730a3',
-    colorPrimaryBg: '#eef2ff',
-    colorPrimaryBgHover: '#e0e7ff',
+    colorPrimary: '#0a65ff',
+    colorPrimaryHover: '#0052d4',
+    colorPrimaryActive: '#0043b3',
+    colorPrimaryBg: '#f0f6ff',
+    colorPrimaryBgHover: '#e1eeff',
 
     // Success / Warning / Error / Info
     colorSuccess: '#10b981',
@@ -34,9 +34,9 @@ export const atlasTheme: ThemeConfig = {
     fontSizeLG: 16,
 
     // Border
-    borderRadius: 6,
-    borderRadiusLG: 8,
-    borderRadiusSM: 4,
+    borderRadius: 8,
+    borderRadiusLG: 12,
+    borderRadiusSM: 6,
     colorBorder: '#e2e8f0',
     colorBorderSecondary: '#f1f5f9',
 
@@ -53,9 +53,9 @@ export const atlasTheme: ThemeConfig = {
 
     // Shadows
     boxShadow:
-      '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
+      '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
     boxShadowSecondary:
-      '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+      '0 4px 12px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.02)',
 
     // Spacing
     padding: 16,
@@ -75,9 +75,9 @@ export const atlasTheme: ThemeConfig = {
     motionDurationSlow: '0.35s',
 
     // Control
-    controlHeight: 36,
-    controlHeightLG: 42,
-    controlHeightSM: 30,
+    controlHeight: 38,
+    controlHeightLG: 44,
+    controlHeightSM: 32,
 
     // Line
     lineHeight: 1.5,
@@ -86,7 +86,7 @@ export const atlasTheme: ThemeConfig = {
   },
   components: {
     Layout: {
-      siderBg: '#0f172a',
+      siderBg: '#ffffff',
       headerBg: '#ffffff',
       bodyBg: '#f8fafc',
       headerHeight: 60,
@@ -95,20 +95,25 @@ export const atlasTheme: ThemeConfig = {
     Menu: {
       darkItemBg: '#0f172a',
       darkItemHoverBg: '#1e293b',
-      darkItemSelectedBg: 'rgba(79, 70, 229, 0.15)',
+      darkItemSelectedBg: 'rgba(10, 101, 255, 0.15)',
       darkItemColor: '#cbd5e1',
       darkItemSelectedColor: '#ffffff',
-      itemBorderRadius: 6,
+      itemBg: '#ffffff',
+      itemSelectedBg: '#f0f6ff',
+      itemSelectedColor: '#0a65ff',
+      itemHoverBg: '#f8fafc',
+      itemColor: '#64748b',
+      itemBorderRadius: 8,
       itemMarginInline: 8,
       itemPaddingInline: 16,
       iconSize: 18,
     },
     Button: {
-      primaryShadow: '0 2px 4px rgba(79, 70, 229, 0.3)',
-      borderRadius: 6,
-      controlHeight: 36,
-      controlHeightLG: 42,
-      controlHeightSM: 30,
+      primaryShadow: '0 2px 4px rgba(10, 101, 255, 0.25)',
+      borderRadius: 8,
+      controlHeight: 38,
+      controlHeightLG: 44,
+      controlHeightSM: 32,
     },
     Table: {
       headerBg: '#f8fafc',
@@ -120,19 +125,19 @@ export const atlasTheme: ThemeConfig = {
       cellPaddingInline: 16,
     },
     Card: {
-      borderRadiusLG: 12,
+      borderRadiusLG: 16,
       paddingLG: 24,
       boxShadowTertiary:
-        '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
+        '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02)',
     },
     Input: {
-      controlHeight: 36,
-      borderRadius: 6,
-      activeShadow: '0 0 0 3px rgba(79, 70, 229, 0.1)',
+      controlHeight: 38,
+      borderRadius: 8,
+      activeShadow: '0 0 0 3px rgba(10, 101, 255, 0.1)',
     },
     Select: {
-      controlHeight: 36,
-      borderRadius: 6,
+      controlHeight: 38,
+      borderRadius: 8,
     },
     Modal: {
       borderRadiusLG: 12,

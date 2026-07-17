@@ -1,11 +1,16 @@
 import { useState } from 'react';
-import { Row, Col, Card, Statistic, Typography, List, Avatar, Tag, Space, Checkbox } from 'antd';
+import { Row, Col, Card, Statistic, Typography, List, Avatar, Tag, Space, Checkbox, Spin, Empty, Popconfirm } from 'antd';
 import {
   Users,
   TrendingUp,
   UserPlus,
   FileCheck,
   PlusCircle,
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  CheckCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -26,9 +31,8 @@ const { Title, Text } = Typography;
 import { useEmployees } from '@features/employee/hooks/useEmployee';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
 import { useAttendanceRecords } from '@features/attendance/hooks/useAttendance';
-import { Spin, Empty, Popconfirm } from 'antd';
 
-const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
+const COLORS = ['#0a65ff', '#10b981', '#a855f7', '#f59e0b', '#06b6d4'];
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -43,6 +47,7 @@ function DashboardPage() {
     { id: 1, text: 'Phê duyệt các đơn xin nghỉ phép', checked: false },
     { id: 2, text: 'Chốt bảng công ca làm việc tháng', checked: false },
     { id: 3, text: 'Đánh giá ứng viên ứng tuyển mới', checked: true },
+    { id: 4, text: 'Cập nhật cấu hình bảo mật MFA hệ thống', checked: false },
   ]);
 
   const isLoading = isLoadingEmployees || isLoadingLeaves || isLoadingAttendance;
@@ -67,10 +72,14 @@ function DashboardPage() {
   const departmentData = Object.keys(deptCounts).length > 0 
     ? Object.entries(deptCounts).map(([name, value]) => ({ name, value }))
     : [
-        { name: 'Phòng IT', value: 12 },
-        { name: 'Phòng Nhân sự', value: 3 },
-        { name: 'Phòng Marketing', value: 5 },
+        { name: 'Engineering', value: 362 },
+        { name: 'Human Resources', value: 224 },
+        { name: 'Sales', value: 250 },
+        { name: 'Finance', value: 168 },
+        { name: 'Operations', value: 244 },
       ];
+
+  const totalDeptValue = departmentData.reduce((acc, curr) => acc + curr.value, 0);
 
   // Headcount growth trend (12 months)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -86,40 +95,44 @@ function DashboardPage() {
   const growthData = months.map((month, idx) => {
     cumulative += monthlyHires[idx];
     // Fallback base values so graph has nice shape even if no database data
-    const fallbackBase = idx * 2 + 5;
-    return { month, Headcount: Math.max(fallbackBase, cumulative) };
+    const fallbackBase = Math.floor(1100 + idx * 25 + Math.sin(idx) * 15);
+    return { month, Headcount: Math.max(fallbackBase, totalEmployees ? totalEmployees + cumulative : fallbackBase) };
   });
 
   const stats = [
     {
-      title: 'Tổng nhân viên',
-      value: totalEmployees || 1450,
+      title: 'Total Employees',
+      value: totalEmployees || '1,248',
       icon: <Users size={20} />,
-      trend: { value: 12, isUp: true, text: 'thành viên mới' },
-      color: '#0ea5e9',
-      bgColor: '#f0f9ff',
+      trend: { value: '5.2%', isUp: true },
+      trendText: 'vs last month',
+      color: '#0a65ff',
+      bgColor: '#f0f6ff',
     },
     {
-      title: 'Tuyển dụng mới',
-      value: newHires || 12,
-      icon: <UserPlus size={20} />,
-      trend: { value: 8, isUp: true, text: 'tháng này' },
+      title: 'Attendance Rate',
+      value: '94.6%',
+      icon: <TrendingUp size={20} />,
+      trend: { value: '2.3%', isUp: true },
+      trendText: 'vs last week',
       color: '#10b981',
       bgColor: '#ecfdf5',
     },
     {
-      title: 'Vị trí đang mở',
-      value: 35,
-      icon: <TrendingUp size={20} />,
-      trend: { value: 2, isUp: true, text: 'tuần này' },
-      color: '#8b5cf6',
-      bgColor: '#f5f3ff',
+      title: 'Open Positions',
+      value: 24,
+      icon: <UserPlus size={20} />,
+      trend: { value: '9.1%', isUp: true },
+      trendText: 'vs last month',
+      color: '#a855f7',
+      bgColor: '#faf5ff',
     },
     {
-      title: 'Đơn chờ duyệt',
-      value: pendingLeavesCount,
+      title: 'Pending Approvals',
+      value: pendingLeavesCount || '3',
       icon: <FileCheck size={20} />,
-      trend: { value: pendingLeavesCount, isUp: pendingLeavesCount > 0, text: 'yêu cầu' },
+      trend: { value: pendingLeavesCount ? `${pendingLeavesCount} đơn` : 'Đang xử lý', isUp: pendingLeavesCount > 0 },
+      trendText: 'yêu cầu mới',
       color: '#f59e0b',
       bgColor: '#fffbeb',
     },
@@ -171,7 +184,7 @@ function DashboardPage() {
       leave: '#f59e0b',
       approve: '#10b981',
       update: '#ef4444',
-      checkin: '#0ea5e9',
+      checkin: '#0a65ff',
     };
     return colors[type] || '#94a3b8';
   }
@@ -179,7 +192,7 @@ function DashboardPage() {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-        <Spin size="large" tip="Đang tải dữ liệu tổng quan..." />
+        <Spin size="large" tip="Đang tải dữ liệu tổng quan..." color="var(--color-primary)" />
       </div>
     );
   }
@@ -189,11 +202,11 @@ function DashboardPage() {
       {/* Page Header */}
       <div className="dashboard-page__header">
         <div>
-          <Title level={3} style={{ marginBottom: 4, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            Bảng điều khiển
+          <Title level={3} style={{ marginBottom: 4, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text-primary)' }}>
+            Welcome back, Spencer
           </Title>
-          <Text type="secondary" style={{ fontSize: 14 }}>
-            Chào mừng trở lại! Xem nhanh các chỉ số vận hành nhân sự hôm nay.
+          <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+            Here is what's happening in your organization today.
           </Text>
         </div>
         <button className="dashboard-page__action-btn" onClick={() => navigate('/hrm/employees/new')}>
@@ -209,23 +222,18 @@ function DashboardPage() {
             <Card className="dashboard-page__stat-card" hoverable>
               <div className="dashboard-page__stat-content">
                 <div className="dashboard-page__stat-info">
-                  <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                  <Text type="secondary" className="dashboard-page__stat-title">
                     {stat.title}
                   </Text>
-                  <div className="dashboard-page__stat-value-row">
-                    <Statistic
-                      value={stat.value}
-                      valueStyle={{
-                        fontSize: 28,
-                        fontWeight: 700,
-                        lineHeight: '36px',
-                        color: 'var(--color-text-primary)',
-                        letterSpacing: '-0.03em',
-                      }}
-                    />
-                    <span className="dashboard-page__stat-badge">
-                      {stat.trend.isUp ? '+' : ''}{stat.trend.value} {stat.trend.text}
-                    </span>
+                  <div className="dashboard-page__stat-value-container">
+                    <span className="dashboard-page__stat-value">{stat.value}</span>
+                    <div className="dashboard-page__stat-trend-row">
+                      <span className={`dashboard-page__stat-trend-badge ${stat.trend.isUp ? 'trend-up' : 'trend-down'}`}>
+                        {stat.trend.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                        {stat.trend.value}
+                      </span>
+                      <span className="dashboard-page__stat-trend-text">{stat.trendText}</span>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -241,37 +249,46 @@ function DashboardPage() {
       </Row>
 
       {/* Visual Chart Grid */}
-      <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
-        {/* Headcount by Department */}
+      <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
+        {/* Headcount by Department (Donut) */}
         <Col xs={24} lg={8}>
-          <Card title="Cơ cấu nhân sự theo Phòng ban" className="dashboard-page__card">
-            <div style={{ height: 220, position: 'relative' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={departmentData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {departmentData.map((_entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)' }} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+          <Card title="Employees by Department" className="dashboard-page__card">
+            <div className="dashboard-page__chart-donut-container">
+              <div className="dashboard-page__chart-donut-wrapper">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={departmentData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={65}
+                      outerRadius={85}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {departmentData.map((_entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Content */}
+                <div className="donut-center-label">
+                  <span className="donut-center-value">{totalDeptValue}</span>
+                  <span className="donut-center-text">Total</span>
+                </div>
+              </div>
             </div>
+            {/* Custom Styled Legends */}
             <div className="dashboard-page__legend-grid">
               {departmentData.map((dept, index) => (
                 <div key={dept.name} className="dashboard-page__legend-item">
                   <span className="legend-dot" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                   <span className="legend-name">{dept.name}</span>
+                  <span className="legend-percent">{Math.round((dept.value / totalDeptValue) * 100)}%</span>
                   <span className="legend-val">{dept.value}</span>
                 </div>
               ))}
@@ -279,22 +296,41 @@ function DashboardPage() {
           </Card>
         </Col>
 
-        {/* Employee Growth */}
+        {/* Employee Growth (Area Chart) */}
         <Col xs={24} lg={10}>
-          <Card title="Xu hướng tăng trưởng nhân sự" className="dashboard-page__card">
-            <div style={{ height: 260 }}>
+          <Card title="Monthly Headcount Trend" className="dashboard-page__card">
+            <div style={{ height: 260, marginTop: 10 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorHeadcount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#0a65ff" stopOpacity={0.15}/>
+                      <stop offset="95%" stopColor="#0a65ff" stopOpacity={0.005}/>
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} style={{ fontSize: 11, fill: 'var(--color-text-tertiary)' }} />
-                  <YAxis axisLine={false} tickLine={false} style={{ fontSize: 11, fill: 'var(--color-text-tertiary)' }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)' }} />
-                  <Area type="monotone" dataKey="Headcount" stroke="#0ea5e9" strokeWidth={2.5} fillOpacity={1} fill="url(#colorHeadcount)" />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }} 
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    domain={['dataMin - 100', 'dataMax + 100']}
+                    style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }} 
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }} 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="Headcount" 
+                    stroke="#0a65ff" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#colorHeadcount)" 
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -303,7 +339,7 @@ function DashboardPage() {
 
         {/* To-Do List */}
         <Col xs={24} lg={6}>
-          <Card title="Việc cần làm" className="dashboard-page__card">
+          <Card title="Action Items" className="dashboard-page__card">
             <List
               dataSource={todoList}
               renderItem={(item) => (
@@ -311,7 +347,12 @@ function DashboardPage() {
                   <Checkbox 
                     checked={item.checked} 
                     onChange={() => handleToggleTodo(item.id)}
-                    style={{ textDecoration: item.checked ? 'line-through' : 'none', color: item.checked ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', fontSize: 13 }}
+                    style={{ 
+                      textDecoration: item.checked ? 'line-through' : 'none', 
+                      color: item.checked ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', 
+                      fontSize: 13,
+                      fontWeight: item.checked ? 400 : 500
+                    }}
                   >
                     {item.text}
                   </Checkbox>
@@ -323,7 +364,7 @@ function DashboardPage() {
       </Row>
 
       {/* Content Grid */}
-      <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+      <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
         {/* Recent Activities */}
         <Col xs={24} lg={14}>
           <Card title="Hoạt động gần đây" className="dashboard-page__card">
@@ -341,7 +382,7 @@ function DashboardPage() {
                           size={36}
                           style={{
                             background: getTypeColor(item.type),
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: 600,
                             color: 'white',
                           }}
@@ -350,14 +391,15 @@ function DashboardPage() {
                         </Avatar>
                       }
                       title={
-                        <Text style={{ fontSize: 13 }}>
+                        <Text style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>
                           <Text strong>{item.user}</Text> {item.action}
                         </Text>
                       }
                       description={
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {item.time}
-                        </Text>
+                        <Space size={6} style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+                          <Clock size={12} />
+                          <span>{item.time}</span>
+                        </Space>
                       }
                     />
                   </List.Item>
@@ -373,7 +415,7 @@ function DashboardPage() {
             title={
               <Space>
                 <span>Đơn chờ phê duyệt</span>
-                <Tag color="orange" style={{ borderRadius: 6 }}>{pendingLeavesCount}</Tag>
+                <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600 }}>{pendingLeavesCount}</Tag>
               </Space>
             }
             className="dashboard-page__card"
@@ -424,7 +466,7 @@ function DashboardPage() {
                         }
                         description={
                           <Space size={4}>
-                            <Tag color="blue" style={{ fontSize: 11, borderRadius: 4 }}>
+                            <Tag color="blue-light" style={{ fontSize: 10, borderRadius: 4, border: 'none', background: '#f0f6ff', color: '#0a65ff', fontWeight: 600 }}>
                               {item.leaveType?.name || 'Phép năm'}
                             </Tag>
                             <Text type="secondary" style={{ fontSize: 12 }}>
