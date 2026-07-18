@@ -11,8 +11,5 @@ export interface EmployeeRepository {
   findByEmployeeNo(tenantId: Identifier, employeeNo: string): Promise<Employee | null>;
   existsByEmployeeNo(tenantId: Identifier, employeeNo: string): Promise<boolean>;
   findAll(tenantId: Identifier): Promise<Employee[]>;
-  findEmploymentsByEmployeeIds(
-    tenantId: Identifier,
-    employeeIds: string[],
-  ): Promise<any[]>;
+  findEmploymentsByEmployeeIds(tenantId: Identifier, employeeIds: string[]): Promise<any[]>;
 }

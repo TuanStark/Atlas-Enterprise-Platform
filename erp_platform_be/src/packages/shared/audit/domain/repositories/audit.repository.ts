@@ -13,7 +13,16 @@ export interface AuditLogCreateInput {
   targetModule?: string;
   targetEntity?: string;
   targetRecordId?: string;
-  action: 'create' | 'update' | 'delete' | 'login' | 'logout' | 'approve' | 'reject' | 'export' | 'import';
+  action:
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'login'
+    | 'logout'
+    | 'approve'
+    | 'reject'
+    | 'export'
+    | 'import';
   actorPrincipalId?: string;
   ipAddress?: string;
   userAgent?: string;

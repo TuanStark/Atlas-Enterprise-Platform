@@ -5,7 +5,11 @@ import { CurrentContext } from '@core/identity/presentation/decorators/current-c
 import type { RequestContext } from '@shared-kernel/application/request-context';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { CreateNotificationDto, NotificationDto } from '../../application/dto/notification.dto';
-import { CreateNotificationCommand, MarkNotificationAsReadCommand, MarkAllNotificationsAsReadCommand } from '../../application/commands/notification.commands';
+import {
+  CreateNotificationCommand,
+  MarkNotificationAsReadCommand,
+  MarkAllNotificationsAsReadCommand,
+} from '../../application/commands/notification.commands';
 import { ListNotificationsForUserQuery } from '../../application/queries/notification.queries';
 import { RequirePermission } from '@core/rbac/presentation/decorators/require-permission.decorator';
 
@@ -47,7 +51,9 @@ export class NotificationController {
   @ApiOperation({ summary: 'List notifications for current user' })
   @ApiOkResponse({ type: [NotificationDto] })
   async listMyNotifications(@CurrentContext() context: RequestContext): Promise<NotificationDto[]> {
-    return this.queryBus.execute(new ListNotificationsForUserQuery(Identifier.create(context.principalId)));
+    return this.queryBus.execute(
+      new ListNotificationsForUserQuery(Identifier.create(context.principalId)),
+    );
   }
 
   @Patch(':recipientId/read')
@@ -55,7 +61,9 @@ export class NotificationController {
   @ApiOperation({ summary: 'Mark notification as read' })
   @ApiOkResponse({ description: 'Notification marked as read' })
   async readOne(@Param('recipientId') recipientId: string): Promise<void> {
-    await this.commandBus.execute(new MarkNotificationAsReadCommand(Identifier.create(recipientId)));
+    await this.commandBus.execute(
+      new MarkNotificationAsReadCommand(Identifier.create(recipientId)),
+    );
   }
 
   @Post('read-all')
@@ -63,6 +71,8 @@ export class NotificationController {
   @ApiOperation({ summary: 'Mark all notifications as read' })
   @ApiOkResponse({ description: 'All notifications marked as read' })
   async readAll(@CurrentContext() context: RequestContext): Promise<void> {
-    await this.commandBus.execute(new MarkAllNotificationsAsReadCommand(Identifier.create(context.principalId)));
+    await this.commandBus.execute(
+      new MarkAllNotificationsAsReadCommand(Identifier.create(context.principalId)),
+    );
   }
 }

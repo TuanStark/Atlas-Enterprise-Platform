@@ -223,9 +223,9 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     // 6. Seed mock HRM data (Departments, Positions, Job Titles)
     this.logger.log('Seeding mock HRM master data...');
-    
+
     let org = await this.prisma.organization.findFirst({
-      where: { tenantId: tenant.id }
+      where: { tenantId: tenant.id },
     });
     if (!org) {
       org = await this.prisma.organization.create({
@@ -236,13 +236,13 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           name: 'Default Organization',
           isActive: true,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
     }
 
     let unitType = await this.prisma.organizationUnitType.findUnique({
-      where: { code: 'DEPT' }
+      where: { code: 'DEPT' },
     });
     if (!unitType) {
       unitType = await this.prisma.organizationUnitType.create({
@@ -250,7 +250,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           id: randomUUID(),
           code: 'DEPT',
           name: 'Department',
-        }
+        },
       });
     }
 
@@ -273,8 +273,8 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
             name: dept.name,
             isActive: true,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
       }
     }
@@ -296,8 +296,8 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
             code: pos.code,
             name: pos.name,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
       }
 
@@ -311,8 +311,8 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
             name: pos.name,
             isActive: true,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
       }
     }

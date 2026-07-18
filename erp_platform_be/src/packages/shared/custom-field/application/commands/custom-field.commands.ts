@@ -2,7 +2,11 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { CUSTOM_FIELD_REPOSITORY } from '../../domain/repositories/custom-field.repository';
-import type { CustomFieldRepository, CustomFieldDefinitionCreateInput, CustomFieldValueSaveInput } from '../../domain/repositories/custom-field.repository';
+import type {
+  CustomFieldRepository,
+  CustomFieldDefinitionCreateInput,
+  CustomFieldValueSaveInput,
+} from '../../domain/repositories/custom-field.repository';
 
 export class CreateCustomFieldDefinitionCommand {
   constructor(public readonly input: CustomFieldDefinitionCreateInput) {}

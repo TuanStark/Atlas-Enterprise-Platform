@@ -30,7 +30,8 @@ export class ListCommentsHandler implements IQueryHandler<ListCommentsQuery> {
     );
 
     return comments.map((comment) => {
-      const authorName = comment.authorPrincipal?.user?.username || comment.authorPrincipal?.user?.email || 'User';
+      const authorName =
+        comment.authorPrincipal?.user?.username || comment.authorPrincipal?.user?.email || 'User';
       return {
         id: comment.id,
         tenantId: comment.tenantId,

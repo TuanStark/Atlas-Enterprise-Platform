@@ -18,21 +18,22 @@ export class PrismaAuditRepository implements AuditRepository {
         targetModule: logData.targetModule,
         targetEntity: logData.targetEntity,
         targetRecordId: logData.targetRecordId,
-        action: logData.action as AuditAction,
+        action: logData.action,
         actorPrincipalId: logData.actorPrincipalId,
         ipAddress: logData.ipAddress,
         userAgent: logData.userAgent,
         requestId: logData.requestId,
         metadata: logData.metadata || undefined,
-        auditLogAuditDetails: details && details.length > 0 
-          ? {
-              create: details.map((d) => ({
-                fieldName: d.fieldName,
-                oldValue: d.oldValue,
-                newValue: d.newValue,
-              })),
-            }
-          : undefined,
+        auditLogAuditDetails:
+          details && details.length > 0
+            ? {
+                create: details.map((d) => ({
+                  fieldName: d.fieldName,
+                  oldValue: d.oldValue,
+                  newValue: d.newValue,
+                })),
+              }
+            : undefined,
       },
     });
   }

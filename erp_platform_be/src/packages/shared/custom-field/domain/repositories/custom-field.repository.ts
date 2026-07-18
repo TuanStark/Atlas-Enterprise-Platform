@@ -8,7 +8,20 @@ export interface CustomFieldDefinitionCreateInput {
   targetEntity: string;
   code: string;
   name: string;
-  fieldType: 'text' | 'textarea' | 'number' | 'decimal' | 'boolean' | 'date' | 'datetime' | 'email' | 'phone' | 'url' | 'select' | 'multiselect' | 'json';
+  fieldType:
+    | 'text'
+    | 'textarea'
+    | 'number'
+    | 'decimal'
+    | 'boolean'
+    | 'date'
+    | 'datetime'
+    | 'email'
+    | 'phone'
+    | 'url'
+    | 'select'
+    | 'multiselect'
+    | 'json';
   isRequired?: boolean;
   defaultValue?: string;
   validationRules?: any;

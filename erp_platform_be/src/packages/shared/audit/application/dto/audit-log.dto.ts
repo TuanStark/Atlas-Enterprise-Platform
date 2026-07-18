@@ -30,7 +30,19 @@ export class AuditLogDto {
   @ApiProperty({ required: false })
   targetRecordId?: string;
 
-  @ApiProperty({ enum: ['create', 'update', 'delete', 'login', 'logout', 'approve', 'reject', 'export', 'import'] })
+  @ApiProperty({
+    enum: [
+      'create',
+      'update',
+      'delete',
+      'login',
+      'logout',
+      'approve',
+      'reject',
+      'export',
+      'import',
+    ],
+  })
   action: string;
 
   @ApiProperty({ required: false })

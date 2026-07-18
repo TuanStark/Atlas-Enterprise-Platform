@@ -1,7 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { WORKFLOW_REPOSITORY } from '../../domain/repositories/workflow.repository';
-import type { WorkflowRepository, WorkflowInstanceStartInput } from '../../domain/repositories/workflow.repository';
+import type {
+  WorkflowRepository,
+  WorkflowInstanceStartInput,
+} from '../../domain/repositories/workflow.repository';
 
 export class StartWorkflowInstanceCommand {
   constructor(public readonly input: WorkflowInstanceStartInput) {}

@@ -20,7 +20,8 @@ export class ListAuditLogsHandler implements IQueryHandler<ListAuditLogsQuery> {
     const logs = await this.repository.findAll(query.tenantId);
 
     return logs.map((log) => {
-      const actorName = log.actorPrincipal?.user?.username || log.actorPrincipal?.user?.email || 'System';
+      const actorName =
+        log.actorPrincipal?.user?.username || log.actorPrincipal?.user?.email || 'System';
       return {
         id: log.id,
         tenantId: log.tenantId,

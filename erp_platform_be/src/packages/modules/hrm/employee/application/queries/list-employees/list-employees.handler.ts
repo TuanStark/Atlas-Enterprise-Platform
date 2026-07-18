@@ -29,7 +29,10 @@ export class ListEmployeesHandler implements IQueryHandler<ListEmployeesQuery> {
     }
 
     return employees.map((employee) =>
-      EmployeeReadModelMapper.toReadModel(employee, employmentsByEmployee.get(employee.id.toString())),
+      EmployeeReadModelMapper.toReadModel(
+        employee,
+        employmentsByEmployee.get(employee.id.toString()),
+      ),
     );
   }
 }

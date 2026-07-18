@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { WorkflowRepository, WorkflowInstanceStartInput } from '../../domain/repositories/workflow.repository';
+import {
+  WorkflowRepository,
+  WorkflowInstanceStartInput,
+} from '../../domain/repositories/workflow.repository';
 import { WorkflowInstanceStatus } from '@prisma/client';
 
 @Injectable()

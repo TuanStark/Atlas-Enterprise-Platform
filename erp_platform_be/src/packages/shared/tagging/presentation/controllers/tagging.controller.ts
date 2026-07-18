@@ -4,9 +4,22 @@ import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestj
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
 import type { RequestContext } from '@shared-kernel/application/request-context';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { CreateTagDto, AssignTagDto, TagDto, TagAssignmentDto } from '../../application/dto/tagging.dto';
-import { CreateTagCommand, AssignTagCommand, RemoveTagAssignmentCommand, DeleteTagCommand } from '../../application/commands/tagging.commands';
-import { ListTagsQuery, ListAssignmentsForRecordQuery } from '../../application/queries/tagging.queries';
+import {
+  CreateTagDto,
+  AssignTagDto,
+  TagDto,
+  TagAssignmentDto,
+} from '../../application/dto/tagging.dto';
+import {
+  CreateTagCommand,
+  AssignTagCommand,
+  RemoveTagAssignmentCommand,
+  DeleteTagCommand,
+} from '../../application/commands/tagging.commands';
+import {
+  ListTagsQuery,
+  ListAssignmentsForRecordQuery,
+} from '../../application/queries/tagging.queries';
 import { RequirePermission } from '@core/rbac/presentation/decorators/require-permission.decorator';
 
 @ApiTags('Tags & Tagging')

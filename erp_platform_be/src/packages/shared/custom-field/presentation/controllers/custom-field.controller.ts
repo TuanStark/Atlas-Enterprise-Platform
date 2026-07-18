@@ -4,9 +4,21 @@ import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestj
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
 import type { RequestContext } from '@shared-kernel/application/request-context';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { CreateCustomFieldDefinitionDto, SaveCustomFieldValuesDto, CustomFieldDefinitionDto, CustomFieldValueDto } from '../../application/dto/custom-field.dto';
-import { CreateCustomFieldDefinitionCommand, DeleteCustomFieldDefinitionCommand, SaveCustomFieldValuesCommand } from '../../application/commands/custom-field.commands';
-import { ListCustomFieldDefinitionsQuery, GetCustomFieldValuesQuery } from '../../application/queries/custom-field.queries';
+import {
+  CreateCustomFieldDefinitionDto,
+  SaveCustomFieldValuesDto,
+  CustomFieldDefinitionDto,
+  CustomFieldValueDto,
+} from '../../application/dto/custom-field.dto';
+import {
+  CreateCustomFieldDefinitionCommand,
+  DeleteCustomFieldDefinitionCommand,
+  SaveCustomFieldValuesCommand,
+} from '../../application/commands/custom-field.commands';
+import {
+  ListCustomFieldDefinitionsQuery,
+  GetCustomFieldValuesQuery,
+} from '../../application/queries/custom-field.queries';
 import { RequirePermission } from '@core/rbac/presentation/decorators/require-permission.decorator';
 
 @ApiTags('Custom Fields')
@@ -74,9 +86,7 @@ export class CustomFieldController {
   @RequirePermission('shared.custom-field:write')
   @ApiOperation({ summary: 'Save custom field values for record' })
   @ApiOkResponse({ description: 'Custom field values saved successfully' })
-  async saveValues(
-    @Body() dto: SaveCustomFieldValuesDto[],
-  ): Promise<void> {
+  async saveValues(@Body() dto: SaveCustomFieldValuesDto[]): Promise<void> {
     await this.commandBus.execute(
       new SaveCustomFieldValuesCommand(
         dto.map((v) => ({

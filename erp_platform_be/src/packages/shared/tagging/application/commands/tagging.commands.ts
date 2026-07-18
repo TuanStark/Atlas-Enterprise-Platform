@@ -2,7 +2,11 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { TAGGING_REPOSITORY } from '../../domain/repositories/tagging.repository';
-import type { TaggingRepository, TagCreateInput, TagAssignInput } from '../../domain/repositories/tagging.repository';
+import type {
+  TaggingRepository,
+  TagCreateInput,
+  TagAssignInput,
+} from '../../domain/repositories/tagging.repository';
 
 export class CreateTagCommand {
   constructor(public readonly input: TagCreateInput) {}

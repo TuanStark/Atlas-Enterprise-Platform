@@ -76,13 +76,15 @@ export class AuthController {
       permissions: context.permissions,
       tenantId: context.tenantId,
       avatarUrl: context.avatarUrl,
-      tenant: tenant ? {
-        id: tenant.id,
-        code: tenant.code,
-        name: tenant.name,
-        status: tenant.status,
-        logoFileId: tenant.logoFileId,
-      } : null,
+      tenant: tenant
+        ? {
+            id: tenant.id,
+            code: tenant.code,
+            name: tenant.name,
+            status: tenant.status,
+            logoFileId: tenant.logoFileId,
+          }
+        : null,
     };
   }
 }

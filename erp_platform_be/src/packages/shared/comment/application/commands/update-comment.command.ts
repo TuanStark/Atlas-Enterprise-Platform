@@ -2,7 +2,10 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { COMMENT_REPOSITORY } from '../../domain/repositories/comment.repository';
-import type { CommentRepository, CommentUpdateInput } from '../../domain/repositories/comment.repository';
+import type {
+  CommentRepository,
+  CommentUpdateInput,
+} from '../../domain/repositories/comment.repository';
 
 export class UpdateCommentCommand {
   constructor(

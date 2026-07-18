@@ -20,6 +20,8 @@ export class SearchController {
     @CurrentContext() context: RequestContext,
     @Query('q') query: string,
   ): Promise<SearchResultDto[]> {
-    return this.queryBus.execute(new GlobalSearchQuery(Identifier.create(context.tenantId), query || ''));
+    return this.queryBus.execute(
+      new GlobalSearchQuery(Identifier.create(context.tenantId), query || ''),
+    );
   }
 }

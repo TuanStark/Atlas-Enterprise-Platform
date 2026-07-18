@@ -7,7 +7,7 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 @Injectable()
 export class PrismaTenantRepository implements TenantRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findById(id: Identifier): Promise<Tenant | null> {
     const tenant = await this.prisma.tenant.findUnique({

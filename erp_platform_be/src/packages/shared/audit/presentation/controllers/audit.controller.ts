@@ -18,8 +18,6 @@ export class AuditController {
   @ApiOperation({ summary: 'List all audit logs' })
   @ApiOkResponse({ type: [AuditLogDto] })
   async list(@CurrentContext() context: RequestContext): Promise<AuditLogDto[]> {
-    return this.queryBus.execute(
-      new ListAuditLogsQuery(Identifier.create(context.tenantId)),
-    );
+    return this.queryBus.execute(new ListAuditLogsQuery(Identifier.create(context.tenantId)));
   }
 }

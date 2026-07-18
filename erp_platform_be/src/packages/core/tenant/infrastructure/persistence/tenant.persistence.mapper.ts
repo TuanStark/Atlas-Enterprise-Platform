@@ -47,7 +47,12 @@ export class TenantPersistenceMapper {
       taxCode: entity.taxCode,
       email: entity.email,
       phone: entity.phone,
-      logoFileId: entity.logoFileId === null ? null : (entity.logoFileId ? entity.logoFileId.getValue() : undefined),
+      logoFileId:
+        entity.logoFileId === null
+          ? null
+          : entity.logoFileId
+            ? entity.logoFileId.getValue()
+            : undefined,
       timezone: entity.timezone,
       locale: entity.locale,
       currency: entity.currency,

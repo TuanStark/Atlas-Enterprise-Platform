@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Inject, UseInterceptors, UploadedFile, Res, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Inject,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  HttpStatus,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
@@ -24,7 +36,7 @@ export class FileController {
     private readonly queryBus: QueryBus,
     @Inject(FILE_STORAGE_PROVIDER)
     private readonly storageProvider: FileStorageProvider,
-  ) { }
+  ) {}
 
   @Post()
   @RequirePermission('shared.file:write')
@@ -93,7 +105,7 @@ export class FileController {
   async delete(@Param('id') id: string): Promise<void> {
     const file = await this.queryBus.execute(new GetFileQuery(Identifier.create(id)));
     if (file) {
-      const metadata = file.metadata as any;
+      const metadata = file.metadata;
       if (metadata?.publicId) {
         try {
           await this.storageProvider.delete(metadata.publicId);
@@ -124,17 +136,14 @@ export class FileController {
   @Get(':id/view')
   @Public()
   @ApiOperation({ summary: 'Stream/View or download file content' })
-  async view(
-    @Param('id') id: string,
-    @Res() res: express.Response,
-  ): Promise<void> {
+  async view(@Param('id') id: string, @Res() res: express.Response): Promise<void> {
     const file = await this.queryBus.execute(new GetFileQuery(Identifier.create(id)));
     if (!file) {
       res.status(HttpStatus.NOT_FOUND).send('File metadata not found');
       return;
     }
 
-    const metadata = file.metadata as any;
+    const metadata = file.metadata;
     const provider = metadata?.provider || 'local';
 
     if (provider === 'cloudinary' && metadata?.url) {
@@ -153,11 +162,21 @@ export class FileController {
 
     res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
 
-    const inlineTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml', 'application/pdf'];
+    const inlineTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+      'application/pdf',
+    ];
     const isInline = inlineTypes.includes(file.mimeType || '');
     const disposition = isInline ? 'inline' : 'attachment';
 
-    res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(file.fileName || '')}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `${disposition}; filename="${encodeURIComponent(file.fileName || '')}"`,
+    );
 
     const stream = createReadStream(filePath);
     stream.pipe(res);

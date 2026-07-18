@@ -55,9 +55,7 @@ export class GlobalSearchHandler implements IQueryHandler<GlobalSearchQuery> {
     const leaveRequests = await this.prisma.leaveRequest.findMany({
       where: {
         tenantId: query.tenantId.getValue(),
-        OR: [
-          { reason: { contains: term, mode: 'insensitive' } },
-        ],
+        OR: [{ reason: { contains: term, mode: 'insensitive' } }],
       },
       include: {
         employment: {

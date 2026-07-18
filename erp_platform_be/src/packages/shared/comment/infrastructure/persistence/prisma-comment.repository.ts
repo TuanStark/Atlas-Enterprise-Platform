@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { CommentRepository, CommentCreateInput, CommentUpdateInput } from '../../domain/repositories/comment.repository';
+import {
+  CommentRepository,
+  CommentCreateInput,
+  CommentUpdateInput,
+} from '../../domain/repositories/comment.repository';
 import { CommentStatus } from '@prisma/client';
 
 @Injectable()

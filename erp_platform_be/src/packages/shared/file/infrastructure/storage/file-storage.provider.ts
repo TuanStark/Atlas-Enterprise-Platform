@@ -94,7 +94,7 @@ export class CloudinaryStorageProvider implements FileStorageProvider {
             size: result.bytes || file.size,
             provider: 'cloudinary',
           });
-        }
+        },
       );
       uploadStream.end(file.buffer);
     });

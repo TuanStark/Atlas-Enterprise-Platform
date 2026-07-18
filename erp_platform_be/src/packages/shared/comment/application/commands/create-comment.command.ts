@@ -1,7 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { COMMENT_REPOSITORY } from '../../domain/repositories/comment.repository';
-import type { CommentRepository, CommentCreateInput } from '../../domain/repositories/comment.repository';
+import type {
+  CommentRepository,
+  CommentCreateInput,
+} from '../../domain/repositories/comment.repository';
 
 export class CreateCommentCommand {
   constructor(public readonly input: CommentCreateInput) {}

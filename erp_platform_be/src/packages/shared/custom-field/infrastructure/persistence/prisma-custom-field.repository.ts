@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { CustomFieldRepository, CustomFieldDefinitionCreateInput, CustomFieldValueSaveInput } from '../../domain/repositories/custom-field.repository';
+import {
+  CustomFieldRepository,
+  CustomFieldDefinitionCreateInput,
+  CustomFieldValueSaveInput,
+} from '../../domain/repositories/custom-field.repository';
 import { CustomFieldType } from '@prisma/client';
 
 @Injectable()
@@ -19,23 +23,24 @@ export class PrismaCustomFieldRepository implements CustomFieldRepository {
         targetEntity: defData.targetEntity,
         code: defData.code,
         name: defData.name,
-        fieldType: defData.fieldType as CustomFieldType,
+        fieldType: defData.fieldType,
         isRequired: defData.isRequired || false,
         defaultValue: defData.defaultValue || null,
         validationRules: defData.validationRules || undefined,
         displayOrder: defData.displayOrder || null,
         metadata: defData.metadata || undefined,
         createdByPrincipalId: defData.createdByPrincipalId || undefined,
-        customFieldDefinitionCustomFieldOptions: options && options.length > 0
-          ? {
-              create: options.map((opt) => ({
-                value: opt.value,
-                label: opt.label,
-                sortOrder: opt.sortOrder || null,
-                isActive: true,
-              })),
-            }
-          : undefined,
+        customFieldDefinitionCustomFieldOptions:
+          options && options.length > 0
+            ? {
+                create: options.map((opt) => ({
+                  value: opt.value,
+                  label: opt.label,
+                  sortOrder: opt.sortOrder || null,
+                  isActive: true,
+                })),
+              }
+            : undefined,
       },
       include: {
         customFieldDefinitionCustomFieldOptions: true,

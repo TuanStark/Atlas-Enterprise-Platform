@@ -10,10 +10,7 @@ export class PrismaCalendarRepository implements CalendarRepository {
   async listSystemCalendars(tenantId: Identifier): Promise<any[]> {
     return this.prisma.systemCalendar.findMany({
       where: {
-        OR: [
-          { tenantId: tenantId.getValue() },
-          { tenantId: null },
-        ],
+        OR: [{ tenantId: tenantId.getValue() }, { tenantId: null }],
       },
       include: {
         calendarHolidays: true,

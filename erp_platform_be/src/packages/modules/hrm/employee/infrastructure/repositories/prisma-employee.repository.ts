@@ -254,10 +254,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     return records.map(EmployeePersistenceMapper.toDomain);
   }
 
-  async findEmploymentsByEmployeeIds(
-    tenantId: Identifier,
-    employeeIds: string[],
-  ): Promise<any[]> {
+  async findEmploymentsByEmployeeIds(tenantId: Identifier, employeeIds: string[]): Promise<any[]> {
     const empRecords = await this.prisma.employment.findMany({
       where: {
         employeeId: { in: employeeIds },
@@ -277,7 +274,9 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     });
 
     return empRecords.map((e) => {
-      const activeOa = e.organizationAssignments.find((oa) => oa.status === 'active') || e.organizationAssignments[0];
+      const activeOa =
+        e.organizationAssignments.find((oa) => oa.status === 'active') ||
+        e.organizationAssignments[0];
       const deptName = activeOa?.department?.name || '-';
       const posName = activeOa?.position?.name || activeOa?.jobTitle?.name || '-';
 

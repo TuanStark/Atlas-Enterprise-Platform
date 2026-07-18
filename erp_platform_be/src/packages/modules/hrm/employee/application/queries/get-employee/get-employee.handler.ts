@@ -25,10 +25,9 @@ export class GetEmployeeHandler
       query.employeeId.toString(),
     );
 
-    const employments = await this.repository.findEmploymentsByEmployeeIds(
-      query.tenantId,
-      [employee.id.toString()],
-    );
+    const employments = await this.repository.findEmploymentsByEmployeeIds(query.tenantId, [
+      employee.id.toString(),
+    ]);
 
     return EmployeeReadModelMapper.toReadModel(employee, employments);
   }

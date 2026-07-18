@@ -28,6 +28,8 @@ export class PrismaFileRepository implements FileRepository {
         checksum: input.checksum || undefined,
         metadata: input.metadata || undefined,
         createdByPrincipalId: input.createdByPrincipalId || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
 

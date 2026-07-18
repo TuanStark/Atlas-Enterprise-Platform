@@ -31,7 +31,9 @@ export class IdentityController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiOkResponse({ type: UserDto })
   async getMe(@CurrentContext() context: RequestContext): Promise<Result<UserDto>> {
-    const user = await this.userRepository.findByPrincipalId(Identifier.create(context.principalId));
+    const user = await this.userRepository.findByPrincipalId(
+      Identifier.create(context.principalId),
+    );
     if (!user) {
       return Result.failure({
         statusCode: HttpStatus.NOT_FOUND,
@@ -53,7 +55,9 @@ export class IdentityController {
     @CurrentContext() context: RequestContext,
     @Body() dto: UpdateUserDto,
   ): Promise<Result<UserDto>> {
-    const user = await this.userRepository.findByPrincipalId(Identifier.create(context.principalId));
+    const user = await this.userRepository.findByPrincipalId(
+      Identifier.create(context.principalId),
+    );
     if (!user) {
       return Result.failure({
         statusCode: HttpStatus.NOT_FOUND,

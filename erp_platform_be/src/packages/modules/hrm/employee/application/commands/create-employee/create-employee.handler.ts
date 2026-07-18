@@ -15,7 +15,7 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
     private readonly prisma: PrismaService,
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: PasswordHasher,
-  ) { }
+  ) {}
 
   async execute(command: CreateEmployeeCommand): Promise<Identifier> {
     const { tenantId, dto } = command;

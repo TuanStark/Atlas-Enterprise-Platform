@@ -40,7 +40,8 @@ export class CommentController {
       }),
     );
 
-    const authorName = rawResult.authorPrincipal?.user?.username || rawResult.authorPrincipal?.user?.email || 'User';
+    const authorName =
+      rawResult.authorPrincipal?.user?.username || rawResult.authorPrincipal?.user?.email || 'User';
     return {
       id: rawResult.id,
       tenantId: rawResult.tenantId,
@@ -61,10 +62,7 @@ export class CommentController {
   @RequirePermission('shared.comment:write')
   @ApiOperation({ summary: 'Update comment' })
   @ApiOkResponse({ type: CommentDto })
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateCommentDto,
-  ): Promise<CommentDto> {
+  async update(@Param('id') id: string, @Body() dto: UpdateCommentDto): Promise<CommentDto> {
     const rawResult = await this.commandBus.execute(
       new UpdateCommentCommand(Identifier.create(id), {
         content: dto.content,
@@ -72,7 +70,8 @@ export class CommentController {
       }),
     );
 
-    const authorName = rawResult.authorPrincipal?.user?.username || rawResult.authorPrincipal?.user?.email || 'User';
+    const authorName =
+      rawResult.authorPrincipal?.user?.username || rawResult.authorPrincipal?.user?.email || 'User';
     return {
       id: rawResult.id,
       tenantId: rawResult.tenantId,

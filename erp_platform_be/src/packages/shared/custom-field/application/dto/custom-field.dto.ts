@@ -24,8 +24,37 @@ export class CreateCustomFieldDefinitionDto {
   @ApiProperty()
   name: string;
 
-  @ApiProperty({ enum: ['text', 'textarea', 'number', 'decimal', 'boolean', 'date', 'datetime', 'email', 'phone', 'url', 'select', 'multiselect', 'json'] })
-  fieldType: 'text' | 'textarea' | 'number' | 'decimal' | 'boolean' | 'date' | 'datetime' | 'email' | 'phone' | 'url' | 'select' | 'multiselect' | 'json';
+  @ApiProperty({
+    enum: [
+      'text',
+      'textarea',
+      'number',
+      'decimal',
+      'boolean',
+      'date',
+      'datetime',
+      'email',
+      'phone',
+      'url',
+      'select',
+      'multiselect',
+      'json',
+    ],
+  })
+  fieldType:
+    | 'text'
+    | 'textarea'
+    | 'number'
+    | 'decimal'
+    | 'boolean'
+    | 'date'
+    | 'datetime'
+    | 'email'
+    | 'phone'
+    | 'url'
+    | 'select'
+    | 'multiselect'
+    | 'json';
 
   @ApiProperty({ required: false })
   isRequired?: boolean;

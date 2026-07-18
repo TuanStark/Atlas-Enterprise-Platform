@@ -2,7 +2,10 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { NOTIFICATION_REPOSITORY } from '../../domain/repositories/notification.repository';
-import type { NotificationRepository, NotificationCreateInput } from '../../domain/repositories/notification.repository';
+import type {
+  NotificationRepository,
+  NotificationCreateInput,
+} from '../../domain/repositories/notification.repository';
 
 export class CreateNotificationCommand {
   constructor(public readonly input: NotificationCreateInput) {}

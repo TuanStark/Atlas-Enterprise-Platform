@@ -19,7 +19,7 @@ export class JwtTokenServiceImpl implements JwtTokenService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly queryBus: QueryBus,
-  ) { }
+  ) {}
 
   async generateAccessToken(principalId: string): Promise<string> {
     const principalResult = await this.queryBus.execute<GetPrincipalQuery, Result<PrincipalDto>>(
@@ -32,9 +32,10 @@ export class JwtTokenServiceImpl implements JwtTokenService {
 
     const principal = principalResult.data;
 
-    const rolesResult = await this.queryBus.execute<ListPrincipalRolesQuery, Result<PrincipalRoleDto[]>>(
-      new ListPrincipalRolesQuery(principalId),
-    );
+    const rolesResult = await this.queryBus.execute<
+      ListPrincipalRolesQuery,
+      Result<PrincipalRoleDto[]>
+    >(new ListPrincipalRolesQuery(principalId));
 
     const roles: string[] = [];
     if (rolesResult.isSuccess()) {
@@ -48,9 +49,10 @@ export class JwtTokenServiceImpl implements JwtTokenService {
       }
     }
 
-    const permissionsResult = await this.queryBus.execute<GetPrincipalPermissionsQuery, Result<ResolvedPermission[]>>(
-      new GetPrincipalPermissionsQuery(principalId),
-    );
+    const permissionsResult = await this.queryBus.execute<
+      GetPrincipalPermissionsQuery,
+      Result<ResolvedPermission[]>
+    >(new GetPrincipalPermissionsQuery(principalId));
 
     const permissions: string[] = [];
     if (permissionsResult.isSuccess()) {

@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
-import { TaggingRepository, TagCreateInput, TagAssignInput } from '../../domain/repositories/tagging.repository';
+import {
+  TaggingRepository,
+  TagCreateInput,
+  TagAssignInput,
+} from '../../domain/repositories/tagging.repository';
 
 @Injectable()
 export class PrismaTaggingRepository implements TaggingRepository {
