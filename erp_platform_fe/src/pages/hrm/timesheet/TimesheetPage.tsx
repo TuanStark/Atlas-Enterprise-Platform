@@ -6,6 +6,7 @@ import { useEmployees } from '@features/employee/hooks/useEmployee';
 import { useShifts, useAssignShift, useEmployeeAssignments } from '@features/attendance/hooks/useShifts';
 import type { Employee } from '@features/employee/types';
 import type { ShiftAssignment } from '@features/attendance/types';
+import { ShiftAssignmentTag } from '@features/attendance/components/ShiftAssignmentTag';
 import dayjs from 'dayjs';
 import { Plus, UserCheck } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export default function TimesheetPage() {
       const emp = employees.find(e => e.id === value);
       if (emp) setSelectedEmployee(emp);
     }
+
   };
 
   const filterFields: FilterBarField[] = [
@@ -63,6 +65,20 @@ export default function TimesheetPage() {
 
   const { data: assignments = [], isLoading: isLoadingAssignments } = useEmployeeAssignments(employmentId);
   const assignMutation = useAssignShift();
+
+  // Enrich assignments with their shift details using the loaded shifts list
+  const enrichedAssignments = assignments.map(assignment => {
+    if (!assignment.shift && assignment.shiftId) {
+      const match = shifts.find(s => s.id === assignment.shiftId);
+      if (match) {
+        return {
+          ...assignment,
+          shift: match,
+        };
+      }
+    }
+    return assignment;
+  });
 
   const handleAssign = (values: any) => {
     if (!employmentId) return;
@@ -94,13 +110,20 @@ export default function TimesheetPage() {
   };
 
   const getAssignmentsForDate = (date: dayjs.Dayjs): ShiftAssignment[] => {
-    return assignments
+    return enrichedAssignments
       .filter(item => {
-        const fromDate = dayjs(item.effectiveFrom).startOf('day');
-        const toDate = item.effectiveTo ? dayjs(item.effectiveTo).endOf('day') : null;
+        // Strip time/timezone component for strict date-only comparisons
+        const fromDateStr = item.effectiveFrom.split('T')[0];
+        const fromDate = dayjs(fromDateStr).startOf('day');
+        
+        const toDate = item.effectiveTo 
+          ? dayjs(item.effectiveTo.split('T')[0]).endOf('day') 
+          : null;
 
-        const isAfterOrEqualFrom = date.isSame(fromDate, 'day') || date.isAfter(fromDate, 'day');
-        const isBeforeOrEqualTo = !toDate || date.isSame(toDate, 'day') || date.isBefore(toDate, 'day');
+        const targetDate = date.startOf('day');
+
+        const isAfterOrEqualFrom = targetDate.isSame(fromDate, 'day') || targetDate.isAfter(fromDate, 'day');
+        const isBeforeOrEqualTo = !toDate || targetDate.isSame(toDate, 'day') || targetDate.isBefore(toDate, 'day');
 
         return isAfterOrEqualFrom && isBeforeOrEqualTo;
       })
@@ -276,24 +299,7 @@ export default function TimesheetPage() {
                         <div style={{ maxHeight: 75, overflowY: 'auto' }}>
                           {dailyAssignments.map((assignment) => (
                             <div key={assignment.id} style={{ margin: '2px 0' }}>
-                              <Tag
-                                color={assignment.isPrimary ? 'blue' : 'default'}
-                                style={{
-                                  fontSize: '11px',
-                                  width: '100%',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  margin: 0,
-                                  padding: '0 4px',
-                                  border: assignment.isPrimary ? '1px solid var(--color-primary-bg-hover)' : '1px solid var(--color-border)',
-                                }}
-                              >
-                                <span style={{ fontWeight: 600 }}>{assignment.shift?.code || 'Ca'}</span>
-                                <span style={{ fontSize: '10px', marginLeft: 4, opacity: 0.8 }}>
-                                  ({assignment.shift?.startTime?.slice(0, 5) || '--:--'})
-                                </span>
-                              </Tag>
+                              <ShiftAssignmentTag assignment={assignment} />
                             </div>
                           ))}
                         </div>
