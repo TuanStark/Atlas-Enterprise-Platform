@@ -1,4 +1,4 @@
-import { Layout, Avatar, Dropdown, Badge, Space, Typography, Input, Tag } from 'antd';
+import { Layout, Avatar, Dropdown, Badge, Space, Typography, Input } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   Bell,
@@ -9,10 +9,8 @@ import {
   Search,
   MessageSquare,
   HelpCircle,
-  Building2,
 } from 'lucide-react';
 import { useAuth, useCurrentUser } from '@features/auth/hooks/useAuth';
-import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -29,7 +27,6 @@ interface AppHeaderProps {
 export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
   const user = useCurrentUser();
   const { logout } = useAuth();
-  const { data: tenant } = useActiveTenant();
 
   const userMenuItems: MenuProps['items'] = [
     {
@@ -62,9 +59,8 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
 
   return (
     <Header
-      className={`fixed top-0 right-0 h-[60px] flex items-center justify-between px-6 bg-white border-0 border-b border-solid border-border-light z-[200] transition-[left] duration-200 ${
-        collapsed ? 'left-[72px]' : 'left-[270px]'
-      } max-[768px]:left-0 max-[768px]:px-4`}
+      className={`fixed top-0 right-0 h-[60px] flex items-center justify-between px-6 bg-white border-0 border-b border-solid border-border-light z-[200] transition-[left] duration-200 ${collapsed ? 'left-[72px]' : 'left-[270px]'
+        } max-[768px]:left-0 max-[768px]:px-4`}
     >
       {/* Left side: toggle button and search box */}
       <div className="flex items-center gap-4 flex-1">
@@ -119,41 +115,6 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
             <Bell size={18} />
           </Badge>
         </button>
-
-        {/* Tenant / Company Badge */}
-        {tenant && (
-          <Tag
-            icon={
-              tenant.logoFileId ? (
-                <Avatar
-                  size={16}
-                  src={`/api/v1/files/${tenant.logoFileId}/view`}
-                  style={{
-                    marginRight: 4,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    border: '1px solid rgba(14, 165, 233, 0.1)',
-                  }}
-                />
-              ) : (
-                <Building2 size={12} style={{ display: 'inline-flex', alignItems: 'center' }} />
-              )
-            }
-            color="blue"
-            style={{
-              borderRadius: 6,
-              fontWeight: 500,
-              padding: '4px 10px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              boxShadow: '0 2px 6px rgba(14, 165, 233, 0.08)',
-              border: '1px solid rgba(14, 165, 233, 0.15)',
-              marginRight: 12,
-            }}
-          >
-            {tenant.name} ({tenant.code})
-          </Tag>
-        )}
 
         {/* User Menu */}
         <Dropdown
