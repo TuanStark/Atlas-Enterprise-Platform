@@ -3,25 +3,32 @@ import { CreateEmployeeCommand } from './create-employee.command';
 import { EmployeeDomainService } from '../../../domain/services/employee-domain.service';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { PrismaService } from 'src/database/prisma.service';
+import { Inject } from '@nestjs/common';
+import { PASSWORD_HASHER } from '@shared-kernel/application';
+import type { PasswordHasher } from '@shared-kernel/application';
+import { randomUUID } from 'crypto';
 
 @CommandHandler(CreateEmployeeCommand)
 export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeCommand> {
   constructor(
     private readonly domainService: EmployeeDomainService,
     private readonly prisma: PrismaService,
-  ) {}
+    @Inject(PASSWORD_HASHER)
+    private readonly passwordHasher: PasswordHasher,
+  ) { }
 
   async execute(command: CreateEmployeeCommand): Promise<Identifier> {
     const { tenantId, dto } = command;
 
-    // Create an inactive Principal for this Employee (Option A from plan)
     const principalId = Identifier.create();
+    const isCreateAccount = dto.createAccount === true || dto.createAccount === 'true';
+
     await this.prisma.principal.create({
       data: {
         id: principalId.toString(),
         tenantId: tenantId.toString(),
         type: 'user',
-        status: 'inactive',
+        status: isCreateAccount ? 'active' : 'inactive',
         displayName: `${dto.firstName} ${dto.lastName}`,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -46,12 +53,104 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
       },
     });
 
-    // Auto-create initial Employment for the new employee
+    if (dto.addressLine || dto.city || dto.country) {
+      await this.prisma.employeeAddress.create({
+        data: {
+          id: employee.id.toString(),
+          employeeId: employee.id.toString(),
+          addressType: 'current',
+          country: dto.country || undefined,
+          city: dto.city || undefined,
+          addressLine: dto.addressLine || undefined,
+          isPrimary: true,
+          createdAt: new Date(),
+        },
+      });
+    } else {
+      await this.prisma.employeeAddress.create({
+        data: {
+          id: employee.id.toString(),
+          employeeId: employee.id.toString(),
+          addressType: 'current',
+          isPrimary: true,
+          createdAt: new Date(),
+        },
+      });
+    }
+
+    if (dto.email) {
+      await this.prisma.employeeContact.create({
+        data: {
+          id: randomUUID(),
+          employeeId: employee.id.toString(),
+          contactType: 'email',
+          value: dto.email,
+          isPrimary: true,
+          createdAt: new Date(),
+        },
+      });
+    }
+
+    if (dto.phone) {
+      await this.prisma.employeeContact.create({
+        data: {
+          id: randomUUID(),
+          employeeId: employee.id.toString(),
+          contactType: 'phone',
+          value: dto.phone,
+          isPrimary: true,
+          createdAt: new Date(),
+        },
+      });
+    }
+
+    if (isCreateAccount && dto.email && dto.password) {
+      const userId = randomUUID();
+      await this.prisma.user.create({
+        data: {
+          id: userId,
+          principalId: principalId.toString(),
+          tenantId: tenantId.toString(),
+          username: dto.email,
+          email: dto.email,
+          phone: dto.phone || undefined,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      const hash = await this.passwordHasher.hash(dto.password);
+      await this.prisma.credential.create({
+        data: {
+          id: randomUUID(),
+          principalId: principalId.toString(),
+          type: 'password',
+          passwordHash: hash,
+          createdAt: new Date(),
+        },
+      });
+
+      if (dto.roleId) {
+        const globalScope = await this.prisma.scope.findFirst({
+          where: { code: 'GLOBAL' },
+        });
+        if (globalScope) {
+          await this.prisma.principalRole.create({
+            data: {
+              principalId: principalId.toString(),
+              roleId: dto.roleId,
+              scopeId: globalScope.id,
+              assignedAt: new Date(),
+            },
+          });
+        }
+      }
+    }
+
     let empType = await this.prisma.employmentType.findFirst({
       where: { tenantId: tenantId.toString() },
     });
     if (!empType) {
-      const { randomUUID } = require('crypto');
       empType = await this.prisma.employmentType.create({
         data: {
           id: randomUUID(),
@@ -62,7 +161,6 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
       });
     }
 
-    const { randomUUID } = require('crypto');
     const employmentId = randomUUID();
     const hireDate = (dto as any).joinDate ? new Date((dto as any).joinDate) : new Date();
 

@@ -18,9 +18,13 @@ export interface Employee {
   firstName: string;
   middleName?: string;
   lastName: string;
+  preferredName?: string;
   dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other';
   nationality?: string;
+  nationalId?: string;
+  passportNo?: string;
+  taxNumber?: string;
   identificationNumber?: string;
   identificationType?: string;
   taxCode?: string;
@@ -58,6 +62,7 @@ export interface EmployeeAddress {
   type: 'permanent' | 'temporary' | 'mailing';
   addressLine1: string;
   addressLine2?: string;
+  addressLine?: string;
   city: string;
   state?: string;
   country: string;
@@ -97,6 +102,7 @@ export interface EmploymentSummary {
 
 export interface CreateEmployeeDto {
   employeeCode?: string;
+  employeeNo?: string;
   firstName: string;
   middleName?: string;
   lastName: string;
@@ -108,6 +114,18 @@ export interface CreateEmployeeDto {
   departmentId?: string;
   positionId?: string;
   jobTitleId?: string;
+  preferredName?: string;
+  maritalStatus?: string;
+  nationality?: string;
+  nationalId?: string;
+  passportNo?: string;
+  taxNumber?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  createAccount?: boolean;
+  password?: string;
+  roleId?: string;
 }
 
 export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {}

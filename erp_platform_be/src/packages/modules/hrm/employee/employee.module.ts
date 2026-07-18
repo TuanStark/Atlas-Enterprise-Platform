@@ -36,8 +36,10 @@ const commandHandlers = [
 ];
 const queryHandlers = [GetEmployeeHandler, ListEmployeesHandler];
 
+import { IdentityModule } from '@core/identity/identity.module';
+
 @Module({
-  imports: [CqrsModule, PrismaModule],
+  imports: [CqrsModule, PrismaModule, IdentityModule],
 
   controllers: [EmployeeController],
 
