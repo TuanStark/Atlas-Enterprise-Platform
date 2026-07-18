@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 import { AuthGuard } from './guards/AuthGuard';
+import { PermissionGuard } from './guards/PermissionGuard';
 
 // --- Layouts (eagerly loaded) ---
 import { MainLayout } from '@layouts/MainLayout/MainLayout';
@@ -28,10 +29,25 @@ const SettingsPage = lazy(() => import('@pages/admin/settings/SettingsPage'));
 const ShiftsPage = lazy(() => import('@pages/hrm/shifts/ShiftsPage'));
 const TimesheetPage = lazy(() => import('@pages/hrm/timesheet/TimesheetPage'));
 
+// --- Admin Pages — IAM & RBAC ---
+const UserListPage = lazy(() => import('@pages/admin/users/UserListPage'));
+const RoleListPage = lazy(() => import('@pages/admin/roles/RoleListPage'));
+const RoleDetailPage = lazy(() => import('@pages/admin/roles/RoleDetailPage'));
+const AuditLogPage = lazy(() => import('@pages/admin/audit/AuditLogPage'));
+
+// --- Admin Pages — Shared Modules ---
+const CalendarHolidayPage = lazy(() => import('@pages/admin/calendar/CalendarHolidayPage'));
+const TagManagementPage = lazy(() => import('@pages/admin/tags/TagManagementPage'));
+const WorkflowListPage = lazy(() => import('@pages/admin/workflows/WorkflowListPage'));
+const CustomFieldPage = lazy(() => import('@pages/admin/custom-fields/CustomFieldPage'));
+const NotificationCenterPage = lazy(() => import('@pages/admin/notifications/NotificationCenterPage'));
+const FileManagementPage = lazy(() => import('@pages/admin/files/FileManagementPage'));
+
 /**
  * Route Definitions — Organized by module, matching backend structure
  *
  * All authenticated routes are wrapped in AuthGuard.
+ * Admin routes are additionally wrapped in PermissionGuard for RBAC enforcement.
  * Lazy loading ensures each module is a separate chunk.
  */
 export const routes: RouteObject[] = [
@@ -68,7 +84,7 @@ export const routes: RouteObject[] = [
       // HRM — Attendance
       { path: '/hrm/attendance', element: <AttendanceListPage /> },
 
-      // HRM — Missing Pages (Mapped to Under Construction)
+      // HRM — Other Modules
       { path: '/hrm/payroll', element: <PayrollPage /> },
       { path: '/hrm/recruitment', element: <RecruitmentPage /> },
       { path: '/hrm/performance', element: <PerformancePage /> },
@@ -84,10 +100,86 @@ export const routes: RouteObject[] = [
       // Organization
       { path: '/organization', element: <UnderConstructionPage /> },
 
-      // Admin Management
-      { path: '/admin/users', element: <UnderConstructionPage /> },
-      { path: '/admin/roles', element: <UnderConstructionPage /> },
-      { path: '/admin/workflows', element: <UnderConstructionPage /> },
+      // Notifications (accessible to all authenticated users)
+      { path: '/notifications', element: <NotificationCenterPage /> },
+
+      // Admin — IAM & RBAC (Protected by PermissionGuard)
+      {
+        path: '/admin/users',
+        element: (
+          <PermissionGuard resource="admin.user" action="read">
+            <UserListPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/roles',
+        element: (
+          <PermissionGuard resource="admin.role" action="read">
+            <RoleListPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/roles/:id',
+        element: (
+          <PermissionGuard resource="admin.role" action="read">
+            <RoleDetailPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/audit',
+        element: (
+          <PermissionGuard resource="admin.audit" action="read">
+            <AuditLogPage />
+          </PermissionGuard>
+        ),
+      },
+
+      // Admin — Shared Platform Modules
+      {
+        path: '/admin/calendars',
+        element: (
+          <PermissionGuard resource="admin.settings" action="read">
+            <CalendarHolidayPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/tags',
+        element: (
+          <PermissionGuard resource="admin.settings" action="read">
+            <TagManagementPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/workflows',
+        element: (
+          <PermissionGuard resource="admin.settings" action="read">
+            <WorkflowListPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/custom-fields',
+        element: (
+          <PermissionGuard resource="admin.settings" action="read">
+            <CustomFieldPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/files',
+        element: (
+          <PermissionGuard resource="admin.settings" action="read">
+            <FileManagementPage />
+          </PermissionGuard>
+        ),
+      },
+
+      // Admin — Settings
       { path: '/admin/settings', element: <SettingsPage /> },
     ],
   },

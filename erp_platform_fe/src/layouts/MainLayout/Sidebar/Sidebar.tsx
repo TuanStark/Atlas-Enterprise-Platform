@@ -12,7 +12,19 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  Building2,
+  Bell,
+  FileText,
+  Tags,
+  Sliders,
+  Workflow,
+  Settings,
+  UserCog,
+  KeyRound,
+  History,
+  Clock,
 } from 'lucide-react';
+import { useCanAccess } from '@shared/hooks/usePermission';
 import './Sidebar.css';
 
 const { Sider } = Layout;
@@ -20,53 +32,138 @@ const { Sider } = Layout;
 type MenuItem = Required<MenuProps>['items'][number];
 
 /**
- * Sidebar — Main navigation organized by backend module structure
+ * Sidebar Menu Item with optional RBAC permission requirement.
+ *
+ * Items with `permission` will only render if the user has the specified access.
+ * Items without `permission` are visible to all authenticated users.
  */
-function getMenuItems(): MenuItem[] {
-  return [
-    {
-      key: '/dashboard',
-      icon: <LayoutDashboard size={16} />,
-      label: 'Tổng quan',
-    },
-    {
-      key: 'hrm',
-      icon: <Users size={16} />,
-      label: 'Nhân viên',
-      children: [
-        { key: '/hrm/employees', label: 'Danh sách nhân viên' },
-        { key: '/hrm/leave-requests', label: 'Yêu cầu nghỉ phép' },
-        { key: '/hrm/attendance', label: 'Lịch sử chấm công' },
-        { key: '/hrm/timesheet', label: 'Bảng phân ca làm việc' },
-        { key: '/hrm/shifts', label: 'Danh mục ca làm việc' },
-      ],
-    },
-    {
-      key: '/hrm/payroll',
-      icon: <Wallet size={16} />,
-      label: 'Tính lương',
-    },
-    {
-      key: '/hrm/recruitment',
-      icon: <UserPlus size={16} />,
-      label: 'Tuyển dụng',
-    },
-    {
-      key: '/hrm/leave-calendar',
-      icon: <CalendarDays size={16} />,
-      label: 'Quản lý nghỉ phép',
-    },
-    {
-      key: '/hrm/performance',
-      icon: <Target size={16} />,
-      label: 'Đánh giá hiệu suất',
-    },
-    {
-      key: '/admin/settings',
-      icon: <Shield size={16} />,
-      label: 'Cài đặt',
-    },
-  ];
+interface PermissionMenuItem {
+  key: string;
+  icon?: React.ReactNode;
+  label: string;
+  permission?: { resource: string; action: string };
+  children?: PermissionMenuItem[];
+}
+
+/**
+ * Raw menu definition — all items, unfiltered by permissions.
+ * Organized by module matching AWS Console service grouping.
+ */
+const MENU_DEFINITION: PermissionMenuItem[] = [
+  {
+    key: '/dashboard',
+    icon: <LayoutDashboard size={16} />,
+    label: 'Tổng quan',
+  },
+  {
+    key: 'hrm',
+    icon: <Users size={16} />,
+    label: 'Quản lý nhân sự',
+    children: [
+      { key: '/hrm/employees', icon: <Users size={14} />, label: 'Danh sách nhân viên', permission: { resource: 'hrm.employee', action: 'read' } },
+      { key: '/hrm/leave-requests', icon: <CalendarDays size={14} />, label: 'Yêu cầu nghỉ phép', permission: { resource: 'hrm.leave', action: 'read' } },
+      { key: '/hrm/attendance', icon: <Clock size={14} />, label: 'Lịch sử chấm công', permission: { resource: 'hrm.attendance', action: 'read' } },
+      { key: '/hrm/timesheet', icon: <CalendarDays size={14} />, label: 'Bảng phân ca làm việc', permission: { resource: 'hrm.shift', action: 'read' } },
+      { key: '/hrm/shifts', icon: <Clock size={14} />, label: 'Danh mục ca làm việc', permission: { resource: 'hrm.shift', action: 'read' } },
+    ],
+  },
+  {
+    key: '/hrm/leave-calendar',
+    icon: <CalendarDays size={16} />,
+    label: 'Quản lý nghỉ phép',
+    permission: { resource: 'hrm.leave', action: 'read' },
+  },
+  {
+    key: '/hrm/payroll',
+    icon: <Wallet size={16} />,
+    label: 'Tính lương',
+    permission: { resource: 'hrm.payroll', action: 'read' },
+  },
+  {
+    key: '/hrm/recruitment',
+    icon: <UserPlus size={16} />,
+    label: 'Tuyển dụng',
+    permission: { resource: 'hrm.recruitment', action: 'read' },
+  },
+  {
+    key: '/hrm/performance',
+    icon: <Target size={16} />,
+    label: 'Đánh giá hiệu suất',
+    permission: { resource: 'hrm.performance', action: 'read' },
+  },
+  {
+    key: '/organization',
+    icon: <Building2 size={16} />,
+    label: 'Tổ chức',
+    permission: { resource: 'org.structure', action: 'read' },
+  },
+  {
+    key: '/notifications',
+    icon: <Bell size={16} />,
+    label: 'Thông báo',
+  },
+  {
+    key: 'admin',
+    icon: <Shield size={16} />,
+    label: 'Quản trị hệ thống',
+    permission: { resource: 'admin.user', action: 'read' },
+    children: [
+      { key: '/admin/users', icon: <UserCog size={14} />, label: 'Quản lý tài khoản', permission: { resource: 'admin.user', action: 'read' } },
+      { key: '/admin/roles', icon: <KeyRound size={14} />, label: 'Vai trò & Phân quyền', permission: { resource: 'admin.role', action: 'read' } },
+      { key: '/admin/audit', icon: <History size={14} />, label: 'Nhật ký kiểm toán', permission: { resource: 'admin.audit', action: 'read' } },
+      { key: '/admin/workflows', icon: <Workflow size={14} />, label: 'Quy trình duyệt', permission: { resource: 'admin.settings', action: 'read' } },
+      { key: '/admin/calendars', icon: <CalendarDays size={14} />, label: 'Lịch & Ngày lễ', permission: { resource: 'admin.settings', action: 'read' } },
+      { key: '/admin/tags', icon: <Tags size={14} />, label: 'Quản lý nhãn', permission: { resource: 'admin.settings', action: 'read' } },
+      { key: '/admin/custom-fields', icon: <Sliders size={14} />, label: 'Trường tùy chỉnh', permission: { resource: 'admin.settings', action: 'read' } },
+      { key: '/admin/files', icon: <FileText size={14} />, label: 'Quản lý tệp', permission: { resource: 'admin.settings', action: 'read' } },
+      { key: '/admin/settings', icon: <Settings size={14} />, label: 'Cài đặt hệ thống', permission: { resource: 'admin.settings', action: 'read' } },
+    ],
+  },
+];
+
+/**
+ * useFilteredMenu — Filters menu items based on current user's RBAC permissions.
+ *
+ * Items without `permission` are always shown (public within auth context).
+ * Items with `permission` are only shown if `useCanAccess` returns true.
+ * Parent items are hidden if ALL children are hidden.
+ */
+function useFilteredMenu(): MenuItem[] {
+  const checkPermission = useCanAccess;
+
+  function filterItems(items: PermissionMenuItem[]): MenuItem[] {
+    const result: MenuItem[] = [];
+
+    for (const item of items) {
+      // Check item-level permission
+      if (item.permission && !checkPermission(item.permission.resource, item.permission.action)) {
+        continue;
+      }
+
+      if (item.children) {
+        const filteredChildren = filterItems(item.children);
+        // Hide parent if no children are visible
+        if (filteredChildren.length === 0) continue;
+
+        result.push({
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+          children: filteredChildren,
+        } as MenuItem);
+      } else {
+        result.push({
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+        } as MenuItem);
+      }
+    }
+
+    return result;
+  }
+
+  return filterItems(MENU_DEFINITION);
 }
 
 interface SidebarProps {
@@ -77,6 +174,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const menuItems = useFilteredMenu();
 
   // Find active key from current path
   const selectedKeys = [location.pathname];
@@ -97,7 +195,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
   return (
     <Sider
       className="sidebar"
-      width={240}
+      width={270}
       collapsedWidth={72}
       collapsed={collapsed}
       trigger={null}
@@ -112,7 +210,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
         zIndex: 'var(--z-sticky)' as unknown as number,
       }}
     >
-      <div className="sidebar__container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="sidebar__container" style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
         {/* Logo */}
         <div className="sidebar__logo">
           <div className="sidebar__logo-icon">
@@ -137,7 +235,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
             mode="inline"
             selectedKeys={selectedKeys}
             defaultOpenKeys={openKeys}
-            items={getMenuItems()}
+            items={menuItems}
             onClick={handleMenuClick}
             className="sidebar__menu"
           />

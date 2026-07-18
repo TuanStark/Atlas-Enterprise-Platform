@@ -92,7 +92,7 @@
   --shadow-xl: 0 25px 50px -12px rgba(15, 23, 42, 0.1);
 
   /* Layout */
-  --sidebar-width: 260px;
+  --sidebar-width: 270px;
   --sidebar-collapsed-width: 72px;
   --header-height: 60px;
   --content-max-width: 1400px;
