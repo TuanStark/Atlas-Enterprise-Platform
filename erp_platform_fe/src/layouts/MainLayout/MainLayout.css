@@ -40,9 +40,16 @@
   }
 }
 
-/* Responsive: Tablet */
+/* Responsive: Tablet & Mobile */
 @media (max-width: 1024px) {
   .main-layout__content {
     padding: var(--space-4);
+  }
+}
+
+@media (max-width: 768px) {
+  .main-layout__body,
+  .main-layout__body--collapsed {
+    margin-left: 0 !important;
   }
 }

@@ -7,6 +7,15 @@
   border-right: 1px solid rgba(0, 0, 0, 0.06) !important;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.015);
   transition: all var(--transition-normal) !important;
+  
+  /* Layout & Position */
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-sticky) !important;
 }
 
 .sidebar .ant-layout-sider-children {
@@ -234,5 +243,25 @@
 
   to {
     opacity: 1;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -270px !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .sidebar:not(.ant-layout-sider-collapsed) {
+    left: 0 !important;
+    width: 270px !important;
+    max-width: 270px !important;
+    min-width: 270px !important;
+  }
+
+  /* Hide collapse toggler inside sidebar on mobile */
+  .sidebar__collapse-btn {
+    display: none !important;
   }
 }

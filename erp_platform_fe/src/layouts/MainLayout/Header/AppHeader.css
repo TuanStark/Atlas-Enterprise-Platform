@@ -137,6 +137,12 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .app-header,
+  .app-header--collapsed {
+    left: 0 !important;
+    padding: 0 var(--space-4) !important;
+  }
+
   .app-header__user-info,
   .app-header__search-container {
     display: none;

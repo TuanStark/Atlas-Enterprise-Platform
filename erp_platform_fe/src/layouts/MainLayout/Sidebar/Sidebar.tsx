@@ -200,15 +200,6 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
       collapsed={collapsed}
       trigger={null}
       theme="light"
-      style={{
-        overflow: 'hidden',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        zIndex: 'var(--z-sticky)' as unknown as number,
-      }}
     >
       <div className="sidebar__container" style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
         {/* Logo */}
