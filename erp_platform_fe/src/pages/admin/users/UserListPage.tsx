@@ -80,7 +80,7 @@ export default function UserListPage() {
 
     const matchSearch =
       !search ||
-      user.username.toLowerCase().includes(search) ||
+      (user.username || user.displayName || '').toLowerCase().includes(search) ||
       user.email.toLowerCase().includes(search) ||
       user.principal?.displayName?.toLowerCase().includes(search);
 
@@ -133,15 +133,14 @@ export default function UserListPage() {
       key: 'user',
       width: 280,
       render: (_, record) => {
-        const initials = record.principal?.displayName
-          ? record.principal.displayName.slice(0, 2).toUpperCase()
-          : record.username.slice(0, 2).toUpperCase();
+        const name = record.principal?.displayName || record.displayName || record.email || 'NV';
+        const initials = name.slice(0, 2).toUpperCase();
         return (
           <Space>
             <Avatar style={{ backgroundColor: 'var(--color-primary)', fontWeight: 600 }}>{initials}</Avatar>
             <div>
               <Text strong style={{ display: 'block', fontSize: 13 }}>
-                {record.principal?.displayName || record.username}
+                {record.principal?.displayName || record.displayName || record.email}
               </Text>
               <Text type="secondary" style={{ fontSize: 12 }}>{record.email}</Text>
             </div>
@@ -154,7 +153,7 @@ export default function UserListPage() {
       dataIndex: 'username',
       key: 'username',
       width: 150,
-      render: (val: string) => <Text code style={{ fontSize: 12 }}>{val}</Text>,
+      render: (val: string, record) => <Text code style={{ fontSize: 12 }}>{val || record.email}</Text>,
     },
     {
       title: 'Trạng thái',
@@ -256,10 +255,10 @@ export default function UserListPage() {
           <div style={{ marginBottom: 16 }}>
             <Space>
               <Avatar style={{ backgroundColor: 'var(--color-primary)' }}>
-                {selectedUser.principal?.displayName?.slice(0, 2).toUpperCase() || 'US'}
+                {(selectedUser.principal?.displayName || selectedUser.displayName || selectedUser.email || 'US').slice(0, 2).toUpperCase()}
               </Avatar>
               <div>
-                <Text strong>{selectedUser.principal?.displayName || selectedUser.username}</Text>
+                <Text strong>{selectedUser.principal?.displayName || selectedUser.displayName || selectedUser.email}</Text>
                 <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>{selectedUser.email}</Text>
               </div>
             </Space>

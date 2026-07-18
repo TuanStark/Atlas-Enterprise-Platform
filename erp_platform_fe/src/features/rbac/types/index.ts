@@ -101,6 +101,7 @@ export interface ManagedUser {
   principalId: string;
   username: string;
   email: string;
+  displayName?: string;
   phone?: string;
   emailVerified?: boolean;
   lastLoginAt?: string;

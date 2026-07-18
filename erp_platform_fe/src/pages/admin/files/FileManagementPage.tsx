@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Table, Typography, Row, Col, Space, Tag, Empty, Spin, Tooltip, Button, Modal } from 'antd';
+import { Card, Table, Typography, Row, Col, Space, Tag, Empty, Spin, Tooltip, Button, Modal, Image } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { FileText, Trash2, Plus, UploadCloud } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -40,6 +40,12 @@ function formatFileSize(bytes?: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function isImage(file: FileItem): boolean {
+  if (file.mimeType?.startsWith('image/')) return true;
+  const ext = file.extension?.toLowerCase() || '';
+  return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext);
 }
 
 const extensionColors: Record<string, string> = {
@@ -89,20 +95,35 @@ export default function FileManagementPage() {
       title: 'Tên tệp',
       key: 'fileName',
       render: (_, record) => (
-        <Space>
+        <Space size={12}>
           <div
             style={{
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
               borderRadius: 6,
               background: '#f5f5f5',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#8c8c8c',
+              overflow: 'hidden',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
             }}
           >
-            <FileText size={16} />
+            {isImage(record) ? (
+              <Image
+                src={`/api/v1/files/${record.id}/view`}
+                alt={record.fileName}
+                width={36}
+                height={36}
+                style={{ objectFit: 'cover' }}
+                preview={{
+                  maskClassName: 'rounded-lg text-[10px]'
+                }}
+              />
+            ) : (
+              <FileText size={16} />
+            )}
           </div>
           <div>
             <a

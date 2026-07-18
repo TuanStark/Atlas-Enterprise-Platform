@@ -1,4 +1,4 @@
-import { Layout, Avatar, Dropdown, Badge, Space, Typography, Input } from 'antd';
+import { Layout, Avatar, Dropdown, Badge, Space, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   Bell,
@@ -6,9 +6,7 @@ import {
   LogOut,
   User,
   Settings,
-  Search,
   MessageSquare,
-  HelpCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, useCurrentUser } from '@features/auth/hooks/useAuth';
@@ -77,31 +75,10 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
         >
           <MenuIcon size={18} />
         </button>
-
-        <div className="flex items-center max-w-[320px] w-full max-[768px]:hidden">
-          <Input
-            placeholder="Search reports, dashboards, exports..."
-            prefix={<Search size={14} style={{ color: 'var(--color-text-tertiary)', marginRight: 4 }} />}
-            suffix={
-              <span className="text-[10px] bg-[#f1f5f9] border border-solid border-border text-text-secondary px-[5px] py-[1px] rounded font-medium">
-                ⌘ K
-              </span>
-            }
-            className="w-full !rounded-lg !bg-bg-secondary !border-solid !border-[rgba(226,232,240,0.8)] !h-9 transition-all duration-150 text-[13px] hover:!bg-white focus:!bg-white hover:!border-primary/30 focus:!border-primary/30 focus:!shadow-[0_0_0_3px_rgba(10,101,255,0.05)]"
-          />
-        </div>
       </div>
 
       {/* Right side: quick actions, chat, notifications, user avatar */}
       <div className="flex items-center gap-3 shrink-0">
-        {/* Help icon */}
-        <button
-          className="flex items-center justify-center w-9 h-9 bg-transparent rounded-md text-text-secondary cursor-pointer transition-all duration-150 hover:bg-bg-secondary hover:text-text-primary border-none"
-          aria-label="Help"
-        >
-          <HelpCircle size={18} />
-        </button>
-
         {/* Chat / Messages icon */}
         <button
           className="flex items-center justify-center w-9 h-9 bg-transparent rounded-md text-text-secondary cursor-pointer transition-all duration-150 hover:bg-bg-secondary hover:text-text-primary border-none"

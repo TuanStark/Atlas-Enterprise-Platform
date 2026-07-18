@@ -67,8 +67,8 @@ export const rbacApi = {
 
   // --- Users ---
   async listUsers(): Promise<ManagedUser[]> {
-    const { data } = await httpClient.get<ManagedUser[]>('/users');
-    return data;
+    const { data } = await httpClient.get<any>('/users');
+    return Array.isArray(data) ? data : (data?.items || []);
   },
 
   // --- Audit Logs ---
