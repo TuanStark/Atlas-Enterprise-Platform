@@ -71,7 +71,7 @@ export default function SettingsPage() {
     },
     onSuccess: (updatedTenant) => {
       message.success('Đã lưu cấu hình doanh nghiệp thành công!');
-      
+
       // Update header company badge instantly
       updateUser({
         tenant: {
@@ -83,6 +83,7 @@ export default function SettingsPage() {
         },
       });
 
+      void queryClient.invalidateQueries({ queryKey: ['active-tenant', user?.tenantId] });
       void queryClient.invalidateQueries({ queryKey: ['tenant-settings', user?.tenantId] });
     },
     onError: (error: any) => {

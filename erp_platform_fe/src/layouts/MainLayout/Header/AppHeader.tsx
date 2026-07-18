@@ -12,6 +12,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useAuth, useCurrentUser } from '@features/auth/hooks/useAuth';
+import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -28,6 +29,7 @@ interface AppHeaderProps {
 export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
   const user = useCurrentUser();
   const { logout } = useAuth();
+  const { data: tenant } = useActiveTenant();
 
   const userMenuItems: MenuProps['items'] = [
     {
@@ -119,13 +121,13 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
         </button>
 
         {/* Tenant / Company Badge */}
-        {user?.tenant && (
+        {tenant && (
           <Tag
             icon={
-              user.tenant.logoFileId ? (
+              tenant.logoFileId ? (
                 <Avatar
                   size={16}
-                  src={`/api/v1/files/${user.tenant.logoFileId}/view`}
+                  src={`/api/v1/files/${tenant.logoFileId}/view`}
                   style={{
                     marginRight: 4,
                     display: 'inline-flex',
@@ -144,14 +146,12 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
               padding: '4px 10px',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 4,
-              border: '1px solid rgba(14, 165, 233, 0.2)',
-              backgroundColor: 'rgba(14, 165, 233, 0.05)',
-              color: 'var(--color-primary)',
-              marginRight: 8,
+              boxShadow: '0 2px 6px rgba(14, 165, 233, 0.08)',
+              border: '1px solid rgba(14, 165, 233, 0.15)',
+              marginRight: 12,
             }}
           >
-            {user.tenant.name} ({user.tenant.code})
+            {tenant.name} ({tenant.code})
           </Tag>
         )}
 

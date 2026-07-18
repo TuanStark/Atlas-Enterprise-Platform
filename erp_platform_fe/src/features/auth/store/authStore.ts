@@ -85,7 +85,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
     {
       name: 'atlas-auth-storage',
       partialize: (state) => ({
-        user: state.user,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,

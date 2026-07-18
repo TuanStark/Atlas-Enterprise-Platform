@@ -25,6 +25,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { useCanAccess } from '@shared/hooks/usePermission';
+import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
 
 const { Sider } = Layout;
 
@@ -174,6 +175,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const menuItems = useFilteredMenu();
+  const { data: tenant } = useActiveTenant();
 
   // Find active key from current path
   const selectedKeys = [location.pathname];
@@ -202,25 +204,49 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
       theme="light"
     >
       <div className="flex flex-col h-full w-full">
-        {/* Logo */}
         <div
           className={`flex items-center gap-3 p-5 border-0 border-b border-solid border-[rgba(0,0,0,0.04)] mb-2 transition-all duration-200 ${collapsed ? 'justify-center !px-0 gap-0' : 'justify-start'
             }`}
         >
-          <div
-            className={`flex items-center justify-center bg-gradient-to-br from-[#0a65ff] to-[#004ecc] rounded-lg text-white shrink-0 shadow-[0_4px_12px_rgba(10,101,255,0.25)] transition-all duration-200 ${collapsed ? 'w-9 h-9' : 'w-[38px] h-[38px]'
-              }`}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 18C9.33 18 4.67 19.33 4.67 22C6.24 23.55 8.5 24.5 11 24.5C13.5 24.5 15.76 23.55 17.33 22C17.33 19.33 12.67 18 12 18Z" fill="currentColor" />
-              <circle cx="6" cy="9" r="1.5" fill="currentColor" />
-              <circle cx="18" cy="9" r="1.5" fill="currentColor" />
-            </svg>
+          <div className="relative shrink-0 flex items-center justify-center">
+            {tenant?.logoFileId ? (
+              <img
+                src={`/api/v1/files/${tenant.logoFileId}/view`}
+                alt={tenant.name}
+                className={`rounded-lg object-contain bg-white border border-solid border-[rgba(0,0,0,0.06)] shadow-sm transition-all duration-200 ${
+                  collapsed ? 'w-9 h-9' : 'w-10 h-10'
+                }`}
+                style={{ padding: 2 }}
+              />
+            ) : (
+              <div
+                className={`flex items-center justify-center bg-gradient-to-br from-[#1f2937] to-[#111827] rounded-lg text-white font-extrabold transition-all duration-200 ${
+                  collapsed ? 'w-9 h-9 text-[14px]' : 'w-10 h-10 text-[16px]'
+                }`}
+              >
+                {tenant?.name?.[0] || 'T'}
+              </div>
+            )}
+            {/* Atlas Overlay Stamp Badge representing the vendor */}
+            <div
+              className="absolute -bottom-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-gradient-to-br from-[#0a65ff] to-[#004ecc] flex items-center justify-center text-white border-2 border-white border-solid shadow-[0_2px_4px_rgba(10,101,255,0.25)]"
+              title="Powered by Atlas"
+            >
+              <span className="text-[9px] font-black leading-none select-none text-white">A</span>
+            </div>
           </div>
           {!collapsed && (
-            <div className="flex flex-col leading-tight animate-[fadeIn_0.2s_ease-in-out]">
-              <span className="text-[#1f2937] text-[17px] font-extrabold tracking-tight whitespace-nowrap">HRIMS</span>
-              <span className="text-[#9ca3af] text-[9px] font-semibold uppercase tracking-wider whitespace-nowrap">Hệ thống thông tin nhân sự</span>
+            <div className="flex flex-col leading-tight overflow-hidden animate-[fadeIn_0.2s_ease-in-out]">
+              <span 
+                className="text-[#1f2937] text-[14px] font-extrabold tracking-tight truncate whitespace-nowrap block"
+                title={tenant?.name || 'Doanh nghiệp'}
+                style={{ width: 160 }}
+              >
+                {tenant?.name || 'Doanh nghiệp'}
+              </span>
+              <span className="text-[#0a65ff] text-[9px] font-bold uppercase tracking-wider whitespace-nowrap">
+                HRIMS <span className="text-[#9ca3af] font-medium tracking-normal lowercase normal-case">• powered by Atlas</span>
+              </span>
             </div>
           )}
         </div>

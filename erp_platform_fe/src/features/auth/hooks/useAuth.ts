@@ -6,9 +6,6 @@ import { authApi } from '../api/authApi';
 import type { LoginRequest } from '@shared/types';
 import type { ApiError } from '@shared/types';
 
-/**
- * useAuth — Main auth hook for login/logout operations
- */
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '@shared/api';
 
 export function useAuth() {
@@ -61,28 +58,25 @@ export function useAuth() {
   };
 }
 
-/**
- * useCurrentUser — Quick access to current user info
- */
 export function useCurrentUser() {
   return useAuthStore((state) => state.user);
 }
 
-/**
- * usePermission — Check PBAC permissions
- * Maps to backend's Policy Evaluation Engine
- *
- * Usage: const canCreate = usePermission('hrm.employee', 'create');
- */
+
 export function usePermission(resource: string, action: string): boolean {
-  return useAuthStore((state) => state.hasPermission(resource, action));
+  const user = useCurrentUser();
+  if (!user) return false;
+  const permKey = `${resource}:${action}`;
+  return (
+    user.permissions.includes(permKey) ||
+    user.permissions.includes('*') ||
+    user.roles.includes('SUPER_ADMIN')
+  );
 }
 
-/**
- * useHasRole — Check if user has a specific role
- *
- * Usage: const isHrManager = useHasRole('HR_Manager');
- */
+
 export function useHasRole(role: string): boolean {
-  return useAuthStore((state) => state.hasRole(role));
+  const user = useCurrentUser();
+  if (!user) return false;
+  return user.roles.includes(role) || user.roles.includes('SUPER_ADMIN');
 }
