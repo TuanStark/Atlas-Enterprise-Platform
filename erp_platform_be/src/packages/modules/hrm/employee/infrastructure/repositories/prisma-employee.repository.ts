@@ -10,6 +10,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   private readonly includeRelations = {
+    principal: true,
     employeeContacts: true,
     employeeAddresses: true,
     employeeEmergencyContacts: true,
@@ -19,59 +20,68 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
   async save(employee: Employee): Promise<void> {
     const data = EmployeePersistenceMapper.toPersistence(employee);
 
-    await this.prisma.employee.create({
-      data: {
-        ...data,
-        employeeContacts: {
-          create: employee.contacts.map((c) => ({
-            id: c.id.toString(),
-            contactType: c.contactType,
-            value: c.value,
-            isPrimary: c.isPrimary,
-            verifiedAt: c.verifiedAt,
-            createdAt: c.createdAt,
-          })),
+    await this.prisma.$transaction(async (tx) => {
+      await tx.employee.create({
+        data: {
+          ...data,
+          employeeContacts: {
+            create: employee.contacts.map((c) => ({
+              id: c.id.toString(),
+              contactType: c.contactType,
+              value: c.value,
+              isPrimary: c.isPrimary,
+              verifiedAt: c.verifiedAt,
+              createdAt: c.createdAt,
+            })),
+          },
+          employeeAddresses: {
+            create: employee.addresses.map((a) => ({
+              id: a.id.toString(),
+              addressType: a.addressType,
+              country: a.country,
+              state: a.state,
+              city: a.city,
+              district: a.district,
+              ward: a.ward,
+              addressLine: a.addressLine,
+              postalCode: a.postalCode,
+              isPrimary: a.isPrimary,
+              createdAt: a.createdAt,
+            })),
+          },
+          employeeEmergencyContacts: {
+            create: employee.emergencyContacts.map((ec) => ({
+              id: ec.id.toString(),
+              fullName: ec.fullName,
+              relationship: ec.relationship,
+              phone: ec.phone,
+              email: ec.email,
+              address: ec.address,
+              priority: ec.priority,
+              createdAt: ec.createdAt,
+            })),
+          },
+          employeeDocuments: {
+            create: employee.documents.map((d) => ({
+              id: d.id.toString(),
+              documentType: d.documentType,
+              documentNumber: d.documentNumber,
+              issuedDate: d.issuedDate,
+              expiryDate: d.expiryDate,
+              issuedPlace: d.issuedPlace,
+              fileId: d.fileId,
+              createdAt: d.createdAt,
+            })),
+          },
         },
-        employeeAddresses: {
-          create: employee.addresses.map((a) => ({
-            id: a.id.toString(),
-            addressType: a.addressType,
-            country: a.country,
-            state: a.state,
-            city: a.city,
-            district: a.district,
-            ward: a.ward,
-            addressLine: a.addressLine,
-            postalCode: a.postalCode,
-            isPrimary: a.isPrimary,
-            createdAt: a.createdAt,
-          })),
-        },
-        employeeEmergencyContacts: {
-          create: employee.emergencyContacts.map((ec) => ({
-            id: ec.id.toString(),
-            fullName: ec.fullName,
-            relationship: ec.relationship,
-            phone: ec.phone,
-            email: ec.email,
-            address: ec.address,
-            priority: ec.priority,
-            createdAt: ec.createdAt,
-          })),
-        },
-        employeeDocuments: {
-          create: employee.documents.map((d) => ({
-            id: d.id.toString(),
-            documentType: d.documentType,
-            documentNumber: d.documentNumber,
-            issuedDate: d.issuedDate,
-            expiryDate: d.expiryDate,
-            issuedPlace: d.issuedPlace,
-            fileId: d.fileId,
-            createdAt: d.createdAt,
-          })),
-        },
-      },
+      });
+
+      if (employee.avatarFileId) {
+        await tx.principal.update({
+          where: { id: employee.principalId.getValue() },
+          data: { avatarFileId: employee.avatarFileId },
+        });
+      }
     });
   }
 
@@ -93,11 +103,18 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
           nationalId: data.nationalId,
           passportNo: data.passportNo,
           taxNumber: data.taxNumber,
-          avatarFileId: data.avatarFileId,
           status: data.status,
           metadata: data.metadata,
           updatedAt: data.updatedAt,
           deletedAt: data.deletedAt,
+        },
+      });
+
+      // Update avatarFileId on Principal
+      await tx.principal.update({
+        where: { id: employee.principalId.getValue() },
+        data: {
+          avatarFileId: employee.avatarFileId || null,
         },
       });
 

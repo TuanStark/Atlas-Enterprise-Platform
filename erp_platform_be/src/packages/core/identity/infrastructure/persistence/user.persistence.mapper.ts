@@ -37,7 +37,7 @@ export class UserPersistenceMapper {
       firstName: prisma.principal.employee?.firstName ?? '',
       lastName: prisma.principal.employee?.lastName ?? '',
       displayName: prisma.principal.displayName ?? undefined,
-      avatarUrl: prisma.principal.employee?.avatarFileId ?? undefined,
+      avatarUrl: prisma.principal.avatarFileId ?? undefined,
       status: domainStatus,
       type: domainType,
       createdAt: prisma.createdAt ?? new Date(),

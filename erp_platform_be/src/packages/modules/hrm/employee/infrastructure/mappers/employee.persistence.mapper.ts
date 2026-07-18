@@ -47,7 +47,7 @@ export class EmployeePersistenceMapper {
         passportNo: prisma.passportNo ?? undefined,
         taxNumber: prisma.taxNumber ?? undefined,
       }),
-      avatarFileId: prisma.avatarFileId ?? undefined,
+      avatarFileId: (prisma as any).principal?.avatarFileId ?? undefined,
       status: (prisma.status as EmployeeStatus) ?? EmployeeStatus.ACTIVE,
       metadata: prisma.metadata as Record<string, unknown> | undefined,
       contacts: (prisma.employeeContacts ?? []).map((c) =>
@@ -121,7 +121,6 @@ export class EmployeePersistenceMapper {
       nationalId: entity.personalInfo.nationalId,
       passportNo: entity.personalInfo.passportNo,
       taxNumber: entity.personalInfo.taxNumber,
-      avatarFileId: entity.avatarFileId,
       status: entity.status,
       metadata: entity.metadata as any,
       createdAt: entity.createdAt,

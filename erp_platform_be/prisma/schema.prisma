@@ -521,6 +521,7 @@ model Principal {
   updatedAt   DateTime?       @map("updated_at") @db.Timestamptz
   deletedAt   DateTime?       @map("deleted_at") @db.Timestamptz
   version     Int?            @map("version")
+  avatarFileId  String?         @map("avatar_file_id") @db.Uuid
 
   tenant                             Tenant                    @relation(fields: [tenantId], references: [id])
   user                               User?                     @relation
@@ -548,6 +549,7 @@ model Principal {
   createdByTags                      Tag[]                     @relation
   assignedByTagAssignments           TagAssignment[]           @relation
   employee                           Employee?                 @relation
+  avatarFile                         File?                     @relation("Principal_avatarFile", fields: [avatarFileId], references: [id])
   changedByEmploymentStatusHistories EmploymentStatusHistory[] @relation
   requestedByAttendanceAdjustments   AttendanceAdjustment[]    @relation("AttendanceAdjustment_requestedByPrincipal")
   approvedByAttendanceAdjustments    AttendanceAdjustment[]    @relation("AttendanceAdjustment_approvedByPrincipal")
@@ -1221,7 +1223,7 @@ model File {
   fileVersions         FileVersion[]         @relation
   fileAttachments      FileAttachment[]      @relation
   auditExports         AuditExport[]         @relation
-  avatarEmployees      Employee[]            @relation
+  avatarPrincipals     Principal[]           @relation("Principal_avatarFile")
   employeeDocuments    EmployeeDocument[]    @relation
   employmentContracts  EmploymentContract[]  @relation
   payslipPayrolls      Payroll[]             @relation
@@ -1477,7 +1479,6 @@ model Employee {
   nationalId    String?        @map("national_id") @db.VarChar(100)
   passportNo    String?        @map("passport_no") @db.VarChar(100)
   taxNumber     String?        @map("tax_number") @db.VarChar(100)
-  avatarFileId  String?        @map("avatar_file_id") @db.Uuid
   status        String?        @map("status") @db.VarChar(30)
   metadata      Json?          @map("metadata") @db.JsonB
   createdAt     DateTime?      @map("created_at") @db.Timestamptz
@@ -1486,7 +1487,6 @@ model Employee {
 
   tenant                    Tenant                     @relation(fields: [tenantId], references: [id])
   principal                 Principal                  @relation(fields: [principalId], references: [id])
-  avatarFile                File?                      @relation(fields: [avatarFileId], references: [id])
   employeeContacts          EmployeeContact[]          @relation
   employeeAddresses         EmployeeAddress[]          @relation
   employeeEmergencyContacts EmployeeEmergencyContact[] @relation

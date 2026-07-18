@@ -83,24 +83,46 @@ export class PrismaUserRepository implements UserRepository {
               ? 'locked'
               : 'inactive',
         displayName: user.displayName,
+        avatarFileId: user.avatarUrl || null,
         version: user.version,
         updatedAt: user.updatedAt,
       },
     });
 
-    // Update Employee
-    await this.prisma.employee.updateMany({
+    // Update or Create Employee (Upsert logic)
+    const employeeExists = await this.prisma.employee.findUnique({
       where: {
         principalId: user.principalId.getValue(),
       },
-      data: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        preferredName: user.displayName,
-        avatarFileId: user.avatarUrl || null,
-        updatedAt: user.updatedAt,
-      },
     });
+
+    if (!employeeExists) {
+      await this.prisma.employee.create({
+        data: {
+          tenantId: user.tenantId.getValue(),
+          principalId: user.principalId.getValue(),
+          employeeNo: `EMP-${user.email.value.split('@')[0]}-${Date.now().toString().slice(-4)}`,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          preferredName: user.displayName,
+          status: 'active',
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
+    } else {
+      await this.prisma.employee.update({
+        where: {
+          principalId: user.principalId.getValue(),
+        },
+        data: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          preferredName: user.displayName,
+          updatedAt: user.updatedAt,
+        },
+      });
+    }
   }
 
   async delete(user: User): Promise<void> {
