@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, Table, Button, Tag, Typography, Row, Col, Space, Modal, Form, Select, DatePicker, Empty, Spin, Avatar, Badge, Calendar, Segmented, Popover, Divider } from 'antd';
-import type { TableColumnsType } from 'antd';
-import { UserCheck, Plus, CalendarDays, List, Clock } from 'lucide-react';
+import { Card, Button, Tag, Typography, Row, Col, Space, Modal, Form, Select, DatePicker, Empty, Spin, Avatar, Badge, Calendar, Popover, Divider } from 'antd';
 import { FilterBar } from '@shared/components/FilterBar';
 import type { FilterBarField } from '@shared/components/FilterBar';
 import { useEmployees } from '@features/employee/hooks/useEmployee';
@@ -9,13 +7,13 @@ import { useShifts, useAssignShift, useEmployeeAssignments } from '@features/att
 import type { Employee } from '@features/employee/types';
 import type { ShiftAssignment } from '@features/attendance/types';
 import dayjs from 'dayjs';
+import { Plus, UserCheck } from 'lucide-react';
 
 const { Title, Text } = Typography;
 
 export default function TimesheetPage() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'calendar' | 'table'>('calendar');
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs());
   const [form] = Form.useForm();
 
@@ -198,45 +196,7 @@ export default function TimesheetPage() {
     );
   };
 
-  const assignmentColumns: TableColumnsType<ShiftAssignment> = [
-    {
-      title: 'Ca làm việc',
-      key: 'shift',
-      render: (_, record) => (
-        <div>
-          <Tag color="blue" style={{ fontWeight: 600, marginBottom: 2 }}>{record.shift?.code || 'CA'}</Tag>
-          <Text strong style={{ display: 'block', fontSize: 12 }}>{record.shift?.name}</Text>
-        </div>
-      ),
-    },
-    {
-      title: 'Giờ ca',
-      key: 'hours',
-      render: (_, record) => {
-        const start = record.shift?.startTime ? record.shift.startTime.slice(0, 5) : '--:--';
-        const end = record.shift?.endTime ? record.shift.endTime.slice(0, 5) : '--:--';
-        return <Text style={{ fontSize: 12 }}>{start} - {end}</Text>;
-      },
-    },
-    {
-      title: 'Hiệu lực',
-      key: 'dates',
-      render: (_, record) => {
-        const from = dayjs(record.effectiveFrom).format('DD/MM/YYYY');
-        const to = record.effectiveTo ? dayjs(record.effectiveTo).format('DD/MM/YYYY') : 'Vô thời hạn';
-        return <Text style={{ fontSize: 12 }}>{from} - {to}</Text>;
-      },
-    },
-    {
-      title: 'Chính thức',
-      dataIndex: 'isPrimary',
-      key: 'isPrimary',
-      width: 100,
-      render: (primary) => (
-        <Badge status={primary ? 'success' : 'default'} text={primary ? 'Chính' : 'Phụ'} />
-      ),
-    },
-  ];
+
 
   return (
     <div style={{ padding: 24 }}>
@@ -256,17 +216,31 @@ export default function TimesheetPage() {
         fields={filterFields}
         extra={
           selectedEmployee && (
-            <Popover
-              content={renderEmployeeHoverCard(selectedEmployee)}
-              placement="bottomRight"
-              trigger="hover"
-              mouseEnterDelay={0.2}
-              mouseLeaveDelay={0.1}
-            >
-              <Button type="link" size="small" icon={<UserCheck size={14} />} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                Xem nhanh hồ sơ nhân sự
-              </Button>
-            </Popover>
+            <Space size={12}>
+              <Popover
+                content={renderEmployeeHoverCard(selectedEmployee)}
+                placement="bottomRight"
+                trigger="hover"
+                mouseEnterDelay={0.2}
+                mouseLeaveDelay={0.1}
+              >
+                <Button type="link" size="small" icon={<UserCheck size={14} />} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  Xem nhanh hồ sơ nhân sự
+                </Button>
+              </Popover>
+              {employmentId ? (
+                <Button
+                  type="primary"
+                  icon={<Plus size={14} />}
+                  onClick={() => openModal(selectedDate)}
+                  style={{ borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
+                  Phân ca làm việc
+                </Button>
+              ) : (
+                <Tag color="error">Thiếu Hợp đồng/Employment</Tag>
+              )}
+            </Space>
           )
         }
       />
@@ -277,62 +251,12 @@ export default function TimesheetPage() {
           {isLoadingEmployees ? (
             <div style={{ padding: 60, textAlign: 'center' }}><Spin /></div>
           ) : selectedEmployee ? (
-            <Card
-              title={
-                <Row justify="space-between" align="middle" style={{ width: '100%' }}>
-                  <Col>
-                    <Space size={12}>
-                      <Avatar style={{ backgroundColor: 'var(--color-primary)', color: 'white', fontWeight: 600 }}>
-                        {`${selectedEmployee.lastName?.[0] || ''}${selectedEmployee.firstName?.[0] || ''}`}
-                      </Avatar>
-                      <div>
-                        <span style={{ fontWeight: 600, fontSize: 14 }}>
-                          {selectedEmployee.lastName} {selectedEmployee.firstName}
-                        </span>
-                        {activeEmployment ? (
-                          <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', display: 'block' }}>
-                            {activeEmployment.positionName} • {activeEmployment.departmentName}
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', display: 'block' }}>
-                            Chưa gán vị trí/phòng ban
-                          </span>
-                        )}
-                      </div>
-                    </Space>
-                  </Col>
-                  <Col>
-                    {employmentId ? (
-                      <Button
-                        type="primary"
-                        icon={<Plus size={14} />}
-                        onClick={() => openModal(selectedDate)}
-                        style={{ borderRadius: 6 }}
-                      >
-                        Phân ca làm việc
-                      </Button>
-                    ) : (
-                      <Tag color="error">Thiếu Hợp đồng/Employment</Tag>
-                    )}
-                  </Col>
-                </Row>
-              }
-              style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
-            >
-              {/* Segmented View Switcher & Legend */}
-              <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
-                <Col>
-                  <Segmented
-                    value={viewMode}
-                    onChange={(value) => setViewMode(value as 'calendar' | 'table')}
-                    options={[
-                      { label: 'Dạng lịch', value: 'calendar', icon: <CalendarDays size={14} /> },
-                      { label: 'Dạng bảng', value: 'table', icon: <List size={14} /> },
-                    ]}
-                  />
-                </Col>
-                <Col>
-                  {viewMode === 'calendar' && (
+            <Card style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+              {isLoadingAssignments ? (
+                <div style={{ padding: 60, textAlign: 'center' }}><Spin /></div>
+              ) : (
+                <div className="shift-calendar-container">
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
                     <Space size={16}>
                       <Space size={6}>
                         <Badge status="processing" />
@@ -343,150 +267,41 @@ export default function TimesheetPage() {
                         <Text type="secondary" style={{ fontSize: 12 }}>Ca phụ</Text>
                       </Space>
                     </Space>
-                  )}
-                </Col>
-              </Row>
-
-              {viewMode === 'calendar' ? (
-                <div>
-                  {isLoadingAssignments ? (
-                    <div style={{ padding: 60, textAlign: 'center' }}><Spin /></div>
-                  ) : (
-                    <div className="shift-calendar-container" style={{ marginBottom: 20 }}>
-                      <Calendar
-                        fullscreen={true}
-                        cellRender={(date) => {
-                          const dailyAssignments = getAssignmentsForDate(date);
-                          return (
-                            <div style={{ maxHeight: 75, overflowY: 'auto' }}>
-                              {dailyAssignments.map((assignment) => (
-                                <div key={assignment.id} style={{ margin: '2px 0' }}>
-                                  <Tag
-                                    color={assignment.isPrimary ? 'blue' : 'default'}
-                                    style={{
-                                      fontSize: '11px',
-                                      width: '100%',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      margin: 0,
-                                      padding: '0 4px',
-                                      border: assignment.isPrimary ? '1px solid var(--color-primary-bg-hover)' : '1px solid var(--color-border)',
-                                    }}
-                                  >
-                                    <span style={{ fontWeight: 600 }}>{assignment.shift?.code || 'Ca'}</span>
-                                    <span style={{ fontSize: '10px', marginLeft: 4, opacity: 0.8 }}>
-                                      ({assignment.shift?.startTime?.slice(0, 5) || '--:--'})
-                                    </span>
-                                  </Tag>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        }}
-                        value={selectedDate}
-                        onSelect={(date) => setSelectedDate(date)}
-                      />
-                    </div>
-                  )}
-
-                  {/* Date details section */}
-                  <Card
-                    size="small"
-                    title={
-                      <Space>
-                        <CalendarDays size={15} style={{ color: 'var(--color-primary)' }} />
-                        <span style={{ fontWeight: 600, fontSize: 13 }}>
-                          Chi tiết ca trực ngày {selectedDate.format('DD/MM/YYYY')}
-                        </span>
-                      </Space>
-                    }
-                    extra={
-                      employmentId && (
-                        <Button
-                          type="dashed"
-                          size="small"
-                          icon={<Plus size={12} />}
-                          onClick={() => openModal(selectedDate)}
-                        >
-                          Thêm ca ngày này
-                        </Button>
-                      )
-                    }
-                    style={{
-                      borderRadius: 10,
-                      backgroundColor: 'var(--color-bg-layout)',
-                      border: '1px dashed var(--color-border)',
-                    }}
-                  >
-                    {getAssignmentsForDate(selectedDate).length > 0 ? (
-                      <Row gutter={[12, 12]}>
-                        {getAssignmentsForDate(selectedDate).map((assignment) => {
-                          const start = assignment.shift?.startTime ? assignment.shift.startTime.slice(0, 5) : '--:--';
-                          const end = assignment.shift?.endTime ? assignment.shift.endTime.slice(0, 5) : '--:--';
-                          return (
-                            <Col xs={24} sm={12} key={assignment.id}>
-                              <Card
-                                bordered={false}
-                                styles={{ body: { padding: 12 } }}
+                  </div>
+                  <Calendar
+                    fullscreen={true}
+                    cellRender={(date) => {
+                      const dailyAssignments = getAssignmentsForDate(date);
+                      return (
+                        <div style={{ maxHeight: 75, overflowY: 'auto' }}>
+                          {dailyAssignments.map((assignment) => (
+                            <div key={assignment.id} style={{ margin: '2px 0' }}>
+                              <Tag
+                                color={assignment.isPrimary ? 'blue' : 'default'}
                                 style={{
-                                  borderRadius: 8,
-                                  background: '#ffffff',
-                                  border: '1px solid var(--color-border-secondary)',
-                                  boxShadow: '0 2px 6px rgba(0,0,0,0.01)',
+                                  fontSize: '11px',
+                                  width: '100%',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  margin: 0,
+                                  padding: '0 4px',
+                                  border: assignment.isPrimary ? '1px solid var(--color-primary-bg-hover)' : '1px solid var(--color-border)',
                                 }}
                               >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <div>
-                                    <Space style={{ marginBottom: 4 }}>
-                                      <Tag color={assignment.isPrimary ? 'blue' : 'default'} style={{ fontWeight: 600 }}>
-                                        {assignment.shift?.code}
-                                      </Tag>
-                                      <Text strong style={{ fontSize: 13 }}>{assignment.shift?.name}</Text>
-                                    </Space>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 4 }}>
-                                      <Text type="secondary" style={{ fontSize: 12 }}>
-                                        <Clock size={12} style={{ marginRight: 4, display: 'inline', verticalAlign: 'middle' }} />
-                                        Giờ làm việc: <Text strong style={{ fontSize: 12 }}>{start} - {end}</Text>
-                                      </Text>
-                                      <Text type="secondary" style={{ fontSize: 12 }}>
-                                        Nghỉ giữa ca: {assignment.shift?.breakMinutes || 0} phút
-                                      </Text>
-                                    </div>
-                                  </div>
-                                  <Badge
-                                    status={assignment.isPrimary ? 'success' : 'default'}
-                                    text={<span style={{ fontSize: 11 }}>{assignment.isPrimary ? 'Chính' : 'Phụ'}</span>}
-                                  />
-                                </div>
-                              </Card>
-                            </Col>
-                          );
-                        })}
-                      </Row>
-                    ) : (
-                      <div style={{ padding: '16px 0', textAlign: 'center' }}>
-                        <Text type="secondary" style={{ fontSize: 13 }}>Không có ca làm việc nào được gán cho ngày này.</Text>
-                      </div>
-                    )}
-                  </Card>
-                </div>
-              ) : (
-                /* Table View */
-                <div style={{ marginBottom: 16 }}>
-                  <Text strong style={{ fontSize: 13, display: 'block', marginBottom: 12 }}>Lịch sử phân ca làm việc</Text>
-                  {isLoadingAssignments ? (
-                    <div style={{ padding: 30, textAlign: 'center' }}><Spin /></div>
-                  ) : assignments.length > 0 ? (
-                    <Table<ShiftAssignment>
-                      columns={assignmentColumns}
-                      dataSource={assignments}
-                      rowKey="id"
-                      pagination={{ pageSize: 5 }}
-                    />
-                  ) : (
-                    <Empty description="Nhân sự này chưa được xếp ca làm việc nào." />
-                  )}
+                                <span style={{ fontWeight: 600 }}>{assignment.shift?.code || 'Ca'}</span>
+                                <span style={{ fontSize: '10px', marginLeft: 4, opacity: 0.8 }}>
+                                  ({assignment.shift?.startTime?.slice(0, 5) || '--:--'})
+                                </span>
+                              </Tag>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }}
+                    value={selectedDate}
+                    onSelect={(date) => setSelectedDate(date)}
+                  />
                 </div>
               )}
             </Card>
