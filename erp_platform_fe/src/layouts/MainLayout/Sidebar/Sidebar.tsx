@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useCanAccess } from '@shared/hooks/usePermission';
 import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
+import logoHrm from '@/assets/logo-hrm.jpeg';
 
 const { Sider } = Layout;
 
@@ -213,31 +214,31 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
               <img
                 src={`/api/v1/files/${tenant.logoFileId}/view`}
                 alt={tenant.name}
-                className={`rounded-lg object-contain bg-white border border-solid border-[rgba(0,0,0,0.06)] shadow-sm transition-all duration-200 ${
-                  collapsed ? 'w-9 h-9' : 'w-10 h-10'
-                }`}
+                className={`rounded-lg object-contain bg-white border border-solid border-[rgba(0,0,0,0.06)] shadow-sm transition-all duration-200 ${collapsed ? 'w-9 h-9' : 'w-10 h-10'
+                  }`}
                 style={{ padding: 2 }}
               />
             ) : (
-              <div
-                className={`flex items-center justify-center bg-gradient-to-br from-[#1f2937] to-[#111827] rounded-lg text-white font-extrabold transition-all duration-200 ${
-                  collapsed ? 'w-9 h-9 text-[14px]' : 'w-10 h-10 text-[16px]'
-                }`}
-              >
-                {tenant?.name?.[0] || 'T'}
-              </div>
+              <img
+                src={logoHrm}
+                alt={tenant?.name || 'HRIMS'}
+                className={`rounded-lg object-cover bg-white border border-solid border-[rgba(0,0,0,0.06)] shadow-sm transition-all duration-200 ${collapsed ? 'w-9 h-9' : 'w-10 h-10'
+                  }`}
+              />
             )}
             {/* Atlas Overlay Stamp Badge representing the vendor */}
-            <div
-              className="absolute -bottom-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-gradient-to-br from-[#0a65ff] to-[#004ecc] flex items-center justify-center text-white border-2 border-white border-solid shadow-[0_2px_4px_rgba(10,101,255,0.25)]"
-              title="Powered by Atlas"
-            >
-              <span className="text-[9px] font-black leading-none select-none text-white">A</span>
-            </div>
+            {tenant?.logoFileId && (
+              <div
+                className="absolute -bottom-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center border-2 border-white border-solid shadow-[0_2px_4px_rgba(0,0,0,0.12)] overflow-hidden"
+                title="Powered by HRIMS"
+              >
+                <img src={logoHrm} alt="HRIMS Logo" className="w-full h-full object-cover rounded-full" />
+              </div>
+            )}
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight overflow-hidden animate-[fadeIn_0.2s_ease-in-out]">
-              <span 
+              <span
                 className="text-[#1f2937] text-[14px] font-extrabold tracking-tight truncate whitespace-nowrap block"
                 title={tenant?.name || 'Doanh nghiệp'}
                 style={{ width: 160 }}
@@ -245,7 +246,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
                 {tenant?.name || 'Doanh nghiệp'}
               </span>
               <span className="text-[#0a65ff] text-[9px] font-bold uppercase tracking-wider whitespace-nowrap">
-                HRIMS <span className="text-[#9ca3af] font-medium tracking-normal lowercase normal-case">• powered by Atlas</span>
+                HRIMS <span className="text-[#9ca3af] font-medium tracking-normal lowercase normal-case">• powered by TuanStark</span>
               </span>
             </div>
           )}

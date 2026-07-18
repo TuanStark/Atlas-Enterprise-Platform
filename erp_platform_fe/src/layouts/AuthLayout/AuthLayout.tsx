@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { ShieldCheck, Lock, Shield, Server } from 'lucide-react';
+import logoHrm from '@/assets/logo-hrm.jpeg';
 
 /**
  * AuthLayout — Layout for unauthenticated pages (login, forgot password)
@@ -13,13 +14,11 @@ export function AuthLayout() {
         <div className="w-full max-w-[520px] flex flex-col h-full">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-11 h-11 bg-primary rounded-xl flex items-center justify-center text-white shadow-[0_8px_16px_rgba(10,101,255,0.2)]">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 18C9.33 18 4.67 19.33 4.67 22C6.24 23.55 8.5 24.5 11 24.5C13.5 24.5 15.76 23.55 17.33 22C17.33 19.33 12.67 18 12 18Z" fill="currentColor"/>
-                <circle cx="6" cy="9" r="2" fill="currentColor"/>
-                <circle cx="18" cy="9" r="2" fill="currentColor"/>
-              </svg>
-            </div>
+            <img
+              src={logoHrm}
+              alt="HRIMS Logo"
+              className="w-11 h-11 rounded-xl object-cover shadow-[0_8px_16px_rgba(10,101,255,0.15)] border border-solid border-slate-100"
+            />
             <div>
               <h1 className="text-xl font-extrabold text-text-primary leading-tight tracking-tight">HRIMS</h1>
               <p className="text-[11px] text-text-tertiary font-medium">Human Resource Information System</p>
