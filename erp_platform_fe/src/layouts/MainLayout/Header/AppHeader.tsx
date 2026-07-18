@@ -10,6 +10,7 @@ import {
   MessageSquare,
   HelpCircle,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, useCurrentUser } from '@features/auth/hooks/useAuth';
 
 const { Header } = Layout;
@@ -27,6 +28,7 @@ interface AppHeaderProps {
 export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
   const user = useCurrentUser();
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const userMenuItems: MenuProps['items'] = [
     {
@@ -51,6 +53,10 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
   const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'logout') {
       void logout();
+    } else if (key === 'profile') {
+      navigate('/profile');
+    } else if (key === 'settings') {
+      navigate('/admin/settings');
     }
   };
 

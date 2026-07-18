@@ -25,6 +25,7 @@ const RecruitmentPage = lazy(() => import('@pages/hrm/recruitment/RecruitmentPag
 const LeaveCalendarPage = lazy(() => import('@pages/hrm/leave/LeaveCalendarPage'));
 const PerformancePage = lazy(() => import('@pages/hrm/performance/PerformancePage'));
 const SettingsPage = lazy(() => import('@pages/admin/settings/SettingsPage'));
+const ProfilePage = lazy(() => import('@pages/profile/ProfilePage'));
 
 const ShiftsPage = lazy(() => import('@pages/hrm/shifts/ShiftsPage'));
 const TimesheetPage = lazy(() => import('@pages/hrm/timesheet/TimesheetPage'));
@@ -182,6 +183,9 @@ export const routes: RouteObject[] = [
 
       // Admin — Settings
       { path: '/admin/settings', element: <SettingsPage /> },
+
+      // Profile
+      { path: '/profile', element: <ProfilePage /> },
     ],
   },
 
