@@ -65,7 +65,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         const user = get().user;
         if (!user) return false;
         const permKey = `${resource}:${action}`;
-        return user.permissions.includes(permKey) || user.permissions.includes('*');
+        return (
+          user.permissions.includes(permKey) ||
+          user.permissions.includes('*') ||
+          user.roles.includes('SUPER_ADMIN')
+        );
       },
 
       /**

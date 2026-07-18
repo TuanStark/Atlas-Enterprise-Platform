@@ -9,6 +9,8 @@ import type { ApiError } from '@shared/types';
 /**
  * useAuth — Main auth hook for login/logout operations
  */
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '@shared/api';
+
 export function useAuth() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading, login: setAuth, logout: clearAuth, setLoading } = useAuthStore();
@@ -17,22 +19,18 @@ export function useAuth() {
     setLoading(true);
     try {
       const response = await authApi.login(credentials);
-      
-      const user = {
-        id: credentials.email === 'admin@erp.com' ? 'admin' : 'user',
-        principalId: credentials.email === 'admin@erp.com' ? 'admin' : 'user',
-        username: credentials.email.split('@')[0],
-        email: credentials.email,
-        displayName: credentials.email === 'admin@erp.com' ? 'System Admin' : credentials.email.split('@')[0],
-        roles: credentials.email === 'admin@erp.com' ? ['SUPER_ADMIN'] : [],
-        permissions: ['*'],
-        tenantId: 'SYSTEM',
-      };
 
-      setAuth(user, response.accessToken, response.refreshToken);
+      localStorage.setItem(ACCESS_TOKEN_KEY, response.accessToken);
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+
+      const meUser = await authApi.me();
+
+      setAuth(meUser, response.accessToken, response.refreshToken);
       message.success('Đăng nhập thành công!');
       navigate('/');
     } catch (error) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
       const apiError = error as ApiError;
       message.error(apiError.message || apiError.detail || 'Đăng nhập thất bại');
       throw error;
@@ -48,7 +46,6 @@ export function useAuth() {
         await authApi.logout(refreshToken);
       }
     } catch {
-      // Silently fail — we logout anyway
     } finally {
       clearAuth();
       navigate('/login');

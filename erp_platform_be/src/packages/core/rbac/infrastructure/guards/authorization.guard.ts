@@ -116,6 +116,13 @@ export class AuthorizationGuard implements CanActivate {
       return true;
     }
 
+    const isSuperAdmin = principal.principalRoles.some((pr) => pr.role?.code === 'SUPER_ADMIN');
+    const hasWildcard = resolved.some((p) => p.code === '*');
+
+    if (isSuperAdmin || hasWildcard) {
+      return true;
+    }
+
     for (const required of requiredPermissions) {
       const found = resolved.find((p) => p.code === required);
       if (!found || found.effect === EffectType.deny) {

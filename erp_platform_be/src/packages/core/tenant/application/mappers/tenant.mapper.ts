@@ -33,6 +33,7 @@ export class TenantMapper {
       locale: tenant.locale,
       currency: tenant.currency,
       status: tenant.status,
+      logoFileId: tenant.logoFileId?.getValue(),
       createdAt: tenant.createdAt,
       updatedAt: tenant.updatedAt,
     };

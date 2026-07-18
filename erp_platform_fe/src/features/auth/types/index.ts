@@ -11,6 +11,13 @@ export interface AuthUser {
   tenantId: string;
   roles: string[];
   permissions: string[];
+  tenant?: {
+    id: string;
+    code: string;
+    name: string;
+    status: string;
+    logoFileId?: string;
+  } | null;
 }
 
 export interface AuthState {

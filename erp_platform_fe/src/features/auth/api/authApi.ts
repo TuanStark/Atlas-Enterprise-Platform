@@ -1,11 +1,13 @@
 import { httpClient } from '@shared/api';
 import type { LoginRequest, LoginResponse, RefreshTokenRequest } from '@shared/types';
+import type { AuthUser } from '../types';
 
 /**
  * Auth API — Maps to backend AuthController
  * POST /auth/login
  * POST /auth/refresh
  * POST /auth/logout
+ * GET /auth/me
  */
 export const authApi = {
   async login(payload: LoginRequest): Promise<LoginResponse> {
@@ -20,5 +22,10 @@ export const authApi = {
 
   async logout(refreshToken: string): Promise<void> {
     await httpClient.post('/auth/logout', { refreshToken });
+  },
+
+  async me(): Promise<AuthUser> {
+    const { data } = await httpClient.get<AuthUser>('/auth/me');
+    return data;
   },
 };

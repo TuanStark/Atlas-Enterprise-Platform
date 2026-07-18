@@ -1,4 +1,4 @@
-import { Layout, Avatar, Dropdown, Badge, Space, Typography, Input } from 'antd';
+import { Layout, Avatar, Dropdown, Badge, Space, Typography, Input, Tag } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   Bell,
@@ -9,6 +9,7 @@ import {
   Search,
   MessageSquare,
   HelpCircle,
+  Building2,
 } from 'lucide-react';
 import { useAuth, useCurrentUser } from '@features/auth/hooks/useAuth';
 
@@ -116,6 +117,43 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
             <Bell size={18} />
           </Badge>
         </button>
+
+        {/* Tenant / Company Badge */}
+        {user?.tenant && (
+          <Tag
+            icon={
+              user.tenant.logoFileId ? (
+                <Avatar
+                  size={16}
+                  src={`/api/v1/files/${user.tenant.logoFileId}`}
+                  style={{
+                    marginRight: 4,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    border: '1px solid rgba(14, 165, 233, 0.1)',
+                  }}
+                />
+              ) : (
+                <Building2 size={12} style={{ display: 'inline-flex', alignItems: 'center' }} />
+              )
+            }
+            color="blue"
+            style={{
+              borderRadius: 6,
+              fontWeight: 500,
+              padding: '4px 10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              border: '1px solid rgba(14, 165, 233, 0.2)',
+              backgroundColor: 'rgba(14, 165, 233, 0.05)',
+              color: 'var(--color-primary)',
+              marginRight: 8,
+            }}
+          >
+            {user.tenant.name} ({user.tenant.code})
+          </Tag>
+        )}
 
         {/* User Menu */}
         <Dropdown

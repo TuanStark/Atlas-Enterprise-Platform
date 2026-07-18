@@ -1,19 +1,26 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Body, Controller, HttpCode, HttpStatus, Post, Get } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginDto, RefreshTokenDto, LoginResponseDto } from '../application/dto';
 import { LoginCommand } from '../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../application/commands/refresh-token/refresh-token.command';
 import { LogoutCommand } from '../application/commands/logout/logout.command';
 import { Public } from '@core/rbac/presentation/decorators/public.decorator';
+import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
+import type { RequestContext } from '@shared-kernel/application/request-context';
+import { GetTenantQuery, TenantDto } from '@core/tenant/application';
+import { Result } from '@shared-kernel/application';
 
 @ApiTags('Auth')
-@Public()
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login' })
   @ApiOkResponse({ type: LoginResponseDto })
@@ -25,6 +32,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiOkResponse({ type: LoginResponseDto })
@@ -36,6 +44,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Logout user' })
   @ApiOkResponse({ description: 'User successfully logged out' })
@@ -44,5 +53,35 @@ export class AuthController {
     dto: RefreshTokenDto,
   ) {
     return this.commandBus.execute(new LogoutCommand(dto.refreshToken));
+  }
+
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get current user profile & tenant info' })
+  @ApiOkResponse({ description: 'Current user profile details' })
+  async getMe(@CurrentContext() context: RequestContext) {
+    const tenantResult = await this.queryBus.execute<GetTenantQuery, Result<TenantDto>>(
+      new GetTenantQuery(context.tenantId),
+    );
+
+    const tenant = tenantResult.isSuccess() ? tenantResult.data : null;
+
+    return {
+      id: context.principalId,
+      principalId: context.principalId,
+      username: context.username,
+      email: context.email,
+      displayName: context.username,
+      roles: context.roles,
+      permissions: context.permissions,
+      tenantId: context.tenantId,
+      tenant: tenant ? {
+        id: tenant.id,
+        code: tenant.code,
+        name: tenant.name,
+        status: tenant.status,
+        logoFileId: tenant.logoFileId,
+      } : null,
+    };
   }
 }

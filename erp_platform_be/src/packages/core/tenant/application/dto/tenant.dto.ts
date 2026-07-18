@@ -10,6 +10,7 @@ export class TenantDto {
   locale?: string;
   currency?: string;
   status!: string;
+  logoFileId?: string;
   createdAt!: Date;
   updatedAt?: Date;
 }
