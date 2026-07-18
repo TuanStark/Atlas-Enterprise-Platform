@@ -5,6 +5,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { httpClient } from '@shared/api';
 import { useCurrentUser } from '@features/auth/hooks/useAuth';
 import { useAuthStore } from '@features/auth/store/authStore';
+import { FileUpload } from '@shared/components/FileUpload/FileUpload';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -45,14 +46,15 @@ export default function ProfilePage() {
         firstName: values.firstName,
         lastName: values.lastName,
         displayName: values.displayName,
+        avatarUrl: values.avatarUrl,
       });
       return data;
     },
     onSuccess: (updatedUser) => {
       message.success('Cập nhật hồ sơ cá nhân thành công!');
-      // Update global context user display name
       updateUser({
         displayName: updatedUser.displayName,
+        avatarUrl: updatedUser.avatarUrl,
       });
       void refetch();
     },
@@ -80,7 +82,10 @@ export default function ProfilePage() {
   });
 
   const handleProfileSave = (values: any) => {
-    updateProfileMutation.mutate(values);
+    updateProfileMutation.mutate({
+      ...values,
+      avatarUrl: profile?.avatarUrl,
+    });
   };
 
   const handleSecuritySave = (values: any) => {
@@ -97,7 +102,7 @@ export default function ProfilePage() {
 
   // Generate avatar initials
   const getInitials = () => {
-    if (profile?.displayName) return profile.displayName.charAt(0).toUpperCase();
+    if (user?.displayName) return user.displayName.charAt(0).toUpperCase();
     if (user?.email) return user.email.charAt(0).toUpperCase();
     return 'U';
   };
@@ -126,18 +131,19 @@ export default function ProfilePage() {
             }}
             styles={{ body: { padding: '32px 16px' } }}
           >
-            <div style={{ position: 'relative', display: 'inline-block', marginBottom: 16 }}>
+             <div style={{ position: 'relative', display: 'inline-block', marginBottom: 16 }}>
               <Avatar
                 size={84}
+                src={user?.avatarUrl ? `/api/v1/files/${user.avatarUrl}/view` : undefined}
                 style={{
-                  background: 'linear-gradient(135deg, #0a65ff, #004ecc)',
+                  background: !user?.avatarUrl ? 'linear-gradient(135deg, #0a65ff, #004ecc)' : undefined,
                   fontSize: 32,
                   fontWeight: 600,
                   boxShadow: '0 8px 16px rgba(10, 101, 255, 0.15)',
                   border: '3px solid #fff',
                 }}
               >
-                {getInitials()}
+                {!user?.avatarUrl && getInitials()}
               </Avatar>
               <div
                 style={{
@@ -160,8 +166,23 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            <div style={{ marginBottom: 16 }}>
+              <FileUpload
+                accept="image/*"
+                onUploadSuccess={async (fileId) => {
+                  await updateProfileMutation.mutateAsync({
+                    firstName: profile?.firstName,
+                    lastName: profile?.lastName,
+                    displayName: profile?.displayName,
+                    avatarUrl: fileId,
+                  });
+                }}
+                showPreview={false}
+              />
+            </div>
+
             <Title level={5} style={{ margin: '0 0 4px 0', fontWeight: 600 }}>
-              {profile?.displayName || user?.username}
+              {user?.displayName || user?.username}
             </Title>
             <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 16 }}>
               {user?.email}

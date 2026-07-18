@@ -66,6 +66,9 @@ export class IdentityController {
     if (dto.displayName) {
       user.changeDisplayName(dto.displayName);
     }
+    if (dto.avatarUrl !== undefined) {
+      user.changeAvatar(dto.avatarUrl || '');
+    }
 
     await this.userRepository.update(user);
 

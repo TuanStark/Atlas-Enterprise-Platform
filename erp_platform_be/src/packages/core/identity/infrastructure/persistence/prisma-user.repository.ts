@@ -97,6 +97,7 @@ export class PrismaUserRepository implements UserRepository {
         firstName: user.firstName,
         lastName: user.lastName,
         preferredName: user.displayName,
+        avatarFileId: user.avatarUrl || null,
         updatedAt: user.updatedAt,
       },
     });

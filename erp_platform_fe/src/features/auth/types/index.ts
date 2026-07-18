@@ -18,6 +18,7 @@ export interface AuthUser {
     status: string;
     logoFileId?: string;
   } | null;
+  avatarUrl?: string | null;
 }
 
 export interface AuthState {

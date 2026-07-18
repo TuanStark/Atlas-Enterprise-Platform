@@ -119,7 +119,7 @@ export function FileUpload({
               <Text strong style={{ fontSize: 13.5 }} className="text-green-600">
                 Tải lên thành công!
               </Text>
-              <Text type="secondary" style={{ fontSize: 12, marginTop: 4 }} ellipsis className="max-w-[280px]">
+              <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: 'block', maxWidth: '200px' }} ellipsis={{ tooltip: uploadedFile.name }}>
                 {uploadedFile.name}
               </Text>
               {showPreview && uploadedFile.name.match(/\.(jpg|jpeg|png|gif|webp)$/i) && (

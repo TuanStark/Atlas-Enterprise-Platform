@@ -135,11 +135,16 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
           >
             <Avatar
               size={36}
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+              src={user?.avatarUrl ? `/api/v1/files/${user.avatarUrl}/view` : undefined}
               style={{
                 border: '2px solid #e2e8f0',
+                background: !user?.avatarUrl ? 'linear-gradient(135deg, #0a65ff, #004ecc)' : undefined,
+                color: !user?.avatarUrl ? '#fff' : undefined,
+                fontWeight: 600,
               }}
-            />
+            >
+              {!user?.avatarUrl && (user?.displayName || user?.username || 'U').charAt(0).toUpperCase()}
+            </Avatar>
             <div className="flex flex-col leading-none max-[768px]:hidden">
               <Text
                 strong

@@ -75,6 +75,7 @@ export class AuthController {
       roles: context.roles,
       permissions: context.permissions,
       tenantId: context.tenantId,
+      avatarUrl: context.avatarUrl,
       tenant: tenant ? {
         id: tenant.id,
         code: tenant.code,

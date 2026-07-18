@@ -35,6 +35,10 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       user.changeDisplayName(command.dto.displayName);
     }
 
+    if (command.dto.avatarUrl !== undefined) {
+      user.changeAvatar(command.dto.avatarUrl || '');
+    }
+
     await this.repository.update(user);
 
     return Result.success(UserMapper.toDto(user), {

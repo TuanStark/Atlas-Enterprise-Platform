@@ -68,6 +68,7 @@ export class AuthorizationGuard implements CanActivate {
       where: { id: payload.sub },
       include: {
         user: true,
+        employee: true,
         principalRoles: {
           include: {
             role: true,
@@ -102,6 +103,7 @@ export class AuthorizationGuard implements CanActivate {
         .map((pr) => pr.role.code)
         .filter((code): code is string => !!code),
       permissions: resolved.filter((p) => p.effect === EffectType.allow).map((p) => p.code),
+      avatarUrl: principal.employee?.avatarFileId ?? undefined,
     };
 
     request.principalId = principal.id;

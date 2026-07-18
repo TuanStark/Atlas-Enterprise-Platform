@@ -5,4 +5,5 @@ export interface RequestContext {
   email?: string;
   roles: readonly string[];
   permissions: readonly string[];
+  avatarUrl?: string;
 }
