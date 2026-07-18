@@ -28,14 +28,19 @@ const { Title, Text } = Typography;
 import { useEmployees } from '@features/employee/hooks/useEmployee';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
 import { useAttendanceRecords } from '@features/attendance/hooks/useAttendance';
+import { useJobPostings, useJobApplications } from '@features/recruitment/hooks/useRecruitment';
+import { useCurrentUser } from '@features/auth/hooks/useAuth';
 
 const COLORS = ['#0a65ff', '#10b981', '#a855f7', '#f59e0b', '#06b6d4'];
 
 function DashboardPage() {
   const navigate = useNavigate();
+  const user = useCurrentUser();
   const { data: employees = [], isLoading: isLoadingEmployees } = useEmployees();
   const { data: leaveRequests = [], isLoading: isLoadingLeaves } = useLeaveRequests();
-  const { data: _attendanceRecords = [], isLoading: isLoadingAttendance } = useAttendanceRecords();
+  const { data: attendanceRecords = [], isLoading: isLoadingAttendance } = useAttendanceRecords();
+  const { data: jobPostings = [], isLoading: isLoadingPostings } = useJobPostings();
+  const { data: jobApplications = [], isLoading: isLoadingApplications } = useJobApplications();
 
   const approveMutation = useApproveLeaveRequest();
   const rejectMutation = useRejectLeaveRequest();
@@ -47,7 +52,7 @@ function DashboardPage() {
     { id: 4, text: 'Cập nhật cấu hình bảo mật MFA hệ thống', checked: false },
   ]);
 
-  const isLoading = isLoadingEmployees || isLoadingLeaves || isLoadingAttendance;
+  const isLoading = isLoadingEmployees || isLoadingLeaves || isLoadingAttendance || isLoadingPostings || isLoadingApplications;
 
   // Calculators
   const totalEmployees = employees.length;
@@ -65,15 +70,7 @@ function DashboardPage() {
     deptCounts[deptName] = (deptCounts[deptName] || 0) + 1;
   });
 
-  const departmentData = Object.keys(deptCounts).length > 0
-    ? Object.entries(deptCounts).map(([name, value]) => ({ name, value }))
-    : [
-      { name: 'Kỹ thuật', value: 362 },
-      { name: 'Nhân sự', value: 224 },
-      { name: 'Kinh doanh', value: 250 },
-      { name: 'Tài chính', value: 168 },
-      { name: 'Vận hành', value: 244 },
-    ];
+  const departmentData = Object.entries(deptCounts).map(([name, value]) => ({ name, value }));
 
   const totalDeptValue = departmentData.reduce((acc, curr) => acc + curr.value, 0);
 
@@ -87,47 +84,64 @@ function DashboardPage() {
     }
   });
 
-  let cumulative = 0;
+  // Calculate starting headcount before this year
+  const totalHiresThisYear = monthlyHires.reduce((a, b) => a + b, 0);
+  let cumulative = Math.max(0, totalEmployees - totalHiresThisYear);
   const growthData = months.map((month, idx) => {
     cumulative += monthlyHires[idx];
-    // Fallback base values so graph has nice shape even if no database data
-    const fallbackBase = Math.floor(1100 + idx * 25 + Math.sin(idx) * 15);
-    return { month, Headcount: Math.max(fallbackBase, totalEmployees ? totalEmployees + cumulative : fallbackBase) };
+    return { month, Headcount: cumulative };
   });
+
+  // Calculate attendance rate dynamically
+  const presentRecordsCount = attendanceRecords.filter((r) => r.status !== 'absent').length;
+  const totalAttendanceCount = attendanceRecords.length;
+  const attendanceRate = totalAttendanceCount > 0
+    ? `${((presentRecordsCount / totalAttendanceCount) * 100).toFixed(1)}%`
+    : '0.0%';
+
+  // Calculate recruitment open positions & candidates dynamically
+  const openPositionsCount = jobPostings.filter((p) => p.status === 'published').reduce((acc, curr) => acc + (curr.vacancies || 1), 0);
+  const pendingApplicationsCount = jobApplications.filter((a) => a.stage === 'new' || a.status === 'active').length;
+
+  // New hires in last 30 days for employee card trend
+  const newHiresLast30Days = employees.filter(emp => {
+    const date = new Date(emp.joinDate || emp.createdAt);
+    return date >= thirtyDaysAgo;
+  }).length;
 
   const stats = [
     {
       title: 'Tổng nhân viên',
-      value: totalEmployees || '1.248',
+      value: totalEmployees.toString(),
       icon: <Users size={20} />,
-      trend: { value: '5.2%', isUp: true },
-      trendText: 'so với tháng trước',
+      trend: { value: `+${newHiresLast30Days}`, isUp: true },
+      trendText: 'mới trong 30 ngày',
       color: '#0a65ff',
       bgColor: '#f0f6ff',
     },
     {
       title: 'Tỷ lệ đi làm',
-      value: '94.6%',
+      value: attendanceRate,
       icon: <TrendingUp size={20} />,
-      trend: { value: '2.3%', isUp: true },
-      trendText: 'so với tuần trước',
+      trend: { value: `${presentRecordsCount}/${totalAttendanceCount}`, isUp: true },
+      trendText: 'lượt có mặt',
       color: '#10b981',
       bgColor: '#ecfdf5',
     },
     {
       title: 'Vị trí tuyển dụng',
-      value: 24,
+      value: openPositionsCount,
       icon: <UserPlus size={20} />,
-      trend: { value: '9.1%', isUp: true },
-      trendText: 'so với tháng trước',
+      trend: { value: `${pendingApplicationsCount} hồ sơ`, isUp: pendingApplicationsCount > 0 },
+      trendText: 'chờ xử lý',
       color: '#a855f7',
       bgColor: '#faf5ff',
     },
     {
       title: 'Yêu cầu chờ duyệt',
-      value: pendingLeavesCount || '3',
+      value: pendingLeavesCount,
       icon: <FileCheck size={20} />,
-      trend: { value: pendingLeavesCount ? `${pendingLeavesCount} đơn` : 'Đang xử lý', isUp: pendingLeavesCount > 0 },
+      trend: { value: `${pendingLeavesCount} đơn`, isUp: pendingLeavesCount > 0 },
       trendText: 'yêu cầu mới',
       color: '#f59e0b',
       bgColor: '#fffbeb',
@@ -199,7 +213,7 @@ function DashboardPage() {
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div>
           <Title level={3} style={{ marginBottom: 4, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text-primary)' }}>
-            Chào mừng trở lại, Spencer
+            Chào mừng trở lại, {user?.displayName || 'Admin'}
           </Title>
           <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
             Dưới đây là tổng quan hoạt động của tổ chức hôm nay.
@@ -249,46 +263,56 @@ function DashboardPage() {
         {/* Headcount by Department (Donut) */}
         <Col xs={24} lg={8}>
           <Card title="Nhân sự theo phòng ban" className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
-            <div className="flex justify-center items-center h-[200px] mb-2">
-              <div className="relative w-[200px] h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={departmentData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={65}
-                      outerRadius={85}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {departmentData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Center Content */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[26px] font-extrabold text-text-primary leading-none tracking-tight">{totalDeptValue}</span>
-                  <span className="text-[10px] text-text-tertiary font-semibold uppercase tracking-wider mt-0.5">Tổng số</span>
-                </div>
+            {departmentData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-[260px]">
+                <Empty description="Chưa có dữ liệu phòng ban" image={Empty.PRESENTED_IMAGE_SIMPLE} />
               </div>
-            </div>
-            {/* Custom Styled Legends */}
-            <div className="flex flex-col gap-2 mt-4 border-0 border-t border-solid border-border-light pt-4">
-              {departmentData.map((dept, index) => (
-                <div key={dept.name} className="flex items-center text-xs">
-                  <span className="w-2 h-2 rounded-full mr-2 inline-block shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <span className="text-text-secondary flex-1 font-medium">{dept.name}</span>
-                  <span className="text-text-tertiary text-[11px] mr-3 font-medium">{Math.round((dept.value / totalDeptValue) * 100)}%</span>
-                  <span className="font-semibold text-text-primary">{dept.value}</span>
+            ) : (
+              <>
+                <div className="flex justify-center items-center h-[200px] mb-2">
+                  <div className="relative w-[200px] h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={departmentData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={65}
+                          outerRadius={85}
+                          paddingAngle={3}
+                          dataKey="value"
+                        >
+                          {departmentData.map((_entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {/* Center Content */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[26px] font-extrabold text-text-primary leading-none tracking-tight">{totalDeptValue}</span>
+                      <span className="text-[10px] text-text-tertiary font-semibold uppercase tracking-wider mt-0.5">Tổng số</span>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+                {/* Custom Styled Legends */}
+                <div className="flex flex-col gap-2 mt-4 border-0 border-t border-solid border-border-light pt-4">
+                  {departmentData.map((dept, index) => (
+                    <div key={dept.name} className="flex items-center text-xs">
+                      <span className="w-2 h-2 rounded-full mr-2 inline-block shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-text-secondary flex-1 font-medium">{dept.name}</span>
+                      <span className="text-text-tertiary text-[11px] mr-3 font-medium">
+                        {totalDeptValue > 0 ? Math.round((dept.value / totalDeptValue) * 100) : 0}%
+                      </span>
+                      <span className="font-semibold text-text-primary">{dept.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </Card>
         </Col>
 
@@ -313,7 +337,8 @@ function DashboardPage() {
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    domain={['dataMin - 100', 'dataMax + 100']}
+                    domain={[0, 'auto']}
+                    allowDecimals={false}
                     style={{ fontSize: 11, fill: 'var(--color-text-tertiary)', fontWeight: 500 }}
                   />
                   <Tooltip
