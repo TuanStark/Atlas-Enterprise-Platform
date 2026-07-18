@@ -125,7 +125,7 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
               user.tenant.logoFileId ? (
                 <Avatar
                   size={16}
-                  src={`/api/v1/files/${user.tenant.logoFileId}`}
+                  src={`/api/v1/files/${user.tenant.logoFileId}/view`}
                   style={{
                     marginRight: 4,
                     display: 'inline-flex',

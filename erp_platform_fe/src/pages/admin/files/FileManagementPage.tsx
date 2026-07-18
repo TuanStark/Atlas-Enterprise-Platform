@@ -1,9 +1,11 @@
-import { Card, Table, Typography, Row, Col, Space, Tag, Empty, Spin, Tooltip, Button } from 'antd';
+import { useState } from 'react';
+import { Card, Table, Typography, Row, Col, Space, Tag, Empty, Spin, Tooltip, Button, Modal } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { FileText, Trash2 } from 'lucide-react';
+import { FileText, Trash2, Plus, UploadCloud } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@shared/api';
-import { message, Modal } from 'antd';
+import { message } from 'antd';
+import { FileUpload } from '@shared/components/FileUpload/FileUpload';
 
 const { Title, Text } = Typography;
 
@@ -55,6 +57,8 @@ const extensionColors: Record<string, string> = {
 
 export default function FileManagementPage() {
   const queryClient = useQueryClient();
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   const { data: files = [], isLoading } = useQuery({
     queryKey: ['files'],
     queryFn: fileApi.list,
@@ -101,7 +105,14 @@ export default function FileManagementPage() {
             <FileText size={16} />
           </div>
           <div>
-            <Text strong style={{ fontSize: 13 }}>{record.fileName || 'Unnamed'}</Text>
+            <a
+              href={`/api/v1/files/${record.id}/view`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-primary)' }}
+            >
+              {record.fileName || 'Unnamed'}
+            </a>
             {record.code && <Text type="secondary" style={{ display: 'block', fontSize: 11 }}>{record.code}</Text>}
           </div>
         </Space>
@@ -189,8 +200,18 @@ export default function FileManagementPage() {
             <Title level={4} style={{ margin: 0 }}>
               <Space><FileText size={20} /> Quản lý tệp & tài liệu</Space>
             </Title>
-            <Text type="secondary">Xem và quản lý tất cả tệp tin metadata trong hệ thống (hợp đồng, tài liệu, ảnh đại diện...).</Text>
+            <Text type="secondary">Xem, quản lý và tải lên tệp tin tài liệu hoặc hình ảnh vào hệ thống.</Text>
           </Space>
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            icon={<Plus size={16} />}
+            onClick={() => setIsUploadModalOpen(true)}
+            style={{ borderRadius: 6, display: 'flex', alignItems: 'center' }}
+          >
+            Tải tệp lên
+          </Button>
         </Col>
       </Row>
 
@@ -207,6 +228,30 @@ export default function FileManagementPage() {
           />
         )}
       </Card>
+
+      {/* Upload File Modal */}
+      <Modal
+        title={
+          <Space>
+            <UploadCloud size={18} style={{ color: 'var(--color-primary)' }} />
+            <span>Tải tệp lên hệ thống</span>
+          </Space>
+        }
+        open={isUploadModalOpen}
+        onCancel={() => setIsUploadModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        style={{ borderRadius: 12 }}
+      >
+        <div style={{ padding: '16px 0' }}>
+          <FileUpload
+            onUploadSuccess={() => {
+              void queryClient.invalidateQueries({ queryKey: ['files'] });
+              setTimeout(() => setIsUploadModalOpen(false), 1500);
+            }}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -140,6 +140,7 @@ function EmployeeDetailPage() {
           <Col>
             <Avatar 
               size={72} 
+              src={employee.avatarFileId ? `/api/v1/files/${employee.avatarFileId}/view` : undefined}
               style={{ 
                 background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))', 
                 fontSize: 28, 

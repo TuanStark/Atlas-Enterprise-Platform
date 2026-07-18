@@ -17,6 +17,7 @@ export class UpdateTenantHandler implements ICommandHandler<UpdateTenantCommand>
 
   async execute(command: UpdateTenantCommand): Promise<Result<TenantDto>> {
     const { id, dto } = command;
+    console.log('UpdateTenantHandler input:', { id, dto });
 
     const tenant = await this.tenantRepository.findById(Identifier.create(id));
 

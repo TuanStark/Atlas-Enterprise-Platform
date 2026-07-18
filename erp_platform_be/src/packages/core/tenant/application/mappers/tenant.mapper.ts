@@ -1,3 +1,4 @@
+import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { Tenant, TenantStatus } from '../../domain';
 import { TenantCode, TenantName } from '../../domain/value-objects';
 import { CreateTenantDto } from '../dto/create-tenant.dto';
@@ -70,6 +71,10 @@ export class TenantMapper {
 
     if (dto.currency !== undefined) {
       tenant.changeCurrency(dto.currency);
+    }
+
+    if (dto.logoFileId !== undefined) {
+      tenant.changeLogoFileId(dto.logoFileId ? Identifier.create(dto.logoFileId) : null);
     }
   }
 }

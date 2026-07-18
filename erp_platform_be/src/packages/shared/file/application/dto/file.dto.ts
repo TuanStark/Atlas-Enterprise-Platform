@@ -54,6 +54,9 @@ export class FileDto {
   @ApiProperty({ required: false })
   checksum?: string;
 
+  @ApiProperty({ required: false })
+  metadata?: any;
+
   @ApiProperty()
   createdAt: Date;
 }

@@ -16,7 +16,7 @@ export interface TenantProps {
   taxCode?: string;
   email?: string;
   phone?: string;
-  logoFileId?: Identifier;
+  logoFileId?: Identifier | null;
   timezone?: string;
   locale?: string;
   currency?: string;
@@ -72,7 +72,7 @@ export class Tenant extends AggregateRoot<TenantProps> {
     return this.props.phone;
   }
 
-  get logoFileId(): Identifier | undefined {
+  get logoFileId(): Identifier | null | undefined {
     return this.props.logoFileId;
   }
 
@@ -170,6 +170,12 @@ export class Tenant extends AggregateRoot<TenantProps> {
 
   public changeCurrency(currency?: string): void {
     this.props.currency = currency;
+
+    this.touch();
+  }
+
+  public changeLogoFileId(logoFileId?: Identifier | null): void {
+    this.props.logoFileId = logoFileId;
 
     this.touch();
   }

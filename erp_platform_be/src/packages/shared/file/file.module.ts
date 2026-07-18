@@ -6,6 +6,7 @@ import { CreateFileHandler, DeleteFileHandler } from './application/commands/fil
 import { ListFilesHandler, GetFileHandler } from './application/queries/file.queries';
 import { FILE_REPOSITORY } from './domain/repositories/file.repository';
 import { PrismaFileRepository } from './infrastructure/persistence/prisma-file.repository';
+import { FILE_STORAGE_PROVIDER, CloudinaryStorageProvider, LocalStorageProvider } from './infrastructure/storage/file-storage.provider';
 
 const CommandHandlers = [CreateFileHandler, DeleteFileHandler];
 const QueryHandlers = [ListFilesHandler, GetFileHandler];
@@ -20,7 +21,20 @@ const QueryHandlers = [ListFilesHandler, GetFileHandler];
       provide: FILE_REPOSITORY,
       useClass: PrismaFileRepository,
     },
+    {
+      provide: FILE_STORAGE_PROVIDER,
+      useFactory: () => {
+        const hasCloudinary =
+          !!(process.env.CLOUDINARY_CLOUD_NAME &&
+          process.env.CLOUDINARY_API_KEY &&
+          process.env.CLOUDINARY_API_SECRET);
+        if (hasCloudinary) {
+          return new CloudinaryStorageProvider();
+        }
+        return new LocalStorageProvider();
+      },
+    },
   ],
-  exports: [FILE_REPOSITORY],
+  exports: [FILE_REPOSITORY, FILE_STORAGE_PROVIDER],
 })
 export class FileModule {}

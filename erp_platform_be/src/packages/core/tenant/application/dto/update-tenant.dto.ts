@@ -45,4 +45,8 @@ export class UpdateTenantDto {
     typeof value === 'string' ? value.trim().toUpperCase() : value,
   )
   currency?: string;
+
+  @IsOptional()
+  @IsString()
+  logoFileId?: string;
 }

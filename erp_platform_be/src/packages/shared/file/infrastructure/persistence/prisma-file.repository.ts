@@ -15,7 +15,7 @@ export class PrismaFileRepository implements FileRepository {
       restricted: FileVisibility.internal,
     };
 
-    return this.prisma.file.create({
+    const file = await this.prisma.file.create({
       data: {
         id: undefined,
         tenantId: input.tenantId,
@@ -30,6 +30,11 @@ export class PrismaFileRepository implements FileRepository {
         createdByPrincipalId: input.createdByPrincipalId || undefined,
       },
     });
+
+    return {
+      ...file,
+      size: Number(file.size),
+    };
   }
 
   async delete(id: Identifier): Promise<void> {

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@shared/api';
 import { useCurrentUser } from '@features/auth/hooks/useAuth';
 import { useAuthStore } from '@features/auth/store/authStore';
+import { FileUpload } from '@shared/components/FileUpload/FileUpload';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const user = useCurrentUser();
   const updateUser = useAuthStore((state) => state.updateUser);
   const queryClient = useQueryClient();
+  const logoFileId = Form.useWatch('logoFileId', form);
 
   // Fetch tenant info
   const { data: tenant, isLoading } = useQuery({
@@ -36,6 +38,7 @@ export default function SettingsPage() {
         phone: tenant.phone,
         timezone: tenant.timezone || 'Asia/Ho_Chi_Minh',
         currency: tenant.currency || 'VND',
+        logoFileId: tenant.logoFileId || null,
         // Mock default configuration fields
         smtpHost: 'smtp.gmail.com',
         smtpPort: 587,
@@ -61,6 +64,7 @@ export default function SettingsPage() {
         timezone: values.timezone,
         currency: values.currency,
         locale: tenant?.locale || 'vi',
+        logoFileId: values.logoFileId || null,
       };
       const { data } = await httpClient.put<any>(`/tenants/${user?.tenantId}`, payload);
       return data;
@@ -130,6 +134,55 @@ export default function SettingsPage() {
               key="1"
             >
               <div style={{ padding: '16px 0' }}>
+                <Row gutter={24} style={{ marginBottom: 16 }}>
+                  <Col span={24}>
+                    <Form.Item name="logoFileId" hidden>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item label="Logo doanh nghiệp">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: 16, border: '1px solid rgba(0,0,0,0.06)', borderRadius: 8, background: '#fafafa' }}>
+                        {logoFileId ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                            <img
+                              src={`/api/v1/files/${logoFileId}/view`}
+                              alt="Logo Công ty"
+                              style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(0,0,0,0.06)', background: '#fff' }}
+                            />
+                            <Button
+                              type="text"
+                              danger
+                              size="small"
+                              onClick={() => {
+                                form.setFieldValue('logoFileId', null);
+                                updateUser({
+                                  tenant: {
+                                    ...user?.tenant,
+                                    logoFileId: null,
+                                  } as any
+                                });
+                              }}
+                            >
+                              Xóa Logo
+                            </Button>
+                          </div>
+                        ) : (
+                          <div style={{ width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: 8, border: '1px solid rgba(0,0,0,0.06)' }}>
+                            <Building2 size={32} className="text-text-tertiary" />
+                          </div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                          <FileUpload
+                            accept="image/*"
+                            onUploadSuccess={(fileId) => {
+                              form.setFieldValue('logoFileId', fileId);
+                            }}
+                            showPreview={false}
+                          />
+                        </div>
+                      </div>
+                    </Form.Item>
+                  </Col>
+                </Row>
                 <Row gutter={24}>
                   <Col xs={24} md={12}>
                     <Form.Item

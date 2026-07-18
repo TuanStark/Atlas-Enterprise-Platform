@@ -32,6 +32,7 @@ export class ListFilesHandler implements IQueryHandler<ListFilesQuery> {
       visibility: f.visibility,
       size: f.size,
       checksum: f.checksum || undefined,
+      metadata: f.metadata || undefined,
       createdAt: f.createdAt,
     }));
   }
@@ -57,6 +58,7 @@ export class GetFileHandler implements IQueryHandler<GetFileQuery> {
       visibility: file.visibility,
       size: file.size,
       checksum: file.checksum || undefined,
+      metadata: file.metadata || undefined,
       createdAt: file.createdAt,
     };
   }

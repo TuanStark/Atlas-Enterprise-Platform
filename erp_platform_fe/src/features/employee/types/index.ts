@@ -32,6 +32,7 @@ export interface Employee {
   healthInsuranceNumber?: string;
   maritalStatus?: string;
   photoUrl?: string;
+  avatarFileId?: string;
   status: EmployeeStatus;
   joinDate?: string;
   terminationDate?: string;
@@ -126,6 +127,7 @@ export interface CreateEmployeeDto {
   createAccount?: boolean;
   password?: string;
   roleId?: string;
+  avatarFileId?: string;
 }
 
 export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {}

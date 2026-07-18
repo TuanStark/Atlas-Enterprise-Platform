@@ -6,17 +6,16 @@ import { useCreateEmployee, useUpdateEmployee, useEmployee } from '@features/emp
 import { useRoles } from '@features/rbac/hooks/useRbac';
 import { useAuthStore } from '@features/auth/store/authStore';
 import dayjs from 'dayjs';
+import { FileUpload } from '@shared/components/FileUpload/FileUpload';
 
 const { Title, Text } = Typography;
 
-/**
- * EmployeeFormPage — Create/Edit employee form with User Identity creation
- */
 function EmployeeFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const [form] = Form.useForm();
+  const avatarFileId = Form.useWatch('avatarFileId', form);
 
   const tenantId = useAuthStore((s) => s.user?.tenantId || '');
   const { data: employee, isLoading: isLoadingEmployee } = useEmployee(isEdit ? id : undefined);
@@ -56,6 +55,7 @@ function EmployeeFormPage() {
         joinDate: employee.joinDate ? dayjs(employee.joinDate) : null,
         employmentStatus: employee.status,
         createAccount: false,
+        avatarFileId: employee.avatarFileId || null,
       });
     }
   }, [isEdit, employee, form]);
@@ -87,6 +87,7 @@ function EmployeeFormPage() {
         createAccount: values.createAccount,
         password: values.password,
         roleId: values.roleId,
+        avatarFileId: values.avatarFileId || null,
       };
 
       if (isEdit && id) {
@@ -120,6 +121,51 @@ function EmployeeFormPage() {
           </Text>
 
           <Form form={form} layout="vertical" requiredMark="optional" size="large">
+
+            {/* Avatar Upload */}
+            <Form.Item name="avatarFileId" hidden>
+              <Input />
+            </Form.Item>
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col span={24}>
+                <Form.Item label="Ảnh đại diện nhân sự">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: 16, border: '1px solid rgba(0,0,0,0.06)', borderRadius: 8, background: '#fafafa' }}>
+                    {avatarFileId ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                        <img
+                          src={`/api/v1/files/${avatarFileId}/view`}
+                          alt="Avatar"
+                          style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '50%', border: '1px solid rgba(0,0,0,0.06)', background: '#fff' }}
+                        />
+                        <Button
+                          type="text"
+                          danger
+                          size="small"
+                          onClick={() => {
+                            form.setFieldValue('avatarFileId', null);
+                          }}
+                        >
+                          Xóa ảnh
+                        </Button>
+                      </div>
+                    ) : (
+                      <div style={{ width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: '50%', border: '1px solid rgba(0,0,0,0.06)' }}>
+                        <span style={{ fontSize: 24, fontWeight: 600, color: '#bfbfbf' }}>?</span>
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <FileUpload
+                        accept="image/*"
+                        onUploadSuccess={(fileId) => {
+                          form.setFieldValue('avatarFileId', fileId);
+                        }}
+                        showPreview={false}
+                      />
+                    </div>
+                  </div>
+                </Form.Item>
+              </Col>
+            </Row>
 
             {/* Section 1: Personal Info */}
             <Divider titlePlacement="left" plain style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-primary)' }}>1. Thông tin cá nhân</Divider>

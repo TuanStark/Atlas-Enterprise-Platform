@@ -114,6 +114,7 @@ function EmployeeListPage() {
           <Space size={12}>
             <Avatar
               size={38}
+              src={record.avatarFileId ? `/api/v1/files/${record.avatarFileId}/view` : undefined}
               style={{
                 background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
                 fontSize: 13,
