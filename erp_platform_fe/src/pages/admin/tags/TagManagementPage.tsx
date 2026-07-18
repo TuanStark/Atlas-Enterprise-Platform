@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Table, Typography, Row, Col, Space, Tag, Button, Modal, Form, Input, ColorPicker, Empty, Spin, Tooltip } from 'antd';
+import { Card, Table, Typography, Row, Col, Space, Tag, Button, Modal, Form, Input, Empty, Tooltip } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { Tags, Plus, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

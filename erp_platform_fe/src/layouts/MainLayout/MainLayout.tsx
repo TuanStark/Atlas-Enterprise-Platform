@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import { Layout } from 'antd';
 import { Sidebar } from './Sidebar/Sidebar';
 import { AppHeader } from './Header/AppHeader';
-import './MainLayout.css';
 
 const { Content } = Layout;
 
@@ -17,12 +16,16 @@ export function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <Layout className="main-layout">
+    <Layout className="min-h-screen">
       <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
-      <Layout className={`main-layout__body ${collapsed ? 'main-layout__body--collapsed' : ''}`}>
+      <Layout
+        className={`transition-all duration-200 min-h-screen ${
+          collapsed ? 'ml-[72px]' : 'ml-[270px]'
+        } max-[768px]:ml-0`}
+      >
         <AppHeader collapsed={collapsed} onToggleCollapse={() => setCollapsed(!collapsed)} />
-        <Content className="main-layout__content">
-          <div className="main-layout__content-inner">
+        <Content className="mt-[60px] p-6 min-h-[calc(100vh-60px)] bg-bg-secondary max-[1024px]:p-4">
+          <div className="max-w-[1400px] mx-auto animate-[fadeSlideUp_0.3s_ease]">
             <Outlet />
           </div>
         </Content>

@@ -22,8 +22,9 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
-import './DashboardPage.css';
+
 const { Title, Text } = Typography;
+
 import { useEmployees } from '@features/employee/hooks/useEmployee';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
 import { useAttendanceRecords } from '@features/attendance/hooks/useAttendance';
@@ -186,16 +187,16 @@ function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+      <div className="flex justify-center items-center h-[400px]">
         <Spin size="large" tip="Đang tải dữ liệu tổng quan..." />
       </div>
     );
   }
 
   return (
-    <div className="dashboard-page">
+    <div className="pb-8">
       {/* Page Header */}
-      <div className="dashboard-page__header">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div>
           <Title level={3} style={{ marginBottom: 4, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text-primary)' }}>
             Chào mừng trở lại, Spencer
@@ -204,35 +205,35 @@ function DashboardPage() {
             Dưới đây là tổng quan hoạt động của tổ chức hôm nay.
           </Text>
         </div>
-        <button className="dashboard-page__action-btn" onClick={() => navigate('/hrm/employees/new')}>
+        <button className="inline-flex items-center justify-center px-4 h-[38px] bg-primary text-white border-none rounded-lg font-semibold text-[13px] cursor-pointer shadow-[0_4px_12px_rgba(10,101,255,0.15)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-[0_6px_16px_rgba(10,101,255,0.25)]" onClick={() => navigate('/hrm/employees/new')}>
           <PlusCircle size={16} style={{ marginRight: 8 }} />
           Thêm nhân viên
         </button>
       </div>
 
       {/* Stat Cards */}
-      <Row gutter={[20, 20]} className="dashboard-page__stats">
+      <Row gutter={[20, 20]} className="mb-0">
         {stats.map((stat) => (
           <Col xs={24} sm={12} lg={6} key={stat.title}>
-            <Card className="dashboard-page__stat-card" hoverable>
-              <div className="dashboard-page__stat-content">
-                <div className="dashboard-page__stat-info">
-                  <Text type="secondary" className="dashboard-page__stat-title">
+            <Card className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] transition-all duration-200 !bg-white hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(15,23,42,0.05)] hover:!border-primary/15" hoverable>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <Text type="secondary" className="!text-[12px] !font-semibold !text-text-secondary uppercase tracking-wider">
                     {stat.title}
                   </Text>
-                  <div className="dashboard-page__stat-value-container">
-                    <span className="dashboard-page__stat-value">{stat.value}</span>
-                    <div className="dashboard-page__stat-trend-row">
-                      <span className={`dashboard-page__stat-trend-badge ${stat.trend.isUp ? 'trend-up' : 'trend-down'}`}>
+                  <div className="flex flex-col mt-2">
+                    <span className="text-[26px] font-extrabold text-text-primary tracking-tight leading-none">{stat.value}</span>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded ${stat.trend.isUp ? 'bg-success-light text-success' : 'bg-error-light text-error'}`}>
                         {stat.trend.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                         {stat.trend.value}
                       </span>
-                      <span className="dashboard-page__stat-trend-text">{stat.trendText}</span>
+                      <span className="text-[11px] text-text-tertiary font-medium">{stat.trendText}</span>
                     </div>
                   </div>
                 </div>
                 <div
-                  className="dashboard-page__stat-icon"
+                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: stat.bgColor, color: stat.color }}
                 >
                   {stat.icon}
@@ -247,9 +248,9 @@ function DashboardPage() {
       <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
         {/* Headcount by Department (Donut) */}
         <Col xs={24} lg={8}>
-          <Card title="Nhân sự theo phòng ban" className="dashboard-page__card">
-            <div className="dashboard-page__chart-donut-container">
-              <div className="dashboard-page__chart-donut-wrapper">
+          <Card title="Nhân sự theo phòng ban" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
+            <div className="flex justify-center items-center h-[200px] mb-2">
+              <div className="relative w-[200px] h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -271,20 +272,20 @@ function DashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Center Content */}
-                <div className="donut-center-label">
-                  <span className="donut-center-value">{totalDeptValue}</span>
-                  <span className="donut-center-text">Tổng số</span>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[26px] font-extrabold text-text-primary leading-none tracking-tight">{totalDeptValue}</span>
+                  <span className="text-[10px] text-text-tertiary font-semibold uppercase tracking-wider mt-0.5">Tổng số</span>
                 </div>
               </div>
             </div>
             {/* Custom Styled Legends */}
-            <div className="dashboard-page__legend-grid">
+            <div className="flex flex-col gap-2 mt-4 border-0 border-t border-solid border-border-light pt-4">
               {departmentData.map((dept, index) => (
-                <div key={dept.name} className="dashboard-page__legend-item">
-                  <span className="legend-dot" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <span className="legend-name">{dept.name}</span>
-                  <span className="legend-percent">{Math.round((dept.value / totalDeptValue) * 100)}%</span>
-                  <span className="legend-val">{dept.value}</span>
+                <div key={dept.name} className="flex items-center text-xs">
+                  <span className="w-2 h-2 rounded-full mr-2 inline-block shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="text-text-secondary flex-1 font-medium">{dept.name}</span>
+                  <span className="text-text-tertiary text-[11px] mr-3 font-medium">{Math.round((dept.value / totalDeptValue) * 100)}%</span>
+                  <span className="font-semibold text-text-primary">{dept.value}</span>
                 </div>
               ))}
             </div>
@@ -293,7 +294,7 @@ function DashboardPage() {
 
         {/* Employee Growth (Area Chart) */}
         <Col xs={24} lg={10}>
-          <Card title="Xu hướng nhân sự hàng tháng" className="dashboard-page__card">
+          <Card title="Xu hướng nhân sự hàng tháng" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             <div style={{ height: 260, marginTop: 10 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -335,7 +336,7 @@ function DashboardPage() {
 
         {/* To-Do List */}
         <Col xs={24} lg={6}>
-          <Card title="Công việc cần làm" className="dashboard-page__card">
+          <Card title="Công việc cần làm" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             <List
               dataSource={todoList}
               renderItem={(item) => (
@@ -363,7 +364,7 @@ function DashboardPage() {
       <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
         {/* Recent Activities */}
         <Col xs={24} lg={14}>
-          <Card title="Hoạt động gần đây" className="dashboard-page__card">
+          <Card title="Hoạt động gần đây" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             {recentActivities.length === 0 ? (
               <Empty description="Không có hoạt động gần đây" />
             ) : (
@@ -414,7 +415,7 @@ function DashboardPage() {
                 <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600 }}>{pendingLeavesCount}</Tag>
               </Space>
             }
-            className="dashboard-page__card"
+            className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5"
           >
             {pendingLeaves.length === 0 ? (
               <Empty description="Không có đơn chờ duyệt" />

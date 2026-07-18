@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import {
-  Card, Table, Typography, Row, Col, Space, Tag, Button, Modal, Form, Input,
-  DatePicker, Switch, Empty, Spin, Tooltip,
+  Card, Table, Typography, Row, Col, Space, Tag, Spin, Empty,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { CalendarDays, Plus, Trash2, Sun } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CalendarDays, Sun } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api';
-import { message } from 'antd';
 
 const { Title, Text } = Typography;
 
@@ -39,7 +36,6 @@ const calendarApi = {
 };
 
 export default function CalendarHolidayPage() {
-  const queryClient = useQueryClient();
   const { data: calendars = [], isLoading } = useQuery({
     queryKey: ['calendars'],
     queryFn: calendarApi.list,

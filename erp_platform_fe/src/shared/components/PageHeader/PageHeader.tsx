@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react';
 import { Typography, Space, Breadcrumb } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import './PageHeader.css';
 
 const { Title, Text } = Typography;
 
@@ -32,12 +31,12 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
   const navigate = useNavigate();
 
   return (
-    <div className="page-header">
+    <div className="mb-6">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <Breadcrumb
-          className="page-header__breadcrumb"
+          className="mb-3"
           items={[
-            { title: 'Trang chủ', onClick: () => navigate('/dashboard'), className: 'page-header__breadcrumb-link' },
+            { title: 'Trang chủ', onClick: () => navigate('/dashboard'), className: 'cursor-pointer' },
             ...breadcrumbs.map((item) => ({
               title: item.path ? (
                 <a onClick={() => navigate(item.path!)}>{item.label}</a>
@@ -48,8 +47,8 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
           ]}
         />
       )}
-      <div className="page-header__content">
-        <div className="page-header__info">
+      <div className="flex items-start justify-between gap-4 max-[640px]:flex-col max-[640px]:items-stretch">
+        <div className="flex-1 min-w-0">
           <Title level={4} style={{ marginBottom: subtitle ? 4 : 0 }}>
             {title}
           </Title>
@@ -58,7 +57,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
           )}
         </div>
         {actions && (
-          <Space className="page-header__actions">{actions}</Space>
+          <Space className="shrink-0">{actions}</Space>
         )}
       </div>
     </div>

@@ -5,7 +5,6 @@ import type { TableColumnsType, MenuProps } from 'antd';
 import { Plus, Download, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
 import { FilterBar } from '@shared/components/FilterBar';
 import type { FilterBarField } from '@shared/components/FilterBar';
-import './EmployeeListPage.css';
 
 const { Title, Text } = Typography;
 
@@ -129,8 +128,8 @@ function EmployeeListPage() {
               <Text strong style={{ fontSize: 13, display: 'block', color: 'var(--color-text-primary)' }}>
                 {record.lastName} {record.firstName}
               </Text>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {code}
+              <Text type="secondary" style={{ fontSize: 11 }}>
+                Mã: {code}
               </Text>
             </div>
           </Space>
@@ -138,12 +137,26 @@ function EmployeeListPage() {
       },
     },
     {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      width: 220,
+      render: (val: string) => <Text style={{ fontSize: 13 }}>{val || '-'}</Text>,
+    },
+    {
+      title: 'Số điện thoại',
+      dataIndex: 'phone',
+      key: 'phone',
+      width: 150,
+      render: (val: string) => <Text style={{ fontSize: 13 }}>{val || '-'}</Text>,
+    },
+    {
       title: 'Phòng ban',
       key: 'department',
-      width: 160,
+      width: 180,
       render: (_, record) => {
-        const dept = record.employments?.find(e => e.isCurrent)?.departmentName || '-';
-        return <Text style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>{dept}</Text>;
+        const currentEmployment = record.employments?.find((e: any) => e.isCurrent) || record.employments?.[0];
+        return <Text style={{ fontSize: 13 }}>{currentEmployment?.departmentName || '-'}</Text>;
       },
     },
     {
@@ -151,46 +164,32 @@ function EmployeeListPage() {
       key: 'jobTitle',
       width: 180,
       render: (_, record) => {
-        const title = record.employments?.find(e => e.isCurrent)?.jobTitleName || '-';
-        return <Text style={{ fontSize: 13, color: 'var(--color-text-primary)' }}>{title}</Text>;
-      },
-    },
-    {
-      title: 'Email',
-      key: 'email',
-      width: 220,
-      render: (_, record) => {
-        const email = record.contacts?.find(c => c.type === 'email' || (c as any).contactType === 'email')?.value || '-';
-        return <Text type="secondary" style={{ fontSize: 13 }}>{email}</Text>;
+        const currentEmployment = record.employments?.find((e: any) => e.isCurrent) || record.employments?.[0];
+        return <Text style={{ fontSize: 13 }}>{currentEmployment?.jobTitleName || '-'}</Text>;
       },
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
-      width: 120,
-      render: (status: string) => {
-        const config = statusConfig[status] || { color: 'default', label: status };
-        return <Tag color={config.color} style={{ borderRadius: 4, fontWeight: 500 }}>{config.label}</Tag>;
+      key: 'status',
+      width: 140,
+      render: (val: string) => {
+        const config = statusConfig[val] || { color: 'default', label: val || 'Unknown' };
+        return (
+          <Tag color={config.color} style={{ borderRadius: 6, fontSize: 11, fontWeight: 500 }}>
+            {config.label}
+          </Tag>
+        );
       },
     },
     {
-      title: 'Ngày vào',
-      dataIndex: 'joinDate',
-      width: 120,
-      render: (date: string) => (
-        <Text type="secondary" style={{ fontSize: 13 }}>
-          {date ? new Date(date).toLocaleDateString('vi-VN') : '-'}
-        </Text>
-      ),
-    },
-    {
-      title: '',
+      title: 'Hành động',
       key: 'actions',
-      width: 48,
       fixed: 'right',
+      width: 80,
       render: (_, record) => (
         <Dropdown menu={{ items: getRowActions(record) }} trigger={['click']}>
-          <Button type="text" icon={<MoreHorizontal size={16} />} size="small" onClick={(e) => e.stopPropagation()} />
+          <Button type="text" size="small" icon={<MoreHorizontal size={16} />} onClick={(e) => e.stopPropagation()} />
         </Dropdown>
       ),
     },
@@ -205,16 +204,16 @@ function EmployeeListPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+      <div className="flex justify-center items-center h-[300px]">
         <Spin size="large" tip="Đang tải danh sách nhân viên..." />
       </div>
     );
   }
 
   return (
-    <div className="employee-list-page">
+    <div>
       {/* Page Header */}
-      <div className="employee-list-page__header">
+      <div className="flex justify-between items-start mb-6 max-[768px]:flex-col max-[768px]:gap-4">
         <div>
           <Title level={3} style={{ marginBottom: 4, fontWeight: 700, letterSpacing: '-0.02em' }}>
             Nhân viên
@@ -249,7 +248,7 @@ function EmployeeListPage() {
       />
 
       {/* Table Card */}
-      <Card className="employee-list-page__card" style={{ borderRadius: 16, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}>
+      <Card className="!rounded-2xl !border-solid !border-border-light shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
         <div style={{ marginBottom: 16 }}>
           <Text type="secondary" style={{ fontSize: 13 }}>
             Tìm thấy <Text strong>{filteredData.length}</Text> nhân viên
@@ -266,10 +265,9 @@ function EmployeeListPage() {
             showTotal: (total) => `Tổng ${total} nhân viên`,
           }}
           size="middle"
-          rowClassName="employee-list-page__row"
+          rowClassName="hover:!bg-bg-tertiary !cursor-pointer transition-colors duration-150"
           onRow={(record) => ({
             onClick: () => navigate(`/hrm/employees/${record.id}`),
-            style: { cursor: 'pointer' },
           })}
         />
       </Card>

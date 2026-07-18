@@ -1,6 +1,6 @@
 import { Card, Table, Typography, Row, Col, Space, Tag, Empty, Spin, Tooltip, Button } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { FileText, Download, Trash2 } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@shared/api';
 import { message, Modal } from 'antd';

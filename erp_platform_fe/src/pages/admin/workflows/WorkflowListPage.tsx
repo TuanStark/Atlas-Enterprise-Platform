@@ -1,6 +1,6 @@
 import { Card, Table, Typography, Row, Col, Space, Tag, Badge, Empty, Spin, Descriptions, Drawer } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { Workflow, ArrowRight } from 'lucide-react';
+import { Workflow } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api';

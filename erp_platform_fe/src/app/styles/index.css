@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ============================================================
    Atlas Enterprise Platform — Global Design System
    ============================================================ */
@@ -197,6 +201,28 @@ img {
   opacity: 1;
   transform: translateY(0);
   transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+/* Animations for Auth Layout */
+@keyframes floatAnim {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-8px); }
+}
+
+@keyframes pulseShield {
+  0%, 100% { box-shadow: 0 12px 36px rgba(10, 101, 255, 0.15); }
+  50% { box-shadow: 0 12px 48px rgba(10, 101, 255, 0.25); }
+}
+
+@keyframes authCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
