@@ -1,31 +1,110 @@
-import { useState } from 'react';
-import { Card, Form, Input, Button, Tabs, Switch, Select, Row, Col, Space, Typography, message, Divider } from 'antd';
+import { useEffect } from 'react';
+import { Card, Form, Input, Button, Tabs, Switch, Select, Row, Col, Space, Typography, message, Divider, Spin } from 'antd';
 import { Building2, Mail, Shield, Save } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { httpClient } from '@shared/api';
+import { useCurrentUser } from '@features/auth/hooks/useAuth';
+import { useAuthStore } from '@features/auth/store/authStore';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
 export default function SettingsPage() {
   const [form] = Form.useForm();
-  const [isSaving, setIsSaving] = useState(false);
+  const user = useCurrentUser();
+  const updateUser = useAuthStore((state) => state.updateUser);
+  const queryClient = useQueryClient();
+
+  // Fetch tenant info
+  const { data: tenant, isLoading } = useQuery({
+    queryKey: ['tenant-settings', user?.tenantId],
+    queryFn: async () => {
+      const { data } = await httpClient.get<any>(`/tenants/${user?.tenantId}`);
+      return data;
+    },
+    enabled: !!user?.tenantId,
+  });
+
+  // Populate form on load
+  useEffect(() => {
+    if (tenant) {
+      form.setFieldsValue({
+        companyName: tenant.name,
+        legalName: tenant.legalName,
+        taxCode: tenant.taxCode,
+        email: tenant.email,
+        phone: tenant.phone,
+        timezone: tenant.timezone || 'Asia/Ho_Chi_Minh',
+        currency: tenant.currency || 'VND',
+        // Mock default configuration fields
+        smtpHost: 'smtp.gmail.com',
+        smtpPort: 587,
+        smtpUser: tenant.email || 'noreply@erp-atlas.com',
+        emailPayroll: true,
+        emailLeave: true,
+        passwordPolicy: 'strong',
+        twoFactor: false,
+        sessionTimeout: 60,
+      });
+    }
+  }, [tenant, form]);
+
+  // Save mutation
+  const saveMutation = useMutation({
+    mutationFn: async (values: any) => {
+      const payload = {
+        name: values.companyName,
+        legalName: values.legalName,
+        taxCode: values.taxCode,
+        email: values.email,
+        phone: values.phone,
+        timezone: values.timezone,
+        currency: values.currency,
+        locale: tenant?.locale || 'vi',
+      };
+      const { data } = await httpClient.put<any>(`/tenants/${user?.tenantId}`, payload);
+      return data;
+    },
+    onSuccess: (updatedTenant) => {
+      message.success('Đã lưu cấu hình doanh nghiệp thành công!');
+      
+      // Update header company badge instantly
+      updateUser({
+        tenant: {
+          id: updatedTenant.id,
+          code: updatedTenant.code,
+          name: updatedTenant.name,
+          status: updatedTenant.status,
+          logoFileId: updatedTenant.logoFileId,
+        },
+      });
+
+      void queryClient.invalidateQueries({ queryKey: ['tenant-settings', user?.tenantId] });
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Gặp lỗi khi lưu cấu hình doanh nghiệp');
+    },
+  });
 
   const handleSave = (values: any) => {
-    setIsSaving(true);
-    console.log('Saving settings:', values);
-    // Simulate API call to save settings
-    setTimeout(() => {
-      setIsSaving(false);
-      message.success('Đã lưu cấu hình hệ thống thành công!');
-    }, 1000);
+    saveMutation.mutate(values);
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: 48, textAlign: 'center' }}>
+        <Spin size="large" tip="Đang tải cấu hình doanh nghiệp..." />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 24 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
         <Col>
           <Space direction="vertical" size={4}>
-            <Title level={4} style={{ margin: 0 }}>Cấu hình Hệ thống</Title>
-            <Text type="secondary">Quản trị viên thiết lập tham số hệ thống, kết nối máy chủ và chính sách bảo mật cho doanh nghiệp.</Text>
+            <Title level={4} style={{ margin: 0 }}>Cấu hình Hệ thống & Doanh nghiệp</Title>
+            <Text type="secondary">Thiết lập hồ sơ doanh nghiệp, thông số hoạt động và chính sách bảo mật hệ thống.</Text>
           </Space>
         </Col>
       </Row>
@@ -33,20 +112,6 @@ export default function SettingsPage() {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{
-          companyName: 'Atlas Enterprise Platform Corp',
-          taxCode: '0109283746',
-          timezone: 'Asia/Ho_Chi_Minh',
-          currency: 'VND',
-          smtpHost: 'smtp.gmail.com',
-          smtpPort: 587,
-          smtpUser: 'noreply@erp-atlas.com',
-          emailPayroll: true,
-          emailLeave: true,
-          passwordPolicy: 'strong',
-          twoFactor: false,
-          sessionTimeout: 60,
-        }}
         onFinish={handleSave}
       >
         <Card
@@ -77,11 +142,38 @@ export default function SettingsPage() {
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item
+                      name="legalName"
+                      label="Tên pháp lý (Legal Name)"
+                    >
+                      <Input placeholder="Tên đăng ký kinh doanh chính thức" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col xs={24} md={8}>
+                    <Form.Item
                       name="taxCode"
                       label="Mã số thuế"
                       rules={[{ required: true, message: 'Nhập mã số thuế' }]}
                     >
                       <Input placeholder="Ví dụ: 0101234567" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={8}>
+                    <Form.Item
+                      name="email"
+                      label="Email doanh nghiệp"
+                      rules={[{ type: 'email', message: 'Email không hợp lệ' }]}
+                    >
+                      <Input placeholder="contact@company.com" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={8}>
+                    <Form.Item
+                      name="phone"
+                      label="Số điện thoại"
+                    >
+                      <Input placeholder="024-xxxx-xxxx" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -230,7 +322,7 @@ export default function SettingsPage() {
               type="primary"
               htmlType="submit"
               icon={<Save size={16} />}
-              loading={isSaving}
+              loading={saveMutation.isPending}
               style={{ borderRadius: 6, height: 40, padding: '0 24px' }}
             >
               Lưu cài đặt

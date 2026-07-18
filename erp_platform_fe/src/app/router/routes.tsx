@@ -28,6 +28,7 @@ const SettingsPage = lazy(() => import('@pages/admin/settings/SettingsPage'));
 
 const ShiftsPage = lazy(() => import('@pages/hrm/shifts/ShiftsPage'));
 const TimesheetPage = lazy(() => import('@pages/hrm/timesheet/TimesheetPage'));
+const OrganizationPage = lazy(() => import('@pages/organization/OrganizationPage'));
 
 // --- Admin Pages — IAM & RBAC ---
 const UserListPage = lazy(() => import('@pages/admin/users/UserListPage'));
@@ -98,7 +99,7 @@ export const routes: RouteObject[] = [
       { path: '/hrm/training-courses', element: <UnderConstructionPage /> },
 
       // Organization
-      { path: '/organization', element: <UnderConstructionPage /> },
+      { path: '/organization', element: <OrganizationPage /> },
 
       // Notifications (accessible to all authenticated users)
       { path: '/notifications', element: <NotificationCenterPage /> },
