@@ -215,7 +215,7 @@ function DashboardPage() {
       <Row gutter={[20, 20]} className="mb-0">
         {stats.map((stat) => (
           <Col xs={24} sm={12} lg={6} key={stat.title}>
-            <Card className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] transition-all duration-200 !bg-white hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(15,23,42,0.05)] hover:!border-primary/15" hoverable>
+            <Card className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] transition-all duration-200 !bg-white hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(15,23,42,0.05)] hover:!border-primary/15" hoverable>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <Text type="secondary" className="!text-[12px] !font-semibold !text-text-secondary uppercase tracking-wider">
@@ -248,7 +248,7 @@ function DashboardPage() {
       <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
         {/* Headcount by Department (Donut) */}
         <Col xs={24} lg={8}>
-          <Card title="Nhân sự theo phòng ban" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
+          <Card title="Nhân sự theo phòng ban" className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             <div className="flex justify-center items-center h-[200px] mb-2">
               <div className="relative w-[200px] h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -294,7 +294,7 @@ function DashboardPage() {
 
         {/* Employee Growth (Area Chart) */}
         <Col xs={24} lg={10}>
-          <Card title="Xu hướng nhân sự hàng tháng" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
+          <Card title="Xu hướng nhân sự hàng tháng" className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             <div style={{ height: 260, marginTop: 10 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -336,7 +336,7 @@ function DashboardPage() {
 
         {/* To-Do List */}
         <Col xs={24} lg={6}>
-          <Card title="Công việc cần làm" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
+          <Card title="Công việc cần làm" className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             <List
               dataSource={todoList}
               renderItem={(item) => (
@@ -364,7 +364,7 @@ function DashboardPage() {
       <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
         {/* Recent Activities */}
         <Col xs={24} lg={14}>
-          <Card title="Hoạt động gần đây" className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
+          <Card title="Hoạt động gần đây" className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5">
             {recentActivities.length === 0 ? (
               <Empty description="Không có hoạt động gần đây" />
             ) : (
@@ -415,7 +415,7 @@ function DashboardPage() {
                 <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600 }}>{pendingLeavesCount}</Tag>
               </Space>
             }
-            className="!rounded-2xl !border-solid !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-b [&_.ant-card-head]:!border-solid [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5"
+            className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white h-full [&_.ant-card-head]:!border-border-light [&_.ant-card-head]:!min-h-0 [&_.ant-card-head]:!px-5 [&_.ant-card-head]:!py-4 [&_.ant-card-head-title]:!text-[14px] [&_.ant-card-head-title]:!font-bold [&_.ant-card-head-title]:!text-text-primary [&_.ant-card-body]:!p-5"
           >
             {pendingLeaves.length === 0 ? (
               <Empty description="Không có đơn chờ duyệt" />

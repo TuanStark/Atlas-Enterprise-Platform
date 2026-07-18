@@ -22,6 +22,18 @@ export default {
           primary: 'var(--color-text-primary, #0f172a)',
           secondary: 'var(--color-text-secondary, #475569)',
           tertiary: 'var(--color-text-tertiary, #94a3b8)',
+        },
+        border: {
+          DEFAULT: 'var(--color-border, #e2e8f0)',
+          light: 'var(--color-border-light, #f1f5f9)',
+        },
+        success: {
+          DEFAULT: 'var(--color-success, #10b981)',
+          light: 'var(--color-success-light, #ecfdf5)',
+        },
+        error: {
+          DEFAULT: 'var(--color-error, #ef4444)',
+          light: 'var(--color-error-light, #fef2f2)',
         }
       },
       transitionProperty: {

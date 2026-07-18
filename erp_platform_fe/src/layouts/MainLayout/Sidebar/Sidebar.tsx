@@ -11,7 +11,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
+  // ShieldCheck,
   Building2,
   Bell,
   FileText,
@@ -193,9 +193,8 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
 
   return (
     <Sider
-      className={`!bg-white border-0 border-r border-solid border-[rgba(0,0,0,0.06)] shadow-[2px_0_8px_rgba(0,0,0,0.015)] transition-all duration-200 overflow-hidden h-screen fixed top-0 bottom-0 z-[200] ${
-        collapsed ? 'left-0 max-[768px]:-left-[270px]' : 'left-0'
-      } max-[768px]:!w-[270px] max-[768px]:!max-w-[270px] max-[768px]:!min-w-[270px]`}
+      className={`!bg-white border-0 border-r border-solid border-[rgba(0,0,0,0.06)] shadow-[2px_0_8px_rgba(0,0,0,0.015)] transition-all duration-200 overflow-hidden h-screen fixed top-0 bottom-0 z-[200] ${collapsed ? 'left-0 max-[768px]:-left-[270px]' : 'left-0'
+        } max-[768px]:!w-[270px] max-[768px]:!max-w-[270px] max-[768px]:!min-w-[270px]`}
       width={270}
       collapsedWidth={72}
       collapsed={collapsed}
@@ -205,14 +204,12 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
       <div className="flex flex-col h-full w-full">
         {/* Logo */}
         <div
-          className={`flex items-center gap-3 p-5 border-0 border-b border-solid border-[rgba(0,0,0,0.04)] mb-2 transition-all duration-200 ${
-            collapsed ? 'justify-center !px-0 gap-0' : 'justify-start'
-          }`}
+          className={`flex items-center gap-3 p-5 border-0 border-b border-solid border-[rgba(0,0,0,0.04)] mb-2 transition-all duration-200 ${collapsed ? 'justify-center !px-0 gap-0' : 'justify-start'
+            }`}
         >
           <div
-            className={`flex items-center justify-center bg-gradient-to-br from-[#0a65ff] to-[#004ecc] rounded-lg text-white shrink-0 shadow-[0_4px_12px_rgba(10,101,255,0.25)] transition-all duration-200 ${
-              collapsed ? 'w-9 h-9' : 'w-[38px] h-[38px]'
-            }`}
+            className={`flex items-center justify-center bg-gradient-to-br from-[#0a65ff] to-[#004ecc] rounded-lg text-white shrink-0 shadow-[0_4px_12px_rgba(10,101,255,0.25)] transition-all duration-200 ${collapsed ? 'w-9 h-9' : 'w-[38px] h-[38px]'
+              }`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 18C9.33 18 4.67 19.33 4.67 22C6.24 23.55 8.5 24.5 11 24.5C13.5 24.5 15.76 23.55 17.33 22C17.33 19.33 12.67 18 12 18Z" fill="currentColor" />
@@ -248,7 +245,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
         </div>
 
         {/* Safety Badge */}
-        {!collapsed && (
+        {/* {!collapsed && (
           <div className="flex items-center gap-3 bg-gradient-to-br from-primary/[0.03] to-primary/[0.06] border border-solid border-primary/10 rounded-xl p-3 mx-4 my-4 shadow-[0_4px_20px_rgba(0,0,0,0.01)] transition-opacity duration-300">
             <div className="text-primary flex items-center justify-center shrink-0 w-7 h-7 bg-white rounded-lg shadow-[0_2px_8px_rgba(10,101,255,0.1)]">
               <ShieldCheck size={16} />
@@ -258,7 +255,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
               <span className="text-[9.5px] text-text-secondary">Đảm bảo an toàn và bảo mật dữ liệu.</span>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Collapse Toggle */}
         <button
