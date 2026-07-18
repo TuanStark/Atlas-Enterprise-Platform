@@ -18,6 +18,7 @@ export class EmployeeReadModelMapper {
     return {
       id: employee.id.toString(),
       tenantId: employee.tenantId.toString(),
+      principalId: employee.principalId.toString(),
       employeeNo: employee.employeeNo.getValue(),
       firstName: employee.fullName.firstName,
       lastName: employee.fullName.lastName,

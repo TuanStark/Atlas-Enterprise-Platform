@@ -93,6 +93,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
       await tx.employee.update({
         where: { id: data.id },
         data: {
+          principalId: data.principalId,
           firstName: data.firstName,
           lastName: data.lastName,
           preferredName: data.preferredName,

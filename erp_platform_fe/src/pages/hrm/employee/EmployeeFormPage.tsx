@@ -1,9 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Card, Form, Input, Select, DatePicker, Button, Space, Row, Col, Typography, Divider, message, Spin, Switch } from 'antd';
+import { Card, Form, Input, Select, DatePicker, Button, Space, Row, Col, Typography, Divider, message, Spin, Radio } from 'antd';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useEffect } from 'react';
 import { useCreateEmployee, useUpdateEmployee, useEmployee } from '@features/employee/hooks/useEmployee';
-import { useRoles } from '@features/rbac/hooks/useRbac';
+import { useRoles, useManagedUsers } from '@features/rbac/hooks/useRbac';
 import { useAuthStore } from '@features/auth/store/authStore';
 import dayjs from 'dayjs';
 import { FileUpload } from '@shared/components/FileUpload/FileUpload';
@@ -20,11 +20,12 @@ function EmployeeFormPage() {
   const tenantId = useAuthStore((s) => s.user?.tenantId || '');
   const { data: employee, isLoading: isLoadingEmployee } = useEmployee(isEdit ? id : undefined);
   const { data: roles = [], isLoading: isLoadingRoles } = useRoles(tenantId);
+  const { data: users = [], isLoading: isLoadingUsers } = useManagedUsers();
 
   const createMutation = useCreateEmployee();
   const updateMutation = useUpdateEmployee();
 
-  const createAccount = Form.useWatch('createAccount', form);
+  const accountMode = Form.useWatch('accountMode', form);
 
   useEffect(() => {
     if (isEdit && employee) {
@@ -54,7 +55,8 @@ function EmployeeFormPage() {
         jobTitleId: currentEmployment?.jobTitleName ? '1' : null,
         joinDate: employee.joinDate ? dayjs(employee.joinDate) : null,
         employmentStatus: employee.status,
-        createAccount: false,
+        accountMode: employee.principalId ? 'link_existing' : 'no_account',
+        principalId: employee.principalId || null,
         avatarFileId: employee.avatarFileId || null,
       });
     }
@@ -84,16 +86,17 @@ function EmployeeFormPage() {
         departmentId: values.departmentId,
         jobTitleId: values.jobTitleId,
         status: values.employmentStatus,
-        createAccount: values.createAccount,
-        password: values.password,
-        roleId: values.roleId,
+        createAccount: values.accountMode === 'create_new',
+        password: values.accountMode === 'create_new' ? values.password : undefined,
+        roleId: values.accountMode === 'create_new' ? values.roleId : undefined,
+        principalId: values.accountMode === 'link_existing' ? values.principalId : undefined,
         avatarFileId: values.avatarFileId || null,
       };
 
       if (isEdit && id) {
-        await updateMutation.mutateAsync({ id, data: payload });
+        await updateMutation.mutateAsync({ id, data: payload as any });
       } else {
-        await createMutation.mutateAsync(payload);
+        await createMutation.mutateAsync(payload as any);
       }
       navigate('/hrm/employees');
     } catch (err: any) {
@@ -304,19 +307,49 @@ function EmployeeFormPage() {
               </Col>
             </Row>
 
-            {/* Section 4: System Account Provisioning */}
-            {!isEdit && (
+            {/* Section 4: System Account Provisioning / Linking */}
+            {isEdit ? (
               <>
                 <Divider titlePlacement="left" plain style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-primary)' }}>4. Tài khoản hệ thống (Identity / User Account)</Divider>
                 <Row gutter={16}>
                   <Col xs={24}>
-                    <Form.Item name="createAccount" label="Tạo tài khoản đăng nhập cho nhân viên này?" valuePropName="checked">
-                      <Switch checkedChildren="Có" unCheckedChildren="Không" />
+                    <Form.Item
+                      name="principalId"
+                      label="Tài khoản người dùng liên kết"
+                      rules={[{ required: true, message: 'Vui lòng chọn tài khoản để liên kết' }]}
+                    >
+                      <Select 
+                        placeholder="Tìm tài khoản theo tên hoặc email..." 
+                        options={users.map((u: any) => ({
+                          value: u.principalId,
+                          label: `${u.displayName || u.username} (${u.email})`,
+                        }))} 
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        loading={isLoadingUsers}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </>
+            ) : (
+              <>
+                <Divider titlePlacement="left" plain style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-primary)' }}>4. Tài khoản hệ thống (Identity / User Account)</Divider>
+                <Row gutter={16}>
+                  <Col xs={24}>
+                    <Form.Item name="accountMode" label="Tùy chọn tài khoản hệ thống" initialValue="no_account">
+                      <Radio.Group>
+                        <Radio value="no_account">Không sử dụng tài khoản</Radio>
+                        <Radio value="create_new">Tạo tài khoản đăng nhập mới</Radio>
+                        <Radio value="link_existing">Liên kết tài khoản người dùng có sẵn</Radio>
+                      </Radio.Group>
                     </Form.Item>
                   </Col>
                 </Row>
 
-                {createAccount && (
+                {accountMode === 'create_new' && (
                   <Row gutter={16}>
                     <Col xs={24} sm={12}>
                       <Form.Item
@@ -337,6 +370,31 @@ function EmployeeFormPage() {
                         rules={[{ required: true, message: 'Vui lòng chỉ định vai trò cho tài khoản' }]}
                       >
                         <Select placeholder="Chọn vai trò của nhân sự" options={roleOptions} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                )}
+
+                {accountMode === 'link_existing' && (
+                  <Row gutter={16}>
+                    <Col xs={24}>
+                      <Form.Item
+                        name="principalId"
+                        label="Chọn tài khoản người dùng có sẵn để liên kết"
+                        rules={[{ required: true, message: 'Vui lòng chọn tài khoản để liên kết' }]}
+                      >
+                        <Select 
+                          placeholder="Tìm tài khoản theo tên hoặc email..." 
+                          options={users.map((u: any) => ({
+                            value: u.principalId,
+                            label: `${u.displayName || u.username} (${u.email})`,
+                          }))} 
+                          showSearch
+                          filterOption={(input, option) =>
+                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                          }
+                          loading={isLoadingUsers}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>

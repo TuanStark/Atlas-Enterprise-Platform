@@ -1,6 +1,8 @@
 import {
   AttendanceRecord as PrismaAttendanceRecord,
   AttendanceAdjustment as PrismaAdjustment,
+  Employment as PrismaEmployment,
+  Employee as PrismaEmployee,
 } from '@prisma/client';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { AttendanceRecord } from '../../domain/aggregates/attendance-record.aggregate';
@@ -8,6 +10,9 @@ import { AttendanceAdjustment } from '../../domain/entities/attendance-adjustmen
 
 export type PrismaAttendanceRecordPayload = PrismaAttendanceRecord & {
   attendanceRecordAttendanceAdjustments?: PrismaAdjustment[];
+  employment?: PrismaEmployment & {
+    employee?: PrismaEmployee;
+  };
 };
 
 export class AttendanceRecordPersistenceMapper {
@@ -46,6 +51,18 @@ export class AttendanceRecordPersistenceMapper {
       ),
       createdAt: prisma.createdAt ?? new Date(),
       updatedAt: prisma.updatedAt ?? new Date(),
+      employment: prisma.employment
+        ? {
+            id: prisma.employment.id,
+            employee: prisma.employment.employee
+              ? {
+                  id: prisma.employment.employee.id,
+                  firstName: prisma.employment.employee.firstName,
+                  lastName: prisma.employment.employee.lastName,
+                }
+              : undefined,
+          }
+        : undefined,
     });
   }
 

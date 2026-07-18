@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Row, Col, Card, Typography, List, Avatar, Tag, Space, Checkbox, Spin, Empty, Popconfirm } from 'antd';
+import { useState, useEffect } from 'react';
+import { Row, Col, Card, Typography, List, Avatar, Tag, Space, Checkbox, Spin, Empty, Popconfirm, message, Button } from 'antd';
 import {
   Users,
   TrendingUp,
@@ -27,7 +27,7 @@ const { Title, Text } = Typography;
 
 import { useEmployees } from '@features/employee/hooks/useEmployee';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
-import { useAttendanceRecords } from '@features/attendance/hooks/useAttendance';
+import { useAttendanceRecords, useAttendanceByEmployment, useCheckIn, useCheckOut } from '@features/attendance/hooks/useAttendance';
 import { useJobPostings, useJobApplications } from '@features/recruitment/hooks/useRecruitment';
 import { useCurrentUser } from '@features/auth/hooks/useAuth';
 
@@ -44,6 +44,65 @@ function DashboardPage() {
 
   const approveMutation = useApproveLeaveRequest();
   const rejectMutation = useRejectLeaveRequest();
+
+  // Find current user's employee & active employment
+  const currentUserEmployee = employees.find((emp: any) => emp.principalId === user?.principalId);
+  const currentEmployment = currentUserEmployee?.employments?.find((e: any) => e.isCurrent) || currentUserEmployee?.employments?.[0];
+  const employmentId = currentEmployment?.id;
+
+  // Fetch current user's attendance records
+  const { data: userAttendanceRecords = [], isLoading: isLoadingUserAttendance } = useAttendanceByEmployment(employmentId);
+
+  // Digital clock state
+  const [currentTime, setCurrentTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Check-in and Check-out mutations
+  const checkInMutation = useCheckIn();
+  const checkOutMutation = useCheckOut();
+
+  // Find today's attendance record
+  const todayRecord = userAttendanceRecords.find((rec: any) => {
+    const recDate = new Date(rec.attendanceDate);
+    const today = new Date();
+    return recDate.getDate() === today.getDate() &&
+           recDate.getMonth() === today.getMonth() &&
+           recDate.getFullYear() === today.getFullYear();
+  });
+
+  const handleWebCheckIn = async () => {
+    if (!employmentId) {
+      message.error('Không tìm thấy thông tin hợp đồng nhân sự của bạn!');
+      return;
+    }
+    try {
+      await checkInMutation.mutateAsync({
+        employmentId,
+        checkInTime: new Date().toISOString(),
+        source: 'web',
+      });
+    } catch {
+      // Handled in hook
+    }
+  };
+
+  const handleWebCheckOut = async () => {
+    if (!todayRecord) return;
+    try {
+      await checkOutMutation.mutateAsync({
+        recordId: todayRecord.id,
+        dto: {
+          checkOutTime: new Date().toISOString(),
+          source: 'web',
+        },
+      });
+    } catch {
+      // Handled in hook
+    }
+  };
 
   const [todoList, setTodoList] = useState([
     { id: 1, text: 'Phê duyệt các đơn xin nghỉ phép', checked: false },
@@ -225,37 +284,147 @@ function DashboardPage() {
         </button>
       </div>
 
-      {/* Stat Cards */}
-      <Row gutter={[20, 20]} className="mb-0">
-        {stats.map((stat) => (
-          <Col xs={24} sm={12} lg={6} key={stat.title}>
-            <Card className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] transition-all duration-200 !bg-white hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(15,23,42,0.05)] hover:!border-primary/15" hoverable>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <Text type="secondary" className="!text-[12px] !font-semibold !text-text-secondary uppercase tracking-wider">
-                    {stat.title}
-                  </Text>
-                  <div className="flex flex-col mt-2">
-                    <span className="text-[26px] font-extrabold text-text-primary tracking-tight leading-none">{stat.value}</span>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded ${stat.trend.isUp ? 'bg-success-light text-success' : 'bg-error-light text-error'}`}>
-                        {stat.trend.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                        {stat.trend.value}
-                      </span>
-                      <span className="text-[11px] text-text-tertiary font-medium">{stat.trendText}</span>
+      {/* Stat Cards & Web Check-in Widget */}
+      <Row gutter={[20, 20]} className="mb-0 items-stretch">
+        <Col xs={24} lg={18}>
+          <Row gutter={[20, 20]} className="h-full">
+            {stats.map((stat) => (
+              <Col xs={24} sm={12} lg={6} key={stat.title}>
+                <Card className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] transition-all duration-200 !bg-white hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(15,23,42,0.05)] hover:!border-primary/15 h-full" hoverable>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <Text type="secondary" className="!text-[12px] !font-semibold !text-text-secondary uppercase tracking-wider">
+                        {stat.title}
+                      </Text>
+                      <div className="flex flex-col mt-2">
+                        <span className="text-[26px] font-extrabold text-text-primary tracking-tight leading-none">{stat.value}</span>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded ${stat.trend.isUp ? 'bg-success-light text-success' : 'bg-error-light text-error'}`}>
+                            {stat.trend.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                            {stat.trend.value}
+                          </span>
+                          <span className="text-[11px] text-text-tertiary font-medium">{stat.trendText}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: stat.bgColor, color: stat.color }}
+                    >
+                      {stat.icon}
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Col>
+
+        <Col xs={24} lg={6}>
+          <Card 
+            className="!rounded-2xl !border-border-light shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)] !bg-white [&_.ant-card-body]:!p-4 h-full flex flex-col justify-center"
+          >
+            <div className="flex flex-col items-center">
+              <div className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">
+                Chấm công trực tuyến
+              </div>
+              <div className="text-[22px] font-extrabold text-text-primary tracking-tight leading-none mb-1">
+                {currentTime.toLocaleTimeString('vi-VN')}
+              </div>
+              <div className="text-[11px] text-text-tertiary font-medium mb-3">
+                {currentTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+
+              {/* Status Tag */}
+              <div className="mb-3">
+                {isLoadingUserAttendance ? (
+                  <Spin size="small" />
+                ) : !todayRecord?.checkInAt ? (
+                  <Tag color="default" className="px-3 py-0.5 rounded-full font-semibold border-none !text-[11px]">Chưa Check-in</Tag>
+                ) : !todayRecord?.checkOutAt ? (
+                  <Tag color="processing" className="px-3 py-0.5 rounded-full font-semibold border-none !text-[11px]">Đang làm việc</Tag>
+                ) : (
+                  <Tag color="success" className="px-3 py-0.5 rounded-full font-semibold border-none !text-[11px]">Đã hoàn thành</Tag>
+                )}
+              </div>
+
+              {/* Check-in/out button */}
+              <div className="w-full flex flex-col gap-2">
+                {isLoadingUserAttendance ? (
+                  <Button block disabled size="middle" className="rounded-xl font-bold">Đang tải...</Button>
+                ) : !todayRecord?.checkInAt ? (
+                  <Button 
+                    type="primary" 
+                    block 
+                    size="middle" 
+                    icon={<Clock size={15} />} 
+                    loading={checkInMutation.isPending}
+                    onClick={handleWebCheckIn}
+                    className="!rounded-xl font-bold bg-primary hover:bg-primary-hover shadow-sm text-xs h-[36px]"
+                  >
+                    Check In
+                  </Button>
+                ) : !todayRecord?.checkOutAt ? (
+                  <Popconfirm
+                    title="Xác nhận Check-out"
+                    description="Bạn có chắc chắn muốn Check-out ca làm việc hôm nay?"
+                    onConfirm={handleWebCheckOut}
+                    okText="Đồng ý"
+                    cancelText="Hủy"
+                    placement="topRight"
+                  >
+                    <Button 
+                      type="primary" 
+                      danger
+                      block 
+                      size="middle" 
+                      icon={<Clock size={15} />} 
+                      loading={checkOutMutation.isPending}
+                      className="!rounded-xl font-bold shadow-sm text-xs h-[36px]"
+                    >
+                      Check Out
+                    </Button>
+                  </Popconfirm>
+                ) : (
+                  <Button 
+                    block 
+                    disabled 
+                    size="middle" 
+                    className="!rounded-xl font-bold text-xs h-[36px]"
+                  >
+                    Đã hoàn thành ngày công
+                  </Button>
+                )}
+              </div>
+
+              {/* Today's detail metrics */}
+              {todayRecord && (
+                <div className="w-full mt-3 pt-3 border-0 border-t border-solid border-border-light flex justify-around text-center text-[11px]">
+                  <div>
+                    <div className="text-text-tertiary font-medium">Giờ vào</div>
+                    <div className="font-semibold text-text-primary mt-0.5">
+                      {todayRecord.checkInAt ? new Date(todayRecord.checkInAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </div>
+                  </div>
+                  <div className="w-[1px] bg-border-light self-stretch" />
+                  <div>
+                    <div className="text-text-tertiary font-medium">Giờ ra</div>
+                    <div className="font-semibold text-text-primary mt-0.5">
+                      {todayRecord.checkOutAt ? new Date(todayRecord.checkOutAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </div>
+                  </div>
+                  <div className="w-[1px] bg-border-light self-stretch" />
+                  <div>
+                    <div className="text-text-tertiary font-medium">Giờ làm</div>
+                    <div className="font-semibold text-text-primary mt-0.5">
+                      {todayRecord.workedMinutes && todayRecord.workedMinutes > 0 ? `${(todayRecord.workedMinutes / 60).toFixed(1)}h` : '-'}
                     </div>
                   </div>
                 </div>
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: stat.bgColor, color: stat.color }}
-                >
-                  {stat.icon}
-                </div>
-              </div>
-            </Card>
-          </Col>
-        ))}
+              )}
+            </div>
+          </Card>
+        </Col>
       </Row>
 
       {/* Visual Chart Grid */}

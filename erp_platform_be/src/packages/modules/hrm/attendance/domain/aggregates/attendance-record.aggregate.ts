@@ -22,6 +22,14 @@ export interface AttendanceRecordProps {
   adjustments: AttendanceAdjustment[];
   createdAt: Date;
   updatedAt: Date;
+  employment?: {
+    id: string;
+    employee?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  };
 }
 
 export class AttendanceRecord extends AggregateRoot<AttendanceRecordProps> {
@@ -36,8 +44,12 @@ export class AttendanceRecord extends AggregateRoot<AttendanceRecordProps> {
     deviceId?: string;
   }): AttendanceRecord {
     const now = new Date();
+    const normalizedDate = new Date(props.attendanceDate);
+    normalizedDate.setHours(0, 0, 0, 0);
+
     return new AttendanceRecord(Identifier.create(), {
       ...props,
+      attendanceDate: normalizedDate,
       overtimeMinutes: 0,
       lateMinutes: 0,
       earlyLeaveMinutes: 0,
@@ -117,6 +129,10 @@ export class AttendanceRecord extends AggregateRoot<AttendanceRecordProps> {
 
   get updatedAt() {
     return this.props.updatedAt;
+  }
+
+  get employment() {
+    return this.props.employment;
   }
 
   // --- Domain Commands ---

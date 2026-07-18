@@ -45,4 +45,8 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsString()
   avatarFileId?: string;
+
+  @IsOptional()
+  @IsString()
+  principalId?: string;
 }

@@ -14,6 +14,7 @@ import type { UUID } from '@shared/types';
 export interface Employee {
   id: UUID;
   tenantId: UUID;
+  principalId?: UUID;
   employeeCode: string;
   firstName: string;
   middleName?: string;
@@ -128,6 +129,7 @@ export interface CreateEmployeeDto {
   password?: string;
   roleId?: string;
   avatarFileId?: string;
+  principalId?: string;
 }
 
 export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {}

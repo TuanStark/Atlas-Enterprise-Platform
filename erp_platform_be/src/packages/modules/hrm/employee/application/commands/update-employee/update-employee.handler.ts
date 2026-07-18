@@ -2,6 +2,7 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateEmployeeCommand } from './update-employee.command';
 import { BaseCommandHandler } from '@shared-kernel/application';
+import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import * as employeeRepo from '../../../domain/repositories/employee.repository';
 
 @CommandHandler(UpdateEmployeeCommand)
@@ -67,6 +68,11 @@ export class UpdateEmployeeHandler
     // Update avatar
     if (dto.avatarFileId !== undefined) {
       employee.changeAvatar(dto.avatarFileId);
+    }
+
+    // Link existing Principal / User account if provided
+    if (dto.principalId !== undefined) {
+      employee.linkPrincipal(Identifier.create(dto.principalId));
     }
 
     await this.repository.update(employee);

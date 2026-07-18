@@ -73,4 +73,8 @@ export class CreateEmployeeDto {
   @IsOptional()
   @IsString()
   roleId?: string;
+
+  @IsOptional()
+  @IsString()
+  principalId?: string;
 }

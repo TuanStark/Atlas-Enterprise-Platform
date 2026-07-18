@@ -3,6 +3,7 @@ import { Gender, MaritalStatus } from '@prisma/client';
 export interface EmployeeReadModel {
   id: string;
   tenantId: string;
+  principalId: string;
   employeeNo: string;
   firstName: string;
   lastName: string;

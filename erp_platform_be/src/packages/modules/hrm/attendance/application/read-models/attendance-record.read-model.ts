@@ -18,6 +18,15 @@ export interface AttendanceRecordReadModel {
   adjustments: AttendanceAdjustmentReadModel[];
   createdAt: Date;
   updatedAt: Date;
+  employment?: {
+    id: string;
+    employee?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      displayName: string;
+    };
+  };
 }
 
 export interface AttendanceAdjustmentReadModel {

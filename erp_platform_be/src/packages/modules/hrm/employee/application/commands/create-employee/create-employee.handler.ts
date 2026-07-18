@@ -20,20 +20,25 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
   async execute(command: CreateEmployeeCommand): Promise<Identifier> {
     const { tenantId, dto } = command;
 
-    const principalId = Identifier.create();
-    const isCreateAccount = dto.createAccount === true || dto.createAccount === 'true';
+    const hasExistingPrincipal = Boolean(dto.principalId);
+    const principalId = hasExistingPrincipal 
+      ? Identifier.create(dto.principalId) 
+      : Identifier.create();
+    const isCreateAccount = !hasExistingPrincipal && (dto.createAccount === true || dto.createAccount === 'true');
 
-    await this.prisma.principal.create({
-      data: {
-        id: principalId.toString(),
-        tenantId: tenantId.toString(),
-        type: 'user',
-        status: isCreateAccount ? 'active' : 'inactive',
-        displayName: `${dto.firstName} ${dto.lastName}`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
+    if (!hasExistingPrincipal) {
+      await this.prisma.principal.create({
+        data: {
+          id: principalId.toString(),
+          tenantId: tenantId.toString(),
+          type: 'user',
+          status: isCreateAccount ? 'active' : 'inactive',
+          displayName: `${dto.firstName} ${dto.lastName}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
 
     const employee = await this.domainService.create({
       tenantId,

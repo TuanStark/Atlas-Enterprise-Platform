@@ -32,6 +32,19 @@ export class AttendanceRecordReadModelMapper {
       })),
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      employment: entity.employment
+        ? {
+            id: entity.employment.id,
+            employee: entity.employment.employee
+              ? {
+                  id: entity.employment.employee.id,
+                  firstName: entity.employment.employee.firstName,
+                  lastName: entity.employment.employee.lastName,
+                  displayName: `${entity.employment.employee.lastName || ''} ${entity.employment.employee.firstName || ''}`.trim(),
+                }
+              : undefined,
+          }
+        : undefined,
     };
   }
 }

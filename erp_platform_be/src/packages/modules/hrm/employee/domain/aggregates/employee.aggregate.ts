@@ -128,7 +128,10 @@ export class Employee extends AggregateRoot<EmployeeProps> {
     return this.props.deletedAt;
   }
 
-  // --- Commands ---
+  linkPrincipal(principalId: Identifier): void {
+    this.props.principalId = principalId;
+    this.touch();
+  }
 
   updateName(firstName: string, lastName: string, preferredName?: string): void {
     this.props.fullName = FullName.create(firstName, lastName, preferredName);

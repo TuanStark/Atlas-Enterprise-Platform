@@ -35,7 +35,7 @@ export function useCheckIn() {
     mutationFn: (dto: CheckInDto) => attendanceApi.checkIn(dto),
     onSuccess: () => {
       message.success('Check-in thành công!');
-      void queryClient.invalidateQueries({ queryKey: attendanceKeys.records() });
+      void queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
     },
     onError: (error: ApiError) => {
       message.error(error.message || 'Check-in thất bại');
@@ -52,7 +52,7 @@ export function useCheckOut() {
       attendanceApi.checkOut(recordId, dto),
     onSuccess: () => {
       message.success('Check-out thành công!');
-      void queryClient.invalidateQueries({ queryKey: attendanceKeys.records() });
+      void queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
     },
     onError: (error: ApiError) => {
       message.error(error.message || 'Check-out thất bại');
