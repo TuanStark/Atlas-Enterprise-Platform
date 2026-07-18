@@ -1,13 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Table, Button, Tag, Typography } from 'antd';
+import { Card, Table, Button, Tag, Typography, Spin, Space, Popconfirm } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { Plus } from 'lucide-react';
-
-const { Title, Text } = Typography;
-
+import { FilterBar } from '@shared/components/FilterBar';
+import type { FilterBarField } from '@shared/components/FilterBar';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
 import type { LeaveRequest } from '@features/leave/types';
-import { Spin, Space, Popconfirm } from 'antd';
+
+const { Title, Text } = Typography;
 
 const statusMap: Record<string, { color: string; label: string }> = {
   draft: { color: 'default', label: 'Nháp' },
@@ -19,10 +20,42 @@ const statusMap: Record<string, { color: string; label: string }> = {
 
 function LeaveRequestListPage() {
   const navigate = useNavigate();
+  const [filters, setFilters] = useState<{
+    searchText: string;
+    status: string | undefined;
+  }>({
+    searchText: '',
+    status: undefined,
+  });
 
   const { data: requests = [], isLoading } = useLeaveRequests();
   const approveMutation = useApproveLeaveRequest();
   const rejectMutation = useRejectLeaveRequest();
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const filterFields: FilterBarField[] = [
+    {
+      key: 'searchText',
+      type: 'text',
+      label: 'Nhân viên',
+      placeholder: 'Tìm nhân viên theo tên...',
+      span: 12,
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Trạng thái đơn',
+      placeholder: 'Chọn trạng thái...',
+      options: Object.entries(statusMap).map(([key, value]) => ({
+        value: key,
+        label: value.label,
+      })),
+      span: 12,
+    }
+  ];
 
   const columns: TableColumnsType<LeaveRequest> = [
     {
@@ -105,6 +138,14 @@ function LeaveRequestListPage() {
     }
   ];
 
+  const filteredRequests = requests.filter(req => {
+    const emp = req.employment?.employee;
+    const empName = emp ? `${emp.lastName || ''} ${emp.firstName || ''}` : '';
+    const matchesSearch = empName.toLowerCase().includes(filters.searchText.toLowerCase());
+    const matchesStatus = !filters.status || req.status === filters.status;
+    return matchesSearch && matchesStatus;
+  });
+
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
@@ -131,8 +172,15 @@ function LeaveRequestListPage() {
           Tạo đơn nghỉ phép
         </Button>
       </div>
+
+      <FilterBar
+        values={filters}
+        onChange={handleFilterChange}
+        fields={filterFields}
+      />
+
       <Card style={{ borderRadius: 16, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}>
-        <Table columns={columns} dataSource={requests} rowKey="id" size="middle"
+        <Table columns={columns} dataSource={filteredRequests} rowKey="id" size="middle"
           pagination={{ pageSize: 20, showTotal: (total) => `Tổng ${total} đơn` }}
         />
       </Card>

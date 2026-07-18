@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Card, Table, Button, Tag, Typography, Row, Col, Space, Modal, Form, Input, InputNumber, Progress, Spin, Empty, DatePicker } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { Plus, Target, Calendar } from 'lucide-react';
+import { FilterBar } from '@shared/components/FilterBar';
+import type { FilterBarField } from '@shared/components/FilterBar';
 import { usePerformanceCycles, useCreatePerformanceCycle, useDeletePerformanceCycle, usePerformanceGoals, useCreatePerformanceGoal } from '@features/performance/hooks/usePerformance';
 import type { PerformanceCycle, PerformanceGoal } from '@features/performance/types';
 import dayjs from 'dayjs';
@@ -26,6 +28,14 @@ export default function PerformancePage() {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [cycleForm] = Form.useForm();
   const [goalForm] = Form.useForm();
+
+  const [goalFilters, setGoalFilters] = useState<{
+    search: string;
+    status: string | undefined;
+  }>({
+    search: '',
+    status: undefined,
+  });
 
   // Queries & Mutations
   const { data: cycles = [], isLoading: isLoadingCycles } = usePerformanceCycles();
@@ -69,6 +79,31 @@ export default function PerformancePage() {
       }
     );
   };
+
+  const handleGoalFilterChange = (key: string, value: any) => {
+    setGoalFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const goalFilterFields: FilterBarField[] = [
+    {
+      key: 'search',
+      type: 'text',
+      label: 'Tìm kiếm',
+      placeholder: 'Tìm kiếm mục tiêu/KPI...',
+      span: 12,
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Trạng thái',
+      placeholder: 'Lọc trạng thái...',
+      options: Object.entries(goalStatusConfig).map(([key, val]) => ({
+        value: key,
+        label: val.label,
+      })),
+      span: 12,
+    }
+  ];
 
   // Columns Definitions
   const cycleColumns: TableColumnsType<PerformanceCycle> = [
@@ -160,6 +195,14 @@ export default function PerformancePage() {
     },
   ];
 
+  const filteredGoals = goals.filter(g => {
+    const title = g.title?.toLowerCase() || '';
+    const desc = g.description?.toLowerCase() || '';
+    const matchesSearch = title.includes(goalFilters.search.toLowerCase()) || desc.includes(goalFilters.search.toLowerCase());
+    const matchesStatus = !goalFilters.status || g.status === goalFilters.status;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div style={{ padding: 24 }}>
       <Row gutter={24} style={{ marginBottom: 24 }}>
@@ -234,35 +277,39 @@ export default function PerformancePage() {
             styles={{ body: { padding: 0 } }}
             style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)', overflow: 'hidden' }}
           >
-            {isLoadingGoals ? (
-              <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
-            ) : goals.length > 0 ? (
-              <Table<PerformanceGoal>
-                columns={goalColumns}
-                dataSource={goals}
-                rowKey="id"
-                pagination={{ pageSize: 5 }}
-              />
-            ) : (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={
-                    <Space direction="vertical" size={12}>
-                      <Text type="secondary">Chưa có mục tiêu cá nhân hoặc KPI nào được phân bổ.</Text>
-                      <Button
-                        type="primary"
-                        icon={<Plus size={14} />}
-                        onClick={() => setIsGoalModalOpen(true)}
-                        style={{ borderRadius: 6 }}
-                      >
-                        Thiết lập mục tiêu đầu tiên
-                      </Button>
-                    </Space>
-                  }
+            <div>
+              <div style={{ padding: '16px 16px 0 16px' }}>
+                <FilterBar
+                  values={goalFilters}
+                  onChange={handleGoalFilterChange}
+                  fields={goalFilterFields}
+                  cardStyle={{
+                    marginBottom: 16,
+                    border: '1px dashed var(--color-border)',
+                    borderRadius: 10,
+                    boxShadow: 'none',
+                    background: 'var(--color-bg-layout)'
+                  }}
                 />
               </div>
-            )}
+              {isLoadingGoals ? (
+                <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
+              ) : filteredGoals.length > 0 ? (
+                <Table<PerformanceGoal>
+                  columns={goalColumns}
+                  dataSource={filteredGoals}
+                  rowKey="id"
+                  pagination={{ pageSize: 5 }}
+                />
+              ) : (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="Không tìm thấy mục tiêu nào khớp với tìm kiếm."
+                  />
+                </div>
+              )}
+            </div>
           </Card>
         </Col>
       </Row>

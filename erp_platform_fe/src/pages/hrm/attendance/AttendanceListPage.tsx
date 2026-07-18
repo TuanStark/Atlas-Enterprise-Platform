@@ -1,12 +1,12 @@
-import { Card, Table, Tag, Typography, Space, Select } from 'antd';
+import { useState } from 'react';
+import { Card, Table, Tag, Typography, Spin } from 'antd';
 import type { TableColumnsType } from 'antd';
-
-
-const { Title, Text } = Typography;
-
+import { FilterBar } from '@shared/components/FilterBar';
+import type { FilterBarField } from '@shared/components/FilterBar';
 import { useAttendanceRecords } from '@features/attendance/hooks/useAttendance';
 import type { AttendanceRecord } from '@features/attendance/types';
-import { Spin } from 'antd';
+
+const { Title, Text } = Typography;
 
 const statusMap: Record<string, { color: string; label: string }> = {
   present: { color: 'green', label: 'Có mặt' },
@@ -18,7 +18,54 @@ const statusMap: Record<string, { color: string; label: string }> = {
 };
 
 function AttendanceListPage() {
+  const [filters, setFilters] = useState<{
+    timeRange: string;
+    searchText: string;
+    status: string | undefined;
+  }>({
+    timeRange: 'month',
+    searchText: '',
+    status: undefined,
+  });
+
   const { data: records = [], isLoading } = useAttendanceRecords();
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const filterFields: FilterBarField[] = [
+    {
+      key: 'timeRange',
+      type: 'select',
+      label: 'Thời gian',
+      options: [
+        { value: 'all', label: 'Tất cả thời gian' },
+        { value: 'today', label: 'Hôm nay' },
+        { value: 'week', label: 'Tuần này' },
+        { value: 'month', label: 'Tháng này' },
+      ],
+      span: 6,
+    },
+    {
+      key: 'searchText',
+      type: 'text',
+      label: 'Nhân viên',
+      placeholder: 'Tìm nhân viên theo tên...',
+      span: 10,
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Trạng thái',
+      placeholder: 'Chọn trạng thái...',
+      options: Object.entries(statusMap).map(([key, value]) => ({
+        value: key,
+        label: value.label,
+      })),
+      span: 8,
+    }
+  ];
 
   const columns: TableColumnsType<AttendanceRecord> = [
     {
@@ -74,6 +121,26 @@ function AttendanceListPage() {
     },
   ];
 
+  const filteredRecords = records.filter(rec => {
+    const empName = `${rec.employment?.employee?.lastName || ''} ${rec.employment?.employee?.firstName || ''}`;
+    const matchesSearch = empName.toLowerCase().includes(filters.searchText.toLowerCase());
+    const matchesStatus = !filters.status || rec.status === filters.status;
+    
+    let matchesTime = true;
+    if (filters.timeRange === 'today') {
+      matchesTime = new Date(rec.attendanceDate).toDateString() === new Date().toDateString();
+    } else if (filters.timeRange === 'week') {
+      const diff = new Date().getTime() - new Date(rec.attendanceDate).getTime();
+      matchesTime = diff >= 0 && diff <= 7 * 24 * 60 * 60 * 1000;
+    } else if (filters.timeRange === 'month') {
+      const recDate = new Date(rec.attendanceDate);
+      const today = new Date();
+      matchesTime = recDate.getMonth() === today.getMonth() && recDate.getFullYear() === today.getFullYear();
+    }
+    
+    return matchesSearch && matchesStatus && matchesTime;
+  });
+
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
@@ -84,21 +151,19 @@ function AttendanceListPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <Title level={4} style={{ marginBottom: 4 }}>Chấm công</Title>
-          <Text type="secondary">Theo dõi giờ làm việc và trạng thái chấm công</Text>
-        </div>
-        <Space>
-          <Select defaultValue="today" style={{ width: 160 }} options={[
-            { value: 'today', label: 'Hôm nay' },
-            { value: 'week', label: 'Tuần này' },
-            { value: 'month', label: 'Tháng này' },
-          ]} />
-        </Space>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={4} style={{ marginBottom: 4 }}>Chấm công</Title>
+        <Text type="secondary">Theo dõi giờ làm việc và trạng thái chấm công</Text>
       </div>
+
+      <FilterBar
+        values={filters}
+        onChange={handleFilterChange}
+        fields={filterFields}
+      />
+
       <Card style={{ borderRadius: 12, border: '1px solid var(--color-border-light)' }}>
-        <Table columns={columns} dataSource={records} rowKey="id" size="middle"
+        <Table columns={columns} dataSource={filteredRecords} rowKey="id" size="middle"
           pagination={{ pageSize: 20, showTotal: (total) => `Tổng ${total} bản ghi` }}
         />
       </Card>

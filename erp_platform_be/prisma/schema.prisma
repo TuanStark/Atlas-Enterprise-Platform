@@ -840,6 +840,7 @@ model OrganizationUnit {
   parentUnitOrganizationUnits OrganizationUnit[]   @relation("OrganizationUnit_parentUnit")
   unitType                    OrganizationUnitType @relation(fields: [unitTypeId], references: [id])
   departmentJobRequisitions   JobRequisition[]     @relation
+  departmentOrganizationAssignments OrganizationAssignment[] @relation
 
   @@unique([organizationId, code])
   @@index([parentUnitId])
@@ -1736,8 +1737,7 @@ model OrganizationAssignment {
 
   tenant                            Tenant                   @relation(fields: [tenantId], references: [id])
   employment                        Employment               @relation(name: "OrganizationAssignment_employment", fields: [employmentId], references: [id])
-  department                        OrganizationAssignment   @relation(name: "OrganizationAssignment_department", fields: [departmentId], references: [id])
-  departmentOrganizationAssignments OrganizationAssignment[] @relation("OrganizationAssignment_department")
+  department                        OrganizationUnit         @relation(fields: [departmentId], references: [id])
   position                          Position                 @relation(fields: [positionId], references: [id])
   jobTitle                          JobTitle?                @relation(fields: [jobTitleId], references: [id])
   managerEmployment                 Employment?              @relation(name: "OrganizationAssignment_managerEmployment", fields: [managerEmploymentId], references: [id])

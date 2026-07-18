@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Card, Table, Button, Tag, Typography, Row, Col, Space, Modal, Form, Input, InputNumber, Switch, Spin, Empty, TimePicker, Popconfirm } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { Plus, Clock, Trash2, Check, X } from 'lucide-react';
+import { FilterBar } from '@shared/components/FilterBar';
+import type { FilterBarField } from '@shared/components/FilterBar';
 import { useShifts, useCreateShift, useDeleteShift } from '@features/attendance/hooks/useShifts';
 import type { Shift } from '@features/attendance/types';
 
@@ -10,6 +12,13 @@ const { Title, Text } = Typography;
 export default function ShiftsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
+  const [filters, setFilters] = useState<{
+    search: string;
+    flexible: string | undefined;
+  }>({
+    search: '',
+    flexible: undefined,
+  });
 
   // Queries & Mutations
   const { data: shifts = [], isLoading } = useShifts();
@@ -34,6 +43,32 @@ export default function ShiftsPage() {
       }
     );
   };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const filterFields: FilterBarField[] = [
+    {
+      key: 'search',
+      type: 'text',
+      label: 'Tìm kiếm',
+      placeholder: 'Tìm theo mã hoặc tên ca...',
+      span: 12,
+    },
+    {
+      key: 'flexible',
+      type: 'select',
+      label: 'Loại ca',
+      placeholder: 'Lọc loại ca...',
+      options: [
+        { value: 'all', label: 'Tất cả loại ca' },
+        { value: 'flexible', label: 'Ca linh hoạt' },
+        { value: 'fixed', label: 'Ca cố định' },
+      ],
+      span: 12,
+    }
+  ];
 
   const columns: TableColumnsType<Shift> = [
     {
@@ -101,6 +136,21 @@ export default function ShiftsPage() {
     },
   ];
 
+  const filteredShifts = shifts.filter(s => {
+    const code = s.code?.toLowerCase() || '';
+    const name = s.name?.toLowerCase() || '';
+    const matchesSearch = code.includes(filters.search.toLowerCase()) || name.includes(filters.search.toLowerCase());
+    
+    let matchesFlexible = true;
+    if (filters.flexible === 'flexible') {
+      matchesFlexible = s.isFlexible === true;
+    } else if (filters.flexible === 'fixed') {
+      matchesFlexible = s.isFlexible === false;
+    }
+    
+    return matchesSearch && matchesFlexible;
+  });
+
   return (
     <div style={{ padding: 24 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
@@ -122,19 +172,25 @@ export default function ShiftsPage() {
         </Col>
       </Row>
 
+      <FilterBar
+        values={filters}
+        onChange={handleFilterChange}
+        fields={filterFields}
+      />
+
       <Card style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)', overflow: 'hidden' }} styles={{ body: { padding: 0 } }}>
         {isLoading ? (
           <div style={{ padding: 60, textAlign: 'center' }}><Spin /></div>
-        ) : shifts.length > 0 ? (
+        ) : filteredShifts.length > 0 ? (
           <Table<Shift>
             columns={columns}
-            dataSource={shifts}
+            dataSource={filteredShifts}
             rowKey="id"
             pagination={{ pageSize: 10 }}
           />
         ) : (
           <div style={{ padding: 60, textAlign: 'center' }}>
-            <Empty description="Chưa có ca làm việc nào được cấu hình." />
+            <Empty description="Không tìm thấy ca làm việc nào khớp với tìm kiếm." />
           </div>
         )}
       </Card>

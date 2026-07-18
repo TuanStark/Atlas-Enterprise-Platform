@@ -221,6 +221,102 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       this.logger.log('Assigned SUPER_ADMIN role to Admin principal.');
     }
 
+    // 6. Seed mock HRM data (Departments, Positions, Job Titles)
+    this.logger.log('Seeding mock HRM master data...');
+    
+    let org = await this.prisma.organization.findFirst({
+      where: { tenantId: tenant.id }
+    });
+    if (!org) {
+      org = await this.prisma.organization.create({
+        data: {
+          id: randomUUID(),
+          tenantId: tenant.id,
+          code: 'ORG',
+          name: 'Default Organization',
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      });
+    }
+
+    let unitType = await this.prisma.organizationUnitType.findUnique({
+      where: { code: 'DEPT' }
+    });
+    if (!unitType) {
+      unitType = await this.prisma.organizationUnitType.create({
+        data: {
+          id: randomUUID(),
+          code: 'DEPT',
+          name: 'Department',
+        }
+      });
+    }
+
+    const DEPARTMENTS = [
+      { id: '11111111-1111-1111-1111-111111111111', code: 'IT', name: 'Phòng IT' },
+      { id: '22222222-2222-2222-2222-222222222222', code: 'HR', name: 'Phòng Nhân sự' },
+      { id: '33333333-3333-3333-3333-333333333333', code: 'FIN', name: 'Phòng Tài chính' },
+      { id: '44444444-4444-4444-4444-444444444444', code: 'MKT', name: 'Phòng Marketing' },
+    ];
+
+    for (const dept of DEPARTMENTS) {
+      const exists = await this.prisma.organizationUnit.findUnique({ where: { id: dept.id } });
+      if (!exists) {
+        await this.prisma.organizationUnit.create({
+          data: {
+            id: dept.id,
+            organizationId: org.id,
+            unitTypeId: unitType.id,
+            code: dept.code,
+            name: dept.name,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        });
+      }
+    }
+
+    const POSITIONS = [
+      { id: '11111111-1111-1111-1111-111111111111', code: 'SR_DEV', name: 'Senior Developer' },
+      { id: '22222222-2222-2222-2222-222222222222', code: 'JR_DEV', name: 'Junior Developer' },
+      { id: '33333333-3333-3333-3333-333333333333', code: 'HR_MGR', name: 'HR Manager' },
+      { id: '44444444-4444-4444-4444-444444444444', code: 'ACCT', name: 'Accountant' },
+    ];
+
+    for (const pos of POSITIONS) {
+      const existsPos = await this.prisma.position.findUnique({ where: { id: pos.id } });
+      if (!existsPos) {
+        await this.prisma.position.create({
+          data: {
+            id: pos.id,
+            organizationId: org.id,
+            code: pos.code,
+            name: pos.name,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        });
+      }
+
+      const existsJob = await this.prisma.jobTitle.findUnique({ where: { id: pos.id } });
+      if (!existsJob) {
+        await this.prisma.jobTitle.create({
+          data: {
+            id: pos.id,
+            tenantId: tenant.id,
+            code: pos.code,
+            name: pos.name,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        });
+      }
+    }
+
     this.logger.log('Database seeding check finished.');
   }
 }

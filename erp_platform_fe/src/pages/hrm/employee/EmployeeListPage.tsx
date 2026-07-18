@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Table, Button, Input, Space, Tag, Avatar, Typography, Dropdown } from 'antd';
+import { Card, Table, Button, Space, Tag, Avatar, Typography, Dropdown, Spin, Modal } from 'antd';
 import type { TableColumnsType, MenuProps } from 'antd';
-import { Plus, Search, Download, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Download, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
+import { FilterBar } from '@shared/components/FilterBar';
+import type { FilterBarField } from '@shared/components/FilterBar';
 import './EmployeeListPage.css';
 
 const { Title, Text } = Typography;
 
 import { useEmployees, useDeleteEmployee } from '@features/employee/hooks/useEmployee';
 import type { Employee } from '@features/employee/types';
-import { Spin, Modal } from 'antd';
 
 const statusConfig: Record<string, { color: string; label: string }> = {
   active: { color: 'green', label: 'Chính thức' },
@@ -20,10 +21,41 @@ const statusConfig: Record<string, { color: string; label: string }> = {
 
 function EmployeeListPage() {
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState('');
+  const [filters, setFilters] = useState<{
+    searchText: string;
+    status: string | undefined;
+  }>({
+    searchText: '',
+    status: undefined,
+  });
 
   const { data: employees = [], isLoading } = useEmployees();
   const deleteMutation = useDeleteEmployee();
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const filterFields: FilterBarField[] = [
+    {
+      key: 'searchText',
+      type: 'text',
+      label: 'Tìm kiếm',
+      placeholder: 'Tìm nhân viên theo tên hoặc mã...',
+      span: 12,
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Trạng thái',
+      placeholder: 'Chọn trạng thái...',
+      options: Object.entries(statusConfig).map(([key, value]) => ({
+        value: key,
+        label: value.label,
+      })),
+      span: 12,
+    }
+  ];
 
   const handleDelete = (id: string, e: any) => {
     e?.stopPropagation();
@@ -164,12 +196,12 @@ function EmployeeListPage() {
     },
   ];
 
-  const filteredData = employees.filter(
-    (emp) =>
-      `${emp.firstName || ''} ${emp.lastName || ''} ${emp.employeeCode || (emp as any).employeeNo || ''}`
-        .toLowerCase()
-        .includes(searchText.toLowerCase()),
-  );
+  const filteredData = employees.filter((emp) => {
+    const fullName = `${emp.lastName || ''} ${emp.firstName || ''} ${emp.employeeCode || (emp as any).employeeNo || ''}`;
+    const matchesSearch = fullName.toLowerCase().includes(filters.searchText.toLowerCase());
+    const matchesStatus = !filters.status || emp.status === filters.status;
+    return matchesSearch && matchesStatus;
+  });
 
   if (isLoading) {
     return (
@@ -210,17 +242,15 @@ function EmployeeListPage() {
         </Space>
       </div>
 
+      <FilterBar
+        values={filters}
+        onChange={handleFilterChange}
+        fields={filterFields}
+      />
+
       {/* Table Card */}
       <Card className="employee-list-page__card" style={{ borderRadius: 16, border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-sm)' }}>
-        <div className="employee-list-page__toolbar" style={{ marginBottom: 20 }}>
-          <Input
-            placeholder="Tìm kiếm nhân viên theo tên hoặc mã..."
-            prefix={<Search size={16} style={{ color: 'var(--color-text-tertiary)' }} />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 340, borderRadius: 8, height: 38 }}
-            allowClear
-          />
+        <div style={{ marginBottom: 16 }}>
           <Text type="secondary" style={{ fontSize: 13 }}>
             Tìm thấy <Text strong>{filteredData.length}</Text> nhân viên
           </Text>

@@ -3,6 +3,7 @@ import { Card, Table, Button, Tag, Typography, Row, Col, Space, Modal, Form, Inp
 import type { TableColumnsType } from 'antd';
 import { Plus, Wallet, Play, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
+import { FilterBar } from '@shared/components/FilterBar';
 import { usePayrollPeriods, useCreatePayrollPeriod, useCalculatePayroll, usePayrollsByPeriod } from '@features/payroll/hooks/usePayroll';
 import type { PayrollPeriod, Payroll } from '@features/payroll/types';
 
@@ -18,6 +19,7 @@ const periodStatusConfig: Record<string, { color: string; label: string }> = {
 export default function PayrollPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<PayrollPeriod | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
 
   // Queries & Mutations
@@ -139,6 +141,13 @@ export default function PayrollPage() {
     },
   ];
 
+  const filteredPayrolls = payrolls.filter(p => {
+    const emp = p.employment?.employee;
+    const name = emp ? `${emp.lastName || ''} ${emp.firstName || ''}`.toLowerCase() : '';
+    const code = emp?.employeeCode?.toLowerCase() || '';
+    return name.includes(searchText.toLowerCase()) || code.includes(searchText.toLowerCase());
+  });
+
   return (
     <div style={{ padding: 24 }}>
       <Row gutter={24} style={{ marginBottom: 24 }}>
@@ -183,7 +192,10 @@ export default function PayrollPage() {
                 pagination={{ pageSize: 8 }}
                 rowClassName={(record) => record.id === selectedPeriod?.id ? 'ant-table-row-selected' : ''}
                 onRow={(record) => ({
-                  onClick: () => setSelectedPeriod(record),
+                  onClick: () => {
+                    setSelectedPeriod(record);
+                    setSearchText('');
+                  },
                 })}
               />
             )}
@@ -221,15 +233,36 @@ export default function PayrollPage() {
               {selectedPeriod.status === 'processed' ? (
                 isLoadingPayrolls ? (
                   <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
-                ) : payrolls.length > 0 ? (
-                  <Table<Payroll>
-                    columns={payrollColumns}
-                    dataSource={payrolls}
-                    rowKey="id"
-                    pagination={{ pageSize: 10 }}
-                  />
                 ) : (
-                  <Empty description="Chưa có dữ liệu tính lương. Hãy chạy lại quy trình tính lương." />
+                  <div>
+                    <FilterBar
+                      values={{ search: searchText }}
+                      onChange={(_, val) => setSearchText(val)}
+                      fields={[{
+                        key: 'search',
+                        type: 'text',
+                        placeholder: 'Tìm kiếm nhân viên trong bảng lương...',
+                        span: 24
+                      }]}
+                      cardStyle={{
+                        marginBottom: 16,
+                        border: '1px dashed var(--color-border)',
+                        borderRadius: 10,
+                        boxShadow: 'none',
+                        background: 'var(--color-bg-layout)'
+                      }}
+                    />
+                    {filteredPayrolls.length > 0 ? (
+                      <Table<Payroll>
+                        columns={payrollColumns}
+                        dataSource={filteredPayrolls}
+                        rowKey="id"
+                        pagination={{ pageSize: 10 }}
+                      />
+                    ) : (
+                      <Empty description="Không tìm thấy nhân viên nào khớp với tìm kiếm." />
+                    )}
+                  </div>
                 )
               ) : (
                 <div style={{ padding: '60px 20px', textAlign: 'center' }}>

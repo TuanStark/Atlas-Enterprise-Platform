@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Card, Table, Button, Tag, Typography, Tabs, Row, Col, Space, Modal, Form, Input, InputNumber, Select, Badge, Empty, Spin } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { Plus, UserPlus, XCircle, Briefcase, Send, Play } from 'lucide-react';
+import { FilterBar } from '@shared/components/FilterBar';
+import type { FilterBarField } from '@shared/components/FilterBar';
 import { useJobPostings, useCreateJobPosting, usePublishJobPosting, useCloseJobPosting, useJobApplications, useUpdateApplicationStage, useUpdateApplicationStatus, useCreateJobApplication } from '@features/recruitment/hooks/useRecruitment';
 import type { JobPosting, JobApplication } from '@features/recruitment/types';
 
@@ -29,6 +31,24 @@ export default function RecruitmentPage() {
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
   const [postingForm] = Form.useForm();
   const [appForm] = Form.useForm();
+
+  const [postingFilters, setPostingFilters] = useState<{
+    search: string;
+    status: string | undefined;
+  }>({
+    search: '',
+    status: undefined,
+  });
+
+  const [appFilters, setAppFilters] = useState<{
+    search: string;
+    stage: string | undefined;
+    status: string | undefined;
+  }>({
+    search: '',
+    stage: undefined,
+    status: undefined,
+  });
 
   // Queries & Mutations
   const { data: postings = [], isLoading: isLoadingPostings } = useJobPostings();
@@ -66,6 +86,69 @@ export default function RecruitmentPage() {
       }
     );
   };
+
+  const handlePostingFilterChange = (key: string, value: any) => {
+    setPostingFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleAppFilterChange = (key: string, value: any) => {
+    setAppFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const postingFilterFields: FilterBarField[] = [
+    {
+      key: 'search',
+      type: 'text',
+      label: 'Tìm kiếm',
+      placeholder: 'Tìm kiếm tin tuyển dụng...',
+      span: 12,
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Trạng thái',
+      placeholder: 'Lọc trạng thái...',
+      options: Object.entries(postingStatusConfig).map(([key, val]) => ({
+        value: key,
+        label: val.label,
+      })),
+      span: 12,
+    }
+  ];
+
+  const appFilterFields: FilterBarField[] = [
+    {
+      key: 'search',
+      type: 'text',
+      label: 'Tìm kiếm',
+      placeholder: 'Tìm tên ứng viên...',
+      span: 8,
+    },
+    {
+      key: 'stage',
+      type: 'select',
+      label: 'Vòng tuyển dụng',
+      placeholder: 'Lọc vòng...',
+      options: Object.entries(stageConfig).map(([key, val]) => ({
+        value: key,
+        label: val.label,
+      })),
+      span: 8,
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Trạng thái hồ sơ',
+      placeholder: 'Lọc trạng thái...',
+      options: [
+        { value: 'active', label: 'Đang xử lý' },
+        { value: 'hired', label: 'Đã tuyển dụng' },
+        { value: 'rejected', label: 'Bị từ chối' },
+        { value: 'withdrawn', label: 'Ứng viên rút lui' }
+      ],
+      span: 8,
+    }
+  ];
 
   // Columns Definitions
   const postingColumns: TableColumnsType<JobPosting> = [
@@ -198,6 +281,23 @@ export default function RecruitmentPage() {
     },
   ];
 
+  const filteredPostings = postings.filter(p => {
+    const title = p.title?.toLowerCase() || '';
+    const dept = p.department?.toLowerCase() || '';
+    const matchesSearch = title.includes(postingFilters.search.toLowerCase()) || dept.includes(postingFilters.search.toLowerCase());
+    const matchesStatus = !postingFilters.status || p.status === postingFilters.status;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredApplications = applications.filter(a => {
+    const name = a.candidateName?.toLowerCase() || '';
+    const email = a.candidateEmail?.toLowerCase() || '';
+    const matchesSearch = name.includes(appFilters.search.toLowerCase()) || email.includes(appFilters.search.toLowerCase());
+    const matchesStage = !appFilters.stage || a.stage === appFilters.stage;
+    const matchesStatus = !appFilters.status || a.status === appFilters.status;
+    return matchesSearch && matchesStage && matchesStatus;
+  });
+
   return (
     <div style={{ padding: 24 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
@@ -238,22 +338,28 @@ export default function RecruitmentPage() {
             tab={
               <Space>
                 <Briefcase size={16} />
-                <span>Bản tin tuyển dụng ({postings.length})</span>
+                <span>Bản tin tuyển dụng ({filteredPostings.length})</span>
               </Space>
             }
             key="1"
           >
+            <FilterBar
+              values={postingFilters}
+              onChange={handlePostingFilterChange}
+              fields={postingFilterFields}
+              cardStyle={{ marginBottom: 16, border: '1px solid var(--color-border-secondary)', boxShadow: 'none' }}
+            />
             {isLoadingPostings ? (
               <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
-            ) : postings.length > 0 ? (
+            ) : filteredPostings.length > 0 ? (
               <Table<JobPosting>
                 columns={postingColumns}
-                dataSource={postings}
+                dataSource={filteredPostings}
                 rowKey="id"
                 pagination={{ pageSize: 10 }}
               />
             ) : (
-              <Empty description="Chưa có tin tuyển dụng nào được tạo." />
+              <Empty description="Không tìm thấy tin tuyển dụng nào khớp." />
             )}
           </TabPane>
 
@@ -261,22 +367,28 @@ export default function RecruitmentPage() {
             tab={
               <Space>
                 <UserPlus size={16} />
-                <span>Danh sách Ứng viên ({applications.length})</span>
+                <span>Danh sách Ứng viên ({filteredApplications.length})</span>
               </Space>
             }
             key="2"
           >
+            <FilterBar
+              values={appFilters}
+              onChange={handleAppFilterChange}
+              fields={appFilterFields}
+              cardStyle={{ marginBottom: 16, border: '1px solid var(--color-border-secondary)', boxShadow: 'none' }}
+            />
             {isLoadingApps ? (
               <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
-            ) : applications.length > 0 ? (
+            ) : filteredApplications.length > 0 ? (
               <Table<JobApplication>
                 columns={appColumns}
-                dataSource={applications}
+                dataSource={filteredApplications}
                 rowKey="id"
                 pagination={{ pageSize: 10 }}
               />
             ) : (
-              <Empty description="Chưa nhận được hồ sơ ứng viên nào." />
+              <Empty description="Không tìm thấy ứng viên nào khớp." />
             )}
           </TabPane>
         </Tabs>
