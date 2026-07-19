@@ -12,6 +12,10 @@ import { Employment } from '@modules/hrm/employment/domain';
 import { OrganizationAssignment } from '@core/organization/domain';
 import { Employee } from '@modules/hrm/employee/domain/aggregates/employee.aggregate';
 import { UpdateEmployeeDto } from '../../dto/update-employee.dto';
+import { PRINCIPAL_REPOSITORY } from '@core/principal/domain';
+import type { PrincipalRepository } from '@core/principal/domain';
+import { USER_REPOSITORY } from '@core/identity/domain';
+import type { UserRepository } from '@core/identity/domain';
 
 @CommandHandler(UpdateEmployeeCommand)
 export class UpdateEmployeeHandler
@@ -26,6 +30,10 @@ export class UpdateEmployeeHandler
     private readonly employmentRepository: employmentRepo.EmploymentRepository,
     @Inject(orgAssignmentRepo.ORGANIZATION_ASSIGNMENT_REPOSITORY)
     private readonly orgAssignmentRepository: orgAssignmentRepo.OrganizationAssignmentRepository,
+    @Inject(PRINCIPAL_REPOSITORY)
+    private readonly principalRepository: PrincipalRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
   ) {
     super();
   }
@@ -52,10 +60,42 @@ export class UpdateEmployeeHandler
 
       await this.repository.update(employee);
 
+      await this.syncPrincipalAndUser(employee, dto);
+
       await this.handleEmploymentAndAssignment(command, employee);
     } catch (error: any) {
       this.logger.error(`Error in UpdateEmployeeHandler: ${error.message}`, error.stack);
       throw error;
+    }
+  }
+
+  private async syncPrincipalAndUser(employee: Employee, dto: UpdateEmployeeDto): Promise<void> {
+    const principal = await this.principalRepository.findById(employee.principalId);
+    if (principal) {
+      if (dto.firstName || dto.lastName) {
+        const fullNameStr = `${dto.firstName ?? employee.fullName.firstName} ${dto.lastName ?? employee.fullName.lastName}`.trim();
+        principal.rename(fullNameStr);
+      }
+      if (dto.status === 'active') {
+        principal.activate();
+      } else if (dto.status === 'inactive') {
+        principal.deactivate();
+      }
+      await this.principalRepository.update(principal);
+
+      const user = await this.userRepository.findByPrincipalId(employee.principalId);
+      if (user) {
+        if (dto.firstName || dto.lastName) {
+          user.rename(dto.firstName ?? user.firstName, dto.lastName ?? user.lastName);
+          user.changeDisplayName(`${dto.firstName ?? user.firstName} ${dto.lastName ?? user.lastName}`.trim());
+        }
+        if (dto.status === 'active') {
+          user.activate();
+        } else if (dto.status === 'inactive') {
+          user.deactivate();
+        }
+        await this.userRepository.update(user);
+      }
     }
   }
 

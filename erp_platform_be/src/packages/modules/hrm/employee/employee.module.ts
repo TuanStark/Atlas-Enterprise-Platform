@@ -28,9 +28,10 @@ const queryHandlers = [GetEmployeeHandler, ListEmployeesHandler];
 import { IdentityModule } from '@core/identity/identity.module';
 import { EmploymentModule } from '../employment/employment.module';
 import { OrganizationModule } from '@core/organization/organization.module';
+import { PrincipalModule } from '@core/principal/principal.module';
 
 @Module({
-  imports: [CqrsModule, PrismaModule, IdentityModule, EmploymentModule, OrganizationModule],
+  imports: [CqrsModule, PrismaModule, IdentityModule, EmploymentModule, OrganizationModule, PrincipalModule],
 
   controllers: [EmployeeController],
 

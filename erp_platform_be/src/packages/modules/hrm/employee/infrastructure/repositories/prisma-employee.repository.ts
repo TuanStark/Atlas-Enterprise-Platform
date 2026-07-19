@@ -114,29 +114,9 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
       await tx.principal.update({
         where: { id: employee.principalId.getValue() },
         data: {
-          displayName: `${employee.fullName.firstName} ${employee.fullName.lastName}`.trim(),
           avatarFileId: employee.avatarFileId || null,
-          status: employee.status.toString().toLowerCase().includes('active') ? 'active' : 'inactive',
         },
       });
-
-      const existingUser = await tx.user.findFirst({
-        where: { principalId: employee.principalId.getValue() },
-      });
-      if (existingUser) {
-        const primaryEmail = employee.contacts.find((c) => c.contactType === 'email' && c.isPrimary);
-        const primaryPhone = employee.contacts.find(
-          (c) => (c.contactType === 'phone' || c.contactType === 'mobile') && c.isPrimary,
-        );
-        await tx.user.update({
-          where: { id: existingUser.id },
-          data: {
-            email: primaryEmail?.value || existingUser.email,
-            username: primaryEmail?.value || existingUser.username,
-            phone: primaryPhone?.value || null,
-          },
-        });
-      }
 
       await tx.employeeContact.deleteMany({ where: { employeeId: data.id } });
       await tx.employeeAddress.deleteMany({ where: { employeeId: data.id } });
