@@ -30,4 +30,13 @@ export default () => ({
   JWT: {
     ACCESS_TOKEN_EXPIRATION: parseDurationToSeconds(process.env.ACCESS_TOKEN_EXPIRATION, 3600),
   },
+  mail: {
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    secure: process.env.SMTP_SECURE === 'true',
+    from: process.env.MAIL_FROM || 'Atlas Platform <noreply@atlas.com>',
+  },
 });
+

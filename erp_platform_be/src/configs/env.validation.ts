@@ -19,6 +19,30 @@ export class EnvironmentVariables {
 
   @IsString()
   DATABASE_URL!: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_HOST?: string;
+
+  @IsNumber()
+  @IsOptional()
+  SMTP_PORT?: number = 587;
+
+  @IsString()
+  @IsOptional()
+  SMTP_USER?: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_PASS?: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_SECURE?: string;
+
+  @IsString()
+  @IsOptional()
+  MAIL_FROM?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

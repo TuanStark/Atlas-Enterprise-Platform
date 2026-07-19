@@ -9,13 +9,16 @@ import { PasswordResetService } from './application/services/password-reset.serv
 import { JwtTokenServiceImpl } from './infrastructure/jwt/jwt-token.service';
 import { PrismaModule } from 'src/database/prisma.module';
 import { IdentityModule } from '../identity/identity.module';
+import { MailModule } from 'src/packages/shared/mail/mail.module';
 
 @Module({
   imports: [
     PrismaModule,
     CqrsModule,
     IdentityModule,
+    MailModule,
     JwtModule.register({
+
       secret: process.env.JWT_SECRET,
       signOptions: {
         issuer: 'erp-platform',
