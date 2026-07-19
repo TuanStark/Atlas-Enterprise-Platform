@@ -11,6 +11,7 @@ import { AuthLayout } from '@layouts/AuthLayout/AuthLayout';
 const LoginPage = lazy(() => import('@pages/auth/LoginPage'));
 const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
+const RegisterTenantPage = lazy(() => import('@pages/auth/RegisterTenantPage'));
 const DashboardPage = lazy(() => import('@pages/dashboard/DashboardPage'));
 const EmployeeListPage = lazy(() => import('@pages/hrm/employee/EmployeeListPage'));
 const EmployeeDetailPage = lazy(() => import('@pages/hrm/employee/EmployeeDetailPage'));
@@ -62,6 +63,7 @@ export const routes: RouteObject[] = [
       { path: '/login', element: <LoginPage /> },
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/register-tenant', element: <RegisterTenantPage /> },
     ],
   },
 

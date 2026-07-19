@@ -225,6 +225,16 @@ function LoginPage() {
         </Form.Item>
       </Form>
 
+      <div className="text-center mt-6">
+        <span className="text-[13px] text-text-secondary">Bạn chưa có tài khoản doanh nghiệp? </span>
+        <a
+          href="/register-tenant"
+          className="text-[13px] font-semibold text-primary transition-colors duration-150 hover:text-primary-hover hover:no-underline"
+        >
+          Đăng ký Workspace mới
+        </a>
+      </div>
+
       {/* SSO Separator */}
       {/* <Divider plain style={{ color: 'var(--color-text-tertiary)', fontSize: 11, margin: '20px 0 16px 0' }}>
         hoặc tiếp tục với

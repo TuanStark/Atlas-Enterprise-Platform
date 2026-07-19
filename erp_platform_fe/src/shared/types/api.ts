@@ -82,3 +82,20 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+/** Register tenant request */
+export interface RegisterTenantRequest {
+  code: string;
+  name: string;
+  legalName?: string;
+  taxCode?: string;
+  phone?: string;
+  timezone?: string;
+  locale?: string;
+  currency?: string;
+  adminEmail: string;
+  adminPassword?: string;
+  adminFirstName: string;
+  adminLastName: string;
+}
+
+

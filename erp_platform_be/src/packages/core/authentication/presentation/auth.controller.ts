@@ -1,12 +1,13 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Get } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { LoginDto, RefreshTokenDto, LoginResponseDto, ForgotPasswordDto, ResetPasswordDto } from '../application/dto';
+import { LoginDto, RefreshTokenDto, LoginResponseDto, ForgotPasswordDto, ResetPasswordDto, RegisterTenantDto } from '../application/dto';
 import { LoginCommand } from '../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../application/commands/refresh-token/refresh-token.command';
 import { LogoutCommand } from '../application/commands/logout/logout.command';
 import { ForgotPasswordCommand } from '../application/commands/forgot-password/forgot-password.command';
 import { ResetPasswordCommand } from '../application/commands/reset-password/reset-password.command';
+import { RegisterTenantCommand } from '../application/commands/register-tenant/register-tenant.command';
 import { Public } from '@core/rbac/presentation/decorators/public.decorator';
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
 import type { RequestContext } from '@shared-kernel/application/request-context';
@@ -79,6 +80,18 @@ export class AuthController {
     dto: ResetPasswordDto,
   ) {
     return this.commandBus.execute(new ResetPasswordCommand(dto));
+  }
+
+  @Post('register-tenant')
+  @Public()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new tenant with initial admin account' })
+  @ApiOkResponse({ description: 'Tenant registered successfully' })
+  registerTenant(
+    @Body()
+    dto: RegisterTenantDto,
+  ) {
+    return this.commandBus.execute(new RegisterTenantCommand(dto));
   }
 
   @Get('me')

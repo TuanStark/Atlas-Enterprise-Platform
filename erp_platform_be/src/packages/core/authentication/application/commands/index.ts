@@ -8,4 +8,7 @@ export * from './forgot-password/forgot-password.command';
 export * from './forgot-password/forgot-password.handler';
 export * from './reset-password/reset-password.command';
 export * from './reset-password/reset-password.handler';
+export * from './register-tenant/register-tenant.command';
+export * from './register-tenant/register-tenant.handler';
+
 

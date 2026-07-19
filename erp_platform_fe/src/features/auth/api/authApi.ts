@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api';
-import type { LoginRequest, LoginResponse, RefreshTokenRequest, ResetPasswordRequest } from '@shared/types';
+import type { LoginRequest, LoginResponse, RefreshTokenRequest, ResetPasswordRequest, RegisterTenantRequest } from '@shared/types';
 import type { AuthUser } from '../types';
 
 /**
@@ -35,5 +35,9 @@ export const authApi = {
 
   async resetPassword(payload: ResetPasswordRequest): Promise<void> {
     await httpClient.post('/auth/reset-password', payload);
+  },
+
+  async registerTenant(payload: RegisterTenantRequest): Promise<void> {
+    await httpClient.post('/auth/register-tenant', payload);
   },
 };
