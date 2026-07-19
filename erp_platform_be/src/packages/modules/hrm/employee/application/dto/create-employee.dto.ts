@@ -96,5 +96,9 @@ export class CreateEmployeeDto {
 
   @IsOptional()
   @IsString()
+  positionId?: string;
+
+  @IsOptional()
+  @IsString()
   status?: string;
 }

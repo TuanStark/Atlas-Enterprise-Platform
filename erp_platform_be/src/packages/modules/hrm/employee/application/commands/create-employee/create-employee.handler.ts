@@ -194,8 +194,8 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
     };
 
     const deptId = mapMockUuid(dto.departmentId, '11111111-1111-1111-1111-111111111111');
-    const jobTitleId = mapMockUuid(dto.jobTitleId, '11111111-1111-1111-1111-111111111111');
-    const positionId = jobTitleId;
+    const jobTitleId = dto.jobTitleId ? mapMockUuid(dto.jobTitleId, '11111111-1111-1111-1111-111111111111') : null;
+    const positionId = mapMockUuid(dto.positionId || dto.jobTitleId, '11111111-1111-1111-1111-111111111111');
 
     await this.prisma.employment.create({
       data: {

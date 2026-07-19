@@ -7,7 +7,7 @@ import { EmployeePersistenceMapper } from '../mappers/employee.persistence.mappe
 
 @Injectable()
 export class PrismaEmployeeRepository implements EmployeeRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private readonly includeRelations = {
     principal: true,
@@ -111,32 +111,36 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
         },
       });
 
-      // Update avatarFileId on Principal
       await tx.principal.update({
         where: { id: employee.principalId.getValue() },
         data: {
+          displayName: `${employee.fullName.firstName} ${employee.fullName.lastName}`.trim(),
           avatarFileId: employee.avatarFileId || null,
+          status: employee.status.toString().toLowerCase().includes('active') ? 'active' : 'inactive',
         },
       });
 
-      // Sync contacts: delete all, re-create
-      await tx.employeeContact.deleteMany({ where: { employeeId: data.id } });
-      if (employee.contacts.length > 0) {
-        await tx.employeeContact.createMany({
-          data: employee.contacts.map((c) => ({
-            id: c.id.toString(),
-            employeeId: data.id,
-            contactType: c.contactType,
-            value: c.value,
-            isPrimary: c.isPrimary,
-            verifiedAt: c.verifiedAt,
-            createdAt: c.createdAt,
-          })),
+      const existingUser = await tx.user.findFirst({
+        where: { principalId: employee.principalId.getValue() },
+      });
+      if (existingUser) {
+        const primaryEmail = employee.contacts.find((c) => c.contactType === 'email' && c.isPrimary);
+        const primaryPhone = employee.contacts.find(
+          (c) => (c.contactType === 'phone' || c.contactType === 'mobile') && c.isPrimary,
+        );
+        await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            email: primaryEmail?.value || existingUser.email,
+            username: primaryEmail?.value || existingUser.username,
+            phone: primaryPhone?.value || null,
+          },
         });
       }
 
-      // Sync addresses
+      await tx.employeeContact.deleteMany({ where: { employeeId: data.id } });
       await tx.employeeAddress.deleteMany({ where: { employeeId: data.id } });
+
       if (employee.addresses.length > 0) {
         await tx.employeeAddress.createMany({
           data: employee.addresses.map((a) => ({
@@ -156,7 +160,20 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
         });
       }
 
-      // Sync emergency contacts
+      if (employee.contacts.length > 0) {
+        await tx.employeeContact.createMany({
+          data: employee.contacts.map((c) => ({
+            id: c.id.toString(),
+            employeeId: data.id,
+            contactType: c.contactType,
+            value: c.value,
+            isPrimary: c.isPrimary,
+            verifiedAt: c.verifiedAt,
+            createdAt: c.createdAt,
+          })),
+        });
+      }
+
       await tx.employeeEmergencyContact.deleteMany({ where: { employeeId: data.id } });
       if (employee.emergencyContacts.length > 0) {
         await tx.employeeEmergencyContact.createMany({
@@ -174,7 +191,6 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
         });
       }
 
-      // Sync documents
       await tx.employeeDocument.deleteMany({ where: { employeeId: data.id } });
       if (employee.documents.length > 0) {
         await tx.employeeDocument.createMany({

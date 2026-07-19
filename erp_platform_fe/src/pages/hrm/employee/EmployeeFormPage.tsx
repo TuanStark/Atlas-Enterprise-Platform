@@ -2,8 +2,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Form, Input, Select, DatePicker, Button, Space, Row, Col, Typography, Divider, message, Spin, Radio } from 'antd';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useEffect } from 'react';
-import { useCreateEmployee, useUpdateEmployee, useEmployee, useJobTitles } from '@features/employee/hooks/useEmployee';
+import { useCreateEmployee, useUpdateEmployee, useEmployee } from '@features/employee/hooks/useEmployee';
 import { useOrganizations, useOrgUnitTree } from '@features/organization/hooks/useOrganization';
+import { usePositions } from '@features/organization/hooks/usePosition';
 import { useRoles, useManagedUsers } from '@features/rbac/hooks/useRbac';
 import { useAuthStore } from '@features/auth/store/authStore';
 import dayjs from 'dayjs';
@@ -23,10 +24,10 @@ function EmployeeFormPage() {
   const { data: roles = [], isLoading: isLoadingRoles } = useRoles(tenantId);
   const { data: users = [], isLoading: isLoadingUsers } = useManagedUsers();
 
-  const { data: organizations } = useOrganizations();
-  const orgId = organizations?.[0]?.id;
-  const { data: orgUnits = [] } = useOrgUnitTree(orgId);
-  const { data: jobTitles = [] } = useJobTitles();
+  const { data: organizations = [] } = useOrganizations();
+  const selectedOrgId = Form.useWatch('organizationId', form) || organizations?.[0]?.id;
+  const { data: orgUnits = [] } = useOrgUnitTree(selectedOrgId);
+  const { data: positions = [] } = usePositions(selectedOrgId);
 
   const createMutation = useCreateEmployee();
   const updateMutation = useUpdateEmployee();
@@ -48,8 +49,20 @@ function EmployeeFormPage() {
   };
 
   const departmentOptions = flattenUnits(orgUnits);
-  const jobTitleOptions = jobTitles.map((jt) => ({ value: jt.id, label: jt.name }));
+  const positionOptions = positions.map((p) => ({ value: p.id, label: p.name }));
 
+  const userOptions = users.map((u: any) => ({
+    value: u.principalId,
+    label: `${u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email} (${u.email})`,
+  }));
+
+  if (employee?.principalId && !userOptions.some(o => o.value === employee.principalId)) {
+    const name = employee.preferredName || `${employee.firstName || ''} ${employee.lastName || ''}`.trim();
+    userOptions.push({
+      value: employee.principalId,
+      label: `${name} (${employee.email || 'Đã liên kết'})`,
+    });
+  }
   useEffect(() => {
     if (isEdit && employee) {
       const email = employee.contacts?.find(c => c.type === 'email' || (c as any).contactType === 'email')?.value;
@@ -74,8 +87,9 @@ function EmployeeFormPage() {
         addressLine: address?.addressLine || '',
         city: address?.city || '',
         country: address?.country || '',
+        organizationId: organizations[0]?.id || null,
         departmentId: currentEmployment?.departmentId || null,
-        jobTitleId: currentEmployment?.jobTitleId || null,
+        positionId: currentEmployment?.positionId || currentEmployment?.jobTitleId || null,
         joinDate: employee.joinDate ? dayjs(employee.joinDate) : null,
         employmentStatus: employee.status,
         accountMode: employee.principalId ? 'link_existing' : 'no_account',
@@ -107,7 +121,8 @@ function EmployeeFormPage() {
         country: values.country,
         joinDate: values.joinDate ? values.joinDate.toISOString() : undefined,
         departmentId: values.departmentId,
-        jobTitleId: values.jobTitleId,
+        positionId: values.positionId,
+        jobTitleId: undefined,
         status: values.employmentStatus,
         createAccount: values.accountMode === 'create_new',
         password: values.accountMode === 'create_new' ? values.password : undefined,
@@ -295,14 +310,25 @@ function EmployeeFormPage() {
             {/* Section 3: Employment Info */}
             <Divider titlePlacement="left" plain style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-primary)' }}>3. Thông tin công việc</Divider>
             <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item name="departmentId" label="Phòng ban làm việc" rules={[{ required: true, message: 'Vui lòng chọn phòng ban' }]}>
-                  <Select placeholder="Chọn phòng ban" options={departmentOptions} />
+              <Col xs={24} md={8}>
+                <Form.Item name="organizationId" label="Tổ chức / Chi nhánh" rules={[{ required: true, message: 'Vui lòng chọn tổ chức' }]}>
+                  <Select
+                    placeholder="Chọn tổ chức"
+                    options={organizations.map((org) => ({ value: org.id, label: org.name }))}
+                    onChange={() => {
+                      form.setFieldsValue({ departmentId: null, positionId: null });
+                    }}
+                  />
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item name="jobTitleId" label="Chức danh" rules={[{ required: true, message: 'Vui lòng chọn chức danh' }]}>
-                  <Select placeholder="Chọn chức danh" options={jobTitleOptions} />
+              <Col xs={24} md={8}>
+                <Form.Item name="departmentId" label="Phòng ban làm việc" rules={[{ required: true, message: 'Vui lòng chọn phòng ban' }]}>
+                  <Select placeholder="Chọn phòng ban" options={departmentOptions} disabled={!selectedOrgId} />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={8}>
+                <Form.Item name="positionId" label="Vị trí công việc" rules={[{ required: true, message: 'Vui lòng chọn vị trí công việc' }]}>
+                  <Select placeholder="Chọn vị trí công việc" options={positionOptions} disabled={!selectedOrgId} />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
@@ -333,10 +359,7 @@ function EmployeeFormPage() {
                     >
                       <Select
                         placeholder="Tìm tài khoản theo tên hoặc email..."
-                        options={users.map((u: any) => ({
-                          value: u.principalId,
-                          label: `${u.displayName || u.username} (${u.email})`,
-                        }))}
+                        options={userOptions}
                         showSearch
                         filterOption={(input, option) =>
                           (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -398,10 +421,7 @@ function EmployeeFormPage() {
                       >
                         <Select
                           placeholder="Tìm tài khoản theo tên hoặc email..."
-                          options={users.map((u: any) => ({
-                            value: u.principalId,
-                            label: `${u.displayName || u.username} (${u.email})`,
-                          }))}
+                          options={userOptions}
                           showSearch
                           filterOption={(input, option) =>
                             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())

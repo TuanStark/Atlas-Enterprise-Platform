@@ -16,7 +16,7 @@ const DashboardPage = lazy(() => import('@pages/dashboard/DashboardPage'));
 const EmployeeListPage = lazy(() => import('@pages/hrm/employee/EmployeeListPage'));
 const EmployeeDetailPage = lazy(() => import('@pages/hrm/employee/EmployeeDetailPage'));
 const EmployeeFormPage = lazy(() => import('@pages/hrm/employee/EmployeeFormPage'));
-const JobTitleListPage = lazy(() => import('@pages/hrm/job-title/JobTitleListPage'));
+const PositionListPage = lazy(() => import('@pages/organization/position/PositionListPage'));
 const LeaveRequestListPage = lazy(() => import('@pages/hrm/leave/LeaveRequestListPage'));
 const LeaveRequestFormPage = lazy(() => import('@pages/hrm/leave/LeaveRequestFormPage'));
 const AttendanceListPage = lazy(() => import('@pages/hrm/attendance/AttendanceListPage'));
@@ -85,7 +85,7 @@ export const routes: RouteObject[] = [
       { path: '/hrm/employees/new', element: <EmployeeFormPage /> },
       { path: '/hrm/employees/:id', element: <EmployeeDetailPage /> },
       { path: '/hrm/employees/:id/edit', element: <EmployeeFormPage /> },
-      { path: '/hrm/job-titles', element: <JobTitleListPage /> },
+      { path: '/hrm/positions', element: <PositionListPage /> },
 
       // HRM — Leave
       { path: '/hrm/leave-requests', element: <LeaveRequestListPage /> },

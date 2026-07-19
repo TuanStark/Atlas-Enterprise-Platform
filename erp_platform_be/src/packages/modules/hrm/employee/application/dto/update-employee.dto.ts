@@ -84,5 +84,9 @@ export class UpdateEmployeeDto {
 
   @IsOptional()
   @IsString()
+  positionId?: string;
+
+  @IsOptional()
+  @IsString()
   status?: string;
 }

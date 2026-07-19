@@ -53,3 +53,26 @@ export interface UpdateOrganizationUnitDto {
 export interface MoveOrganizationUnitDto {
   parentUnitId: string | null;
 }
+
+export interface Position {
+  id: string;
+  organizationId: string;
+  code: string;
+  name: string;
+  description?: string;
+  level?: number;
+}
+
+export interface CreatePositionDto {
+  code: string;
+  name: string;
+  description?: string;
+  level?: number;
+}
+
+export interface UpdatePositionDto {
+  code?: string;
+  name?: string;
+  description?: string;
+  level?: number;
+}

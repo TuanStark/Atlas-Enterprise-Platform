@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-
 import {
   ORGANIZATION_REPOSITORY,
   ORGANIZATION_UNIT_REPOSITORY,
@@ -16,8 +15,6 @@ import {
   PrismaOrganizationAssignmentRepository,
 } from './infrastructure';
 import { PrismaModule } from 'src/database/prisma.module';
-
-// Commands & Handlers
 import { CreateOrganizationHandler } from './application/commands/create-organization';
 import { UpdateOrganizationHandler } from './application/commands/update-organization';
 import { DeleteOrganizationHandler } from './application/commands/delete-organization';
@@ -42,8 +39,6 @@ import {
   UpdateOrganizationAssignmentHandler,
   DeleteOrganizationAssignmentHandler,
 } from './application/commands/organization-assignment.commands';
-
-// Queries & Handlers
 import { GetOrganizationHandler } from './application/queries/get-organization/get-organization.handler';
 import { ListOrganizationsHandler } from './application/queries/list-organizations/list-organizations.handler';
 import {
@@ -64,13 +59,21 @@ import {
   ListOrganizationAssignmentsHandler,
   ListAssignmentsByEmploymentHandler,
 } from './application/queries/organization-assignment.queries';
-
-// Controllers
 import { OrganizationController } from './presentation/controllers/organization.controller';
 import { OrganizationUnitTypeController } from './presentation/controllers/organization-unit-type.controller';
 import { OrganizationUnitController } from './presentation/controllers/organization-unit.controller';
 import { OrganizationCalendarController } from './presentation/controllers/organization-calendar.controller';
 import { OrganizationAssignmentController } from './presentation/controllers/organization-assignment.controller';
+import { PositionController } from './presentation/controllers/position.controller';
+import { POSITION_REPOSITORY } from './domain/repositories/position.repository';
+import { PrismaPositionRepository } from './infrastructure/repositories/prisma-position.repository';
+import { CreatePositionHandler } from './application/commands/create-position/create-position.handler';
+import { UpdatePositionHandler } from './application/commands/update-position/update-position.handler';
+import { DeletePositionHandler } from './application/commands/delete-position/delete-position.handler';
+import { GetPositionHandler } from './application/queries/get-position/get-position.handler';
+import { ListPositionsHandler } from './application/queries/list-positions/list-positions.handler';
+import { PositionApplicationService } from './application/services/position-application.service';
+import { PositionDomainService } from './domain/services/position-domain.service';
 
 const commandHandlers = [
   CreateOrganizationHandler,
@@ -89,6 +92,9 @@ const commandHandlers = [
   CreateOrganizationAssignmentHandler,
   UpdateOrganizationAssignmentHandler,
   DeleteOrganizationAssignmentHandler,
+  CreatePositionHandler,
+  UpdatePositionHandler,
+  DeletePositionHandler,
 ];
 
 const queryHandlers = [
@@ -104,6 +110,8 @@ const queryHandlers = [
   GetOrganizationAssignmentHandler,
   ListOrganizationAssignmentsHandler,
   ListAssignmentsByEmploymentHandler,
+  GetPositionHandler,
+  ListPositionsHandler,
 ];
 
 @Module({
@@ -115,6 +123,7 @@ const queryHandlers = [
     OrganizationUnitController,
     OrganizationCalendarController,
     OrganizationAssignmentController,
+    PositionController,
   ],
 
   providers: [
@@ -141,6 +150,12 @@ const queryHandlers = [
       provide: ORGANIZATION_ASSIGNMENT_REPOSITORY,
       useClass: PrismaOrganizationAssignmentRepository,
     },
+    {
+      provide: POSITION_REPOSITORY,
+      useClass: PrismaPositionRepository,
+    },
+    PositionApplicationService,
+    PositionDomainService,
   ],
 
   exports: [
@@ -149,6 +164,7 @@ const queryHandlers = [
     ORGANIZATION_UNIT_TYPE_REPOSITORY,
     ORGANIZATION_CALENDAR_REPOSITORY,
     ORGANIZATION_ASSIGNMENT_REPOSITORY,
+    POSITION_REPOSITORY,
   ],
 })
-export class OrganizationModule {}
+export class OrganizationModule { }

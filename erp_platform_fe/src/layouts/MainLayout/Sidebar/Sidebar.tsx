@@ -11,7 +11,6 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
-  // ShieldCheck,
   Building2,
   Bell,
   FileText,
@@ -99,7 +98,8 @@ const MENU_DEFINITION: PermissionMenuItem[] = [
     label: 'Tổ chức',
     permission: { resource: 'org.structure', action: 'read' },
     children: [
-      { key: '/hrm/job-titles', icon: <Briefcase size={14} />, label: 'Danh mục chức danh' },
+      { key: '/hrm/positions', icon: <Briefcase size={14} />, label: 'Danh mục vị trí' },
+      { key: '/organization', icon: <Building2 size={14} />, label: 'Danh sách tổ chức' },
     ]
   },
   {
@@ -140,14 +140,12 @@ function useFilteredMenu(): MenuItem[] {
     const result: MenuItem[] = [];
 
     for (const item of items) {
-      // Check item-level permission
       if (item.permission && !checkPermission(item.permission.resource, item.permission.action)) {
         continue;
       }
 
       if (item.children) {
         const filteredChildren = filterItems(item.children);
-        // Hide parent if no children are visible
         if (filteredChildren.length === 0) continue;
 
         result.push({
@@ -182,10 +180,8 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
   const menuItems = useFilteredMenu();
   const { data: tenant } = useActiveTenant();
 
-  // Find active key from current path
   const selectedKeys = [location.pathname];
 
-  // Find open submenu from current path
   const openKeys = !collapsed
     ? (() => {
       if (location.pathname.startsWith('/hrm/')) return ['hrm'];
@@ -274,19 +270,6 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
               [&_.ant-menu-sub_.ant-menu-item]:!h-[38px] [&_.ant-menu-sub_.ant-menu-item]:!leading-[38px] [&_.ant-menu-sub_.ant-menu-item]:!text-[13px] [&_.ant-menu-sub_.ant-menu-item]:!pl-3"
           />
         </div>
-
-        {/* Safety Badge */}
-        {/* {!collapsed && (
-          <div className="flex items-center gap-3 bg-gradient-to-br from-primary/[0.03] to-primary/[0.06] border border-solid border-primary/10 rounded-xl p-3 mx-4 my-4 shadow-[0_4px_20px_rgba(0,0,0,0.01)] transition-opacity duration-300">
-            <div className="text-primary flex items-center justify-center shrink-0 w-7 h-7 bg-white rounded-lg shadow-[0_2px_8px_rgba(10,101,255,0.1)]">
-              <ShieldCheck size={16} />
-            </div>
-            <div className="flex flex-col leading-normal">
-              <span className="text-[11px] font-bold text-[#1f2937]">Dữ liệu được bảo mật</span>
-              <span className="text-[9.5px] text-text-secondary">Đảm bảo an toàn và bảo mật dữ liệu.</span>
-            </div>
-          </div>
-        )} */}
 
         {/* Collapse Toggle */}
         <button
