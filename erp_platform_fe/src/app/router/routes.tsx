@@ -9,6 +9,8 @@ import { AuthLayout } from '@layouts/AuthLayout/AuthLayout';
 
 // --- Pages (lazy loaded for code splitting) ---
 const LoginPage = lazy(() => import('@pages/auth/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('@pages/dashboard/DashboardPage'));
 const EmployeeListPage = lazy(() => import('@pages/hrm/employee/EmployeeListPage'));
 const EmployeeDetailPage = lazy(() => import('@pages/hrm/employee/EmployeeDetailPage'));
@@ -58,6 +60,8 @@ export const routes: RouteObject[] = [
     element: <AuthLayout />,
     children: [
       { path: '/login', element: <LoginPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
     ],
   },
 

@@ -75,3 +75,10 @@ export interface RefreshTokenRequest {
 
 /** Generic ID type */
 export type UUID = string;
+
+/** Reset password request */
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+

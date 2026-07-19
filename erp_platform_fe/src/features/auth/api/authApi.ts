@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api';
-import type { LoginRequest, LoginResponse, RefreshTokenRequest } from '@shared/types';
+import type { LoginRequest, LoginResponse, RefreshTokenRequest, ResetPasswordRequest } from '@shared/types';
 import type { AuthUser } from '../types';
 
 /**
@@ -27,5 +27,13 @@ export const authApi = {
   async me(): Promise<AuthUser> {
     const { data } = await httpClient.get<AuthUser>('/auth/me');
     return data;
+  },
+
+  async forgotPassword(email: string): Promise<void> {
+    await httpClient.post('/auth/forgot-password', { email });
+  },
+
+  async resetPassword(payload: ResetPasswordRequest): Promise<void> {
+    await httpClient.post('/auth/reset-password', payload);
   },
 };

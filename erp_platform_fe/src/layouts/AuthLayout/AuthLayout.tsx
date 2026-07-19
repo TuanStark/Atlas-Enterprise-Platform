@@ -16,19 +16,19 @@ export function AuthLayout() {
           <div className="flex items-center gap-3 mb-8">
             <img
               src={logoHrm}
-              alt="HRIMS Logo"
+              alt="Logo HRIMS"
               className="w-11 h-11 rounded-xl object-cover shadow-[0_8px_16px_rgba(10,101,255,0.15)] border border-solid border-slate-100"
             />
             <div>
               <h1 className="text-xl font-extrabold text-text-primary leading-tight tracking-tight">HRIMS</h1>
-              <p className="text-[11px] text-text-tertiary font-medium">Human Resource Information System</p>
+              <p className="text-[11px] text-text-tertiary font-medium">Hệ thống Thông tin Nhân sự</p>
             </div>
           </div>
 
           {/* Heading */}
-          <h2 className="text-3xl font-extrabold text-text-primary tracking-tight mb-2 leading-tight">Welcome back, Spencer</h2>
+          <h2 className="text-3xl font-extrabold text-text-primary tracking-tight mb-2 leading-tight">Chào mừng quay trở lại, Spencer</h2>
           <p className="text-[14px] text-text-secondary leading-relaxed mb-10">
-            Sign in to manage your workforce, payroll, attendance, recruitment, reports, and settings.
+            Đăng nhập để quản lý nhân sự, bảng lương, chuyên cần, tuyển dụng, báo cáo và cài đặt.
           </p>
 
           {/* Floating Widget Illustration Container */}
@@ -39,7 +39,7 @@ export function AuthLayout() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <div>
-                <span className="text-[11px] text-text-tertiary font-medium block">Employees</span>
+                <span className="text-[11px] text-text-tertiary font-medium block">Nhân viên</span>
                 <span className="text-[15px] font-bold text-text-primary mr-1.5">1,248</span>
                 <span className="text-[10px] font-semibold text-[#10b981]">↑ 5.2%</span>
               </div>
@@ -51,7 +51,7 @@ export function AuthLayout() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
               </div>
               <div>
-                <span className="text-[11px] text-text-tertiary font-medium block">Attendance Rate</span>
+                <span className="text-[11px] text-text-tertiary font-medium block">Tỷ lệ chuyên cần</span>
                 <span className="text-[15px] font-bold text-text-primary mr-1.5">94.6%</span>
                 <span className="text-[10px] font-semibold text-[#10b981]">↑ 2.3%</span>
               </div>
@@ -63,9 +63,9 @@ export function AuthLayout() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               </div>
               <div>
-                <span className="text-[11px] text-text-tertiary font-medium block">Payroll Due</span>
+                <span className="text-[11px] text-text-tertiary font-medium block">Lương đến hạn</span>
                 <span className="text-[15px] font-bold text-text-primary mr-1.5">$312,450</span>
-                <span className="text-[10px] text-text-tertiary">Due in 5 days</span>
+                <span className="text-[10px] text-text-tertiary">Đến hạn trong 5 ngày</span>
               </div>
             </div>
 
@@ -75,7 +75,7 @@ export function AuthLayout() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
               </div>
               <div>
-                <span className="text-[11px] text-text-tertiary font-medium block">Open Positions</span>
+                <span className="text-[11px] text-text-tertiary font-medium block">Vị trí đang tuyển</span>
                 <span className="text-[15px] font-bold text-text-primary mr-1.5">24</span>
                 <span className="text-[10px] font-semibold text-[#10b981]">↑ 9.1%</span>
               </div>
@@ -106,8 +106,8 @@ export function AuthLayout() {
                 <Shield size={16} />
               </div>
               <div>
-                <h4 className="text-[12px] font-bold text-text-primary mb-0.5">Secure Access</h4>
-                <p className="text-[10px] text-text-secondary leading-normal">Role-based access and permissions</p>
+                <h4 className="text-[12px] font-bold text-text-primary mb-0.5">Truy cập Bảo mật</h4>
+                <p className="text-[10px] text-text-secondary leading-normal">Quyền và truy cập dựa trên vai trò</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5 flex-1">
@@ -115,8 +115,8 @@ export function AuthLayout() {
                 <Lock size={16} />
               </div>
               <div>
-                <h4 className="text-[12px] font-bold text-text-primary mb-0.5">Encrypted Data</h4>
-                <p className="text-[10px] text-text-secondary leading-normal">Enterprise-grade data encryption</p>
+                <h4 className="text-[12px] font-bold text-text-primary mb-0.5">Dữ liệu mã hóa</h4>
+                <p className="text-[10px] text-text-secondary leading-normal">Mã hóa dữ liệu cấp doanh nghiệp</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5 flex-1">
@@ -124,8 +124,8 @@ export function AuthLayout() {
                 <Server size={16} />
               </div>
               <div>
-                <h4 className="text-[12px] font-bold text-text-primary mb-0.5">Admin Portal</h4>
-                <p className="text-[10px] text-text-secondary leading-normal">Manage your organization with confidence</p>
+                <h4 className="text-[12px] font-bold text-text-primary mb-0.5">Trang quản trị</h4>
+                <p className="text-[10px] text-text-secondary leading-normal">Quản lý tổ chức của bạn một cách tin cậy</p>
               </div>
             </div>
           </div>
