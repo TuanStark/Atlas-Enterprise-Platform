@@ -7,6 +7,8 @@ import type { FilterBarField } from '@shared/components/FilterBar';
 import { useManagedUsers, useRoles, useAssignRoleToPrincipal, useRemoveRoleFromPrincipal } from '@features/rbac/hooks/useRbac';
 import { useAuthStore } from '@features/auth/store/authStore';
 import type { ManagedUser, PrincipalRole } from '@features/rbac/types';
+import { useCanAccessCode } from '@shared/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -30,6 +32,8 @@ export default function UserListPage() {
   const { data: roles = [] } = useRoles(tenantId);
   const assignMutation = useAssignRoleToPrincipal();
   const removeMutation = useRemoveRoleFromPrincipal();
+
+  const canManageRoles = useCanAccessCode(PERMISSIONS.ADMIN.USER.UPDATE);
 
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -183,7 +187,7 @@ export default function UserListPage() {
               <Tooltip key={`${pr.roleId}-${pr.scopeId}`} title={`Scope: ${pr.scope?.name || 'Global'}`}>
                 <Tag
                   color={pr.role?.code === 'SUPER_ADMIN' ? 'red' : pr.role?.code === 'HR_MANAGER' ? 'blue' : 'default'}
-                  closable={pr.role?.code !== 'SUPER_ADMIN'}
+                  closable={canManageRoles && pr.role?.code !== 'SUPER_ADMIN'}
                   onClose={(e) => {
                     e.preventDefault();
                     handleRemoveRole(pr.principalId, pr.roleId, pr.scopeId);
@@ -213,9 +217,11 @@ export default function UserListPage() {
       width: 120,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Gán vai trò">
-            <Button type="text" size="small" icon={<KeyRound size={14} />} onClick={() => openAssignModal(record)} />
-          </Tooltip>
+          {canManageRoles && (
+            <Tooltip title="Gán vai trò">
+              <Button type="text" size="small" icon={<KeyRound size={14} />} onClick={() => openAssignModal(record)} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },

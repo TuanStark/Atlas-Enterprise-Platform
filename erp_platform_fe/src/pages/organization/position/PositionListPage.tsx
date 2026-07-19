@@ -10,6 +10,8 @@ import {
   useDeletePosition,
 } from '@features/organization/hooks/usePosition';
 import type { Position } from '@features/organization/types';
+import { PermissionGate, useCanAccessCode } from '@shared/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -49,6 +51,9 @@ export default function PositionListPage() {
   const createMutation = useCreatePosition(selectedOrgId);
   const updateMutation = useUpdatePosition(selectedOrgId);
   const deleteMutation = useDeletePosition(selectedOrgId);
+
+  const canUpdatePosition = useCanAccessCode(PERMISSIONS.ORGANIZATION.POSITION.UPDATE);
+  const canDeletePosition = useCanAccessCode(PERMISSIONS.ORGANIZATION.POSITION.DELETE);
 
   const handleOpenAddModal = () => {
     setEditingItem(null);
@@ -142,32 +147,38 @@ export default function PositionListPage() {
       title: 'Thao tác',
       key: 'action',
       width: 150,
-      render: (_, record) => (
-        <Space size={12}>
-          <Button
-            type="text"
-            size="small"
-            icon={<Edit2 size={14} />}
-            onClick={() => handleOpenEditModal(record)}
-            style={{ color: 'var(--color-primary)' }}
-          />
-          <Popconfirm
-            title="Xác nhận xóa"
-            description="Bạn có chắc chắn muốn xóa vị trí công việc này?"
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Button
-              type="text"
-              size="small"
-              danger
-              icon={<Trash2 size={14} />}
-            />
-          </Popconfirm>
-        </Space>
-      ),
+      render: (_, record) => {
+        return (
+          <Space size={12}>
+            {canUpdatePosition && (
+              <Button
+                type="text"
+                size="small"
+                icon={<Edit2 size={14} />}
+                onClick={() => handleOpenEditModal(record)}
+                style={{ color: 'var(--color-primary)' }}
+              />
+            )}
+            {canDeletePosition && (
+              <Popconfirm
+                title="Xác nhận xóa"
+                description="Bạn có chắc chắn muốn xóa vị trí công việc này?"
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => handleDelete(record.id)}
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  danger
+                  icon={<Trash2 size={14} />}
+                />
+              </Popconfirm>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -178,20 +189,22 @@ export default function PositionListPage() {
           <Title level={4} style={{ margin: 0 }}>Quản lý Danh mục Vị trí công việc</Title>
           <Text type="secondary">Quản lý và thiết lập các vị trí công việc trong doanh nghiệp</Text>
         </div>
-        <Button
-          type="primary"
-          icon={<Plus size={16} />}
-          onClick={handleOpenAddModal}
-          disabled={!selectedOrgId}
-          style={{
-            background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
-            border: 'none',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(14, 165, 233, 0.25)',
-          }}
-        >
-          Thêm vị trí
-        </Button>
+        <PermissionGate permission={PERMISSIONS.ORGANIZATION.POSITION.CREATE}>
+          <Button
+            type="primary"
+            icon={<Plus size={16} />}
+            onClick={handleOpenAddModal}
+            disabled={!selectedOrgId}
+            style={{
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
+              border: 'none',
+              borderRadius: 8,
+              boxShadow: '0 2px 8px rgba(14, 165, 233, 0.25)',
+            }}
+          >
+            Thêm vị trí
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card style={{ borderRadius: 12, border: '1px solid var(--color-border-light)' }}>

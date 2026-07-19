@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Tabs, Tag, Button, Space, Avatar, Typography, Row, Col, Timeline, Spin, Descriptions } from 'antd';
 import { ArrowLeft, Edit, Mail, Phone, MapPin, Briefcase, Calendar, User, FileText } from 'lucide-react';
 import { useEmployee } from '@features/employee/hooks/useEmployee';
+import { PermissionGate } from '@shared/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -166,14 +168,16 @@ function EmployeeDetailPage() {
             </Space>
           </Col>
           <Col>
-            <Button 
-              type="primary" 
-              icon={<Edit size={14} />} 
-              onClick={() => navigate(`/hrm/employees/${id}/edit`)}
-              style={{ borderRadius: 8, height: 38, background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))', border: 'none' }}
-            >
-              Chỉnh sửa hồ sơ
-            </Button>
+            <PermissionGate permission={PERMISSIONS.HRM.EMPLOYEE.UPDATE}>
+              <Button 
+                type="primary" 
+                icon={<Edit size={14} />} 
+                onClick={() => navigate(`/hrm/employees/${id}/edit`)}
+                style={{ borderRadius: 8, height: 38, background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))', border: 'none' }}
+              >
+                Chỉnh sửa hồ sơ
+              </Button>
+            </PermissionGate>
           </Col>
         </Row>
 

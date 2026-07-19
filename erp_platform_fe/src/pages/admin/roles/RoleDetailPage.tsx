@@ -5,6 +5,9 @@ import { ArrowLeft, Shield, Lock, Clock } from 'lucide-react';
 import { useRole, usePermissions, useAssignPermissionToRole } from '@features/rbac/hooks/useRbac';
 import type { Permission, PrincipalRole } from '@features/rbac/types';
 import { useMemo } from 'react';
+import { useCanAccessCode } from '@shared/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
+import { findRegistryEntry } from '@features/rbac/config/permission-registry';
 
 const { Title, Text } = Typography;
 
@@ -14,6 +17,7 @@ export default function RoleDetailPage() {
   const { data: role, isLoading: roleLoading } = useRole(id);
   const { data: permissions = [], isLoading: permLoading } = usePermissions();
   const assignPermission = useAssignPermissionToRole();
+  const canEditPermissions = useCanAccessCode(PERMISSIONS.ADMIN.ROLE.UPDATE);
 
   // Group permissions by resource for the matrix display
   const permissionMatrix = useMemo(() => {
@@ -206,13 +210,28 @@ export default function RoleDetailPage() {
                               );
                             }
                             const isAssigned = assignedPermissionIds.has(perm.id);
+                            const registryInfo = findRegistryEntry(perm.code);
+                            const tooltipContent = registryInfo ? (
+                              <div>
+                                <div style={{ fontWeight: 600, marginBottom: 4 }}>{registryInfo.description}</div>
+                                {registryInfo.affectedUI.length > 0 && (
+                                  <div>
+                                    <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 2 }}>UI bị ảnh hưởng:</div>
+                                    {registryInfo.affectedUI.map((ui, i) => (
+                                      <div key={i} style={{ fontSize: 11 }}>• {ui}</div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ) : perm.description || perm.code;
+
                             return (
                               <td key={action} style={{ textAlign: 'center', padding: '10px 16px' }}>
-                                <Tooltip title={perm.description || perm.code}>
+                                <Tooltip title={tooltipContent} overlayStyle={{ maxWidth: 320 }}>
                                   <Checkbox
                                     checked={isAssigned}
                                     onChange={(e) => handleTogglePermission(perm.id, e.target.checked)}
-                                    disabled={role.isSystem}
+                                    disabled={role.isSystem || !canEditPermissions}
                                   />
                                 </Tooltip>
                               </td>

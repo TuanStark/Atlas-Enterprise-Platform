@@ -6,6 +6,8 @@ import type { FilterBarField } from '@shared/components/FilterBar';
 import { useRoles, useCreateRole } from '@features/rbac/hooks/useRbac';
 import { useAuthStore } from '@features/auth/store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { PermissionGate } from '@shared/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -109,14 +111,16 @@ export default function RoleListPage() {
         onChange={handleFilterChange}
         fields={filterFields}
         extra={
-          <Button
-            type="primary"
-            icon={<Plus size={14} />}
-            onClick={() => setIsCreateModalOpen(true)}
-            style={{ borderRadius: 6 }}
-          >
-            Tạo vai trò mới
-          </Button>
+          <PermissionGate permission={PERMISSIONS.ADMIN.ROLE.CREATE}>
+            <Button
+              type="primary"
+              icon={<Plus size={14} />}
+              onClick={() => setIsCreateModalOpen(true)}
+              style={{ borderRadius: 6 }}
+            >
+              Tạo vai trò mới
+            </Button>
+          </PermissionGate>
         }
       />
 

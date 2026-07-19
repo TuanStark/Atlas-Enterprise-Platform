@@ -7,6 +7,8 @@ import { FilterBar } from '@shared/components/FilterBar';
 import type { FilterBarField } from '@shared/components/FilterBar';
 import { useLeaveRequests, useApproveLeaveRequest, useRejectLeaveRequest } from '@features/leave/hooks/useLeave';
 import type { LeaveRequest } from '@features/leave/types';
+import { PermissionGate } from '@shared/hooks/usePermission';
+import { PERMISSIONS } from '@shared/constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -114,24 +116,28 @@ function LeaveRequestListPage() {
         if (record.status !== 'pending') return null;
         return (
           <Space size={8}>
-            <Popconfirm
-              title="Duyệt đơn nghỉ phép"
-              description="Bạn có chắc chắn muốn duyệt đơn này?"
-              okText="Đồng ý"
-              cancelText="Hủy"
-              onConfirm={() => approveMutation.mutate(record.id)}
-            >
-              <a style={{ color: 'var(--color-success)', fontSize: 13 }}>Duyệt</a>
-            </Popconfirm>
-            <Popconfirm
-              title="Từ chối đơn"
-              description="Bạn muốn từ chối đơn nghỉ phép này?"
-              okText="Đồng ý"
-              cancelText="Hủy"
-              onConfirm={() => rejectMutation.mutate({ id: record.id })}
-            >
-              <a style={{ color: 'var(--color-error)', fontSize: 13 }}>Từ chối</a>
-            </Popconfirm>
+            <PermissionGate permission={PERMISSIONS.HRM.LEAVE.APPROVE}>
+              <Popconfirm
+                title="Duyệt đơn nghỉ phép"
+                description="Bạn có chắc chắn muốn duyệt đơn này?"
+                okText="Đồng ý"
+                cancelText="Hủy"
+                onConfirm={() => approveMutation.mutate(record.id)}
+              >
+                <a style={{ color: 'var(--color-success)', fontSize: 13 }}>Duyệt</a>
+              </Popconfirm>
+            </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.HRM.LEAVE.REJECT}>
+              <Popconfirm
+                title="Từ chối đơn"
+                description="Bạn muốn từ chối đơn nghỉ phép này?"
+                okText="Đồng ý"
+                cancelText="Hủy"
+                onConfirm={() => rejectMutation.mutate({ id: record.id })}
+              >
+                <a style={{ color: 'var(--color-error)', fontSize: 13 }}>Từ chối</a>
+              </Popconfirm>
+            </PermissionGate>
           </Space>
         );
       }
@@ -163,14 +169,16 @@ function LeaveRequestListPage() {
           </Title>
           <Text type="secondary" style={{ fontSize: 14 }}>Theo dõi và phê duyệt đơn xin nghỉ phép của nhân viên.</Text>
         </div>
-        <Button
-          type="primary"
-          icon={<Plus size={14} />}
-          onClick={() => navigate('/hrm/leave-requests/new')}
-          style={{ height: 38, borderRadius: 8, fontWeight: 600 }}
-        >
-          Tạo đơn nghỉ phép
-        </Button>
+        <PermissionGate permission={PERMISSIONS.HRM.LEAVE.CREATE}>
+          <Button
+            type="primary"
+            icon={<Plus size={14} />}
+            onClick={() => navigate('/hrm/leave-requests/new')}
+            style={{ height: 38, borderRadius: 8, fontWeight: 600 }}
+          >
+            Tạo đơn nghỉ phép
+          </Button>
+        </PermissionGate>
       </div>
 
       <FilterBar
