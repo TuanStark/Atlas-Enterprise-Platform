@@ -28,12 +28,12 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
     }
 
     const token = this.passwordResetService.createToken(email);
-    const resetLink = `${process.env.HOST_FE || 'http://localhost:5173'}/reset-password?token=${token}`;
+    const resetLink = `${process.env.HOST_FE || 'http://localhost:3000'}/reset-password?token=${token}`;
 
     try {
       await this.mailService.sendMailWithTemplate(
         email,
-        '[Atlas Platform] Yêu cầu đặt lại mật khẩu',
+        'Yêu cầu đặt lại mật khẩu',
         'forgot-password',
         { resetLink },
       );
