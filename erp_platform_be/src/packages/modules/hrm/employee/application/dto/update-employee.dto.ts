@@ -49,4 +49,40 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsString()
   principalId?: string;
+
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  addressLine?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsDateString()
+  joinDate?: string;
+
+  @IsOptional()
+  @IsString()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsString()
+  jobTitleId?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

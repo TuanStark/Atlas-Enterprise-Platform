@@ -52,4 +52,26 @@ export const employeeApi = {
     const { data } = await httpClient.post(`/employees/${employeeId}/documents`, { items: documents });
     return data;
   },
+
+  /** Get list of Job Titles from backend */
+  async getJobTitles(): Promise<{ id: string; name: string; code: string; isActive: boolean; createdAt: string }[]> {
+    const { data } = await httpClient.get('/job-titles');
+    return data;
+  },
+
+  /** Create a new job title */
+  async createJobTitle(payload: { name: string; code: string; isActive?: boolean }): Promise<string> {
+    const { data } = await httpClient.post<string>('/job-titles', payload);
+    return data;
+  },
+
+  /** Update job title by ID */
+  async updateJobTitle(id: string, payload: { name?: string; code?: string; isActive?: boolean }): Promise<void> {
+    await httpClient.patch(`/job-titles/${id}`, payload);
+  },
+
+  /** Delete job title by ID */
+  async deleteJobTitle(id: string): Promise<void> {
+    await httpClient.delete(`/job-titles/${id}`);
+  },
 };

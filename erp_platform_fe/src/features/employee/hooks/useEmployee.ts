@@ -99,3 +99,69 @@ export function useDeleteEmployee() {
     },
   });
 }
+
+/**
+ * useJobTitles — Fetch list of Job Titles from master data
+ */
+export function useJobTitles() {
+  return useQuery({
+    queryKey: ['job-titles'],
+    queryFn: () => employeeApi.getJobTitles(),
+  });
+}
+
+/**
+ * useCreateJobTitle — Create new job title
+ */
+export function useCreateJobTitle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { name: string; code: string; isActive?: boolean }) =>
+      employeeApi.createJobTitle(payload),
+    onSuccess: () => {
+      message.success('Tạo chức danh thành công!');
+      void queryClient.invalidateQueries({ queryKey: ['job-titles'] });
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Tạo chức danh thất bại');
+    },
+  });
+}
+
+/**
+ * useUpdateJobTitle — Update job title by ID
+ */
+export function useUpdateJobTitle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: { name?: string; code?: string; isActive?: boolean } }) =>
+      employeeApi.updateJobTitle(id, payload),
+    onSuccess: () => {
+      message.success('Cập nhật chức danh thành công!');
+      void queryClient.invalidateQueries({ queryKey: ['job-titles'] });
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Cập nhật chức danh thất bại');
+    },
+  });
+}
+
+/**
+ * useDeleteJobTitle — Delete job title by ID
+ */
+export function useDeleteJobTitle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => employeeApi.deleteJobTitle(id),
+    onSuccess: () => {
+      message.success('Xóa chức danh thành công!');
+      void queryClient.invalidateQueries({ queryKey: ['job-titles'] });
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Xóa chức danh thất bại');
+    },
+  });
+}

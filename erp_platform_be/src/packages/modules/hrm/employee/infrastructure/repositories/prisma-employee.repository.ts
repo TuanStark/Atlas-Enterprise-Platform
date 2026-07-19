@@ -284,6 +284,9 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
       return {
         id: e.id,
         employeeId: e.employeeId,
+        departmentId: activeOa?.departmentId || undefined,
+        jobTitleId: activeOa?.jobTitleId || undefined,
+        positionId: activeOa?.positionId || undefined,
         departmentName: deptName,
         positionName: posName,
         jobTitleName: posName,
@@ -291,6 +294,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
         startDate: e.hireDate,
         endDate: e.terminationDate ?? undefined,
         isCurrent: e.status === 'active' || e.status === 'probation',
+        status: e.status,
       };
     });
   }

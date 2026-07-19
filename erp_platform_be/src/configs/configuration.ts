@@ -39,4 +39,3 @@ export default () => ({
     from: process.env.MAIL_FROM || 'Atlas Platform <noreply@atlas.com>',
   },
 });
-

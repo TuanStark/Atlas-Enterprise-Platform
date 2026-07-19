@@ -14,7 +14,7 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
     private readonly prisma: PrismaService,
     private readonly passwordResetService: PasswordResetService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   async execute(command: ForgotPasswordCommand): Promise<Result<void>> {
     const email = command.dto.email.toLowerCase();
@@ -45,4 +45,3 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
     return Result.success();
   }
 }
-

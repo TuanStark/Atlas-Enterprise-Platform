@@ -6,6 +6,9 @@ export class EmployeeReadModelMapper {
     employee: Employee,
     employments?: {
       id: string;
+      departmentId?: string;
+      jobTitleId?: string;
+      positionId?: string;
       departmentName: string;
       positionName: string;
       jobTitleName: string;
@@ -13,8 +16,18 @@ export class EmployeeReadModelMapper {
       startDate: Date;
       endDate?: Date;
       isCurrent: boolean;
+      status?: string;
     }[],
   ): EmployeeReadModel {
+    const primaryEmail = employee.contacts.find(
+      (c) => c.contactType === 'email' && c.isPrimary,
+    )?.value;
+    const primaryPhone = employee.contacts.find(
+      (c) => (c.contactType === 'phone' || c.contactType === 'mobile') && c.isPrimary,
+    )?.value;
+    const currentEmployment = employments?.find((e) => e.isCurrent) || employments?.[0];
+    const joinDate = currentEmployment?.startDate;
+
     return {
       id: employee.id.toString(),
       tenantId: employee.tenantId.toString(),
@@ -33,6 +46,9 @@ export class EmployeeReadModelMapper {
       taxNumber: employee.personalInfo.taxNumber,
       avatarFileId: employee.avatarFileId,
       status: employee.status,
+      email: primaryEmail,
+      phone: primaryPhone,
+      joinDate: joinDate,
       contacts: employee.contacts.map((c) => ({
         id: c.id.toString(),
         contactType: c.contactType,

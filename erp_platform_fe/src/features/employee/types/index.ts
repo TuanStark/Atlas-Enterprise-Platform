@@ -34,6 +34,8 @@ export interface Employee {
   maritalStatus?: string;
   photoUrl?: string;
   avatarFileId?: string;
+  email?: string;
+  phone?: string;
   status: EmployeeStatus;
   joinDate?: string;
   terminationDate?: string;
@@ -93,6 +95,9 @@ export interface EmployeeDocument {
 
 export interface EmploymentSummary {
   id: UUID;
+  departmentId?: string;
+  jobTitleId?: string;
+  positionId?: string;
   departmentName: string;
   positionName: string;
   jobTitleName: string;
@@ -100,6 +105,7 @@ export interface EmploymentSummary {
   startDate: string;
   endDate?: string;
   isCurrent: boolean;
+  status?: string;
 }
 
 export interface CreateEmployeeDto {

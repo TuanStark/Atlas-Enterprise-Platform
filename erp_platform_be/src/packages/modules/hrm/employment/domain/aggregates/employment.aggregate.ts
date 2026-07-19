@@ -193,6 +193,19 @@ export class Employment extends AggregateRoot<EmploymentProps> {
     this.touch();
   }
 
+  updateEmploymentDetails(details: { hireDate?: Date; metadata?: Record<string, unknown> }) {
+    if (details.hireDate !== undefined) {
+      this.props.hireDate = details.hireDate;
+    }
+    if (details.metadata !== undefined) {
+      this.props.metadata = {
+        ...this.props.metadata,
+        ...details.metadata,
+      };
+    }
+    this.touch();
+  }
+
   addContract(
     props: Omit<EmploymentContractProps, 'employmentId' | 'isCurrent' | 'createdAt' | 'updatedAt'>,
   ): EmploymentContract {

@@ -4,7 +4,14 @@ import { CqrsModule } from '@nestjs/cqrs';
 
 import { JWT_TOKEN_SERVICE } from '@shared-kernel/application';
 import { AuthController } from './presentation/auth.controller';
-import { LoginHandler, LogoutHandler, RefreshTokenHandler, ForgotPasswordHandler, ResetPasswordHandler, RegisterTenantHandler } from './application/commands';
+import {
+  LoginHandler,
+  LogoutHandler,
+  RefreshTokenHandler,
+  ForgotPasswordHandler,
+  ResetPasswordHandler,
+  RegisterTenantHandler,
+} from './application/commands';
 import { PasswordResetService } from './application/services/password-reset.service';
 import { JwtTokenServiceImpl } from './infrastructure/jwt/jwt-token.service';
 import { PrismaModule } from 'src/database/prisma.module';
@@ -44,4 +51,3 @@ import { MailModule } from 'src/packages/shared/mail/mail.module';
   exports: [JWT_TOKEN_SERVICE],
 })
 export class AuthenticationModule {}
-

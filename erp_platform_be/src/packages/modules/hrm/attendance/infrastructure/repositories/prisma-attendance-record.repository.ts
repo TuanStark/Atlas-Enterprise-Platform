@@ -7,7 +7,7 @@ import { AttendanceRecordPersistenceMapper } from '../mappers/attendance-record.
 
 @Injectable()
 export class PrismaAttendanceRecordRepository implements AttendanceRecordRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   private readonly includeRelations = {
     attendanceRecordAttendanceAdjustments: true,

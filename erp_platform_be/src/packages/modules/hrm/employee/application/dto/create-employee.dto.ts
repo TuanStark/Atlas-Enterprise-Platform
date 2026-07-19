@@ -77,4 +77,24 @@ export class CreateEmployeeDto {
   @IsOptional()
   @IsString()
   principalId?: string;
+
+  @IsOptional()
+  @IsString()
+  avatarFileId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  joinDate?: string;
+
+  @IsOptional()
+  @IsString()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsString()
+  jobTitleId?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

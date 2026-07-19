@@ -1,7 +1,14 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Get } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { LoginDto, RefreshTokenDto, LoginResponseDto, ForgotPasswordDto, ResetPasswordDto, RegisterTenantDto } from '../application/dto';
+import {
+  LoginDto,
+  RefreshTokenDto,
+  LoginResponseDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  RegisterTenantDto,
+} from '../application/dto';
 import { LoginCommand } from '../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../application/commands/refresh-token/refresh-token.command';
 import { LogoutCommand } from '../application/commands/logout/logout.command';
@@ -127,4 +134,3 @@ export class AuthController {
     };
   }
 }
-

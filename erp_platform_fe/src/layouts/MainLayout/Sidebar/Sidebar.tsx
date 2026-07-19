@@ -23,6 +23,7 @@ import {
   KeyRound,
   History,
   Clock,
+  Briefcase,
 } from 'lucide-react';
 import { useCanAccess } from '@shared/hooks/usePermission';
 import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
@@ -97,6 +98,9 @@ const MENU_DEFINITION: PermissionMenuItem[] = [
     icon: <Building2 size={16} />,
     label: 'Tổ chức',
     permission: { resource: 'org.structure', action: 'read' },
+    children: [
+      { key: '/hrm/job-titles', icon: <Briefcase size={14} />, label: 'Danh mục chức danh' },
+    ]
   },
   {
     key: '/notifications',

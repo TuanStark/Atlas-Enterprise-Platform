@@ -21,10 +21,11 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
     const { tenantId, dto } = command;
 
     const hasExistingPrincipal = Boolean(dto.principalId);
-    const principalId = hasExistingPrincipal 
-      ? Identifier.create(dto.principalId) 
+    const principalId = hasExistingPrincipal
+      ? Identifier.create(dto.principalId)
       : Identifier.create();
-    const isCreateAccount = !hasExistingPrincipal && (dto.createAccount === true || dto.createAccount === 'true');
+    const isCreateAccount =
+      !hasExistingPrincipal && (dto.createAccount === true || dto.createAccount === 'true');
 
     if (!hasExistingPrincipal) {
       await this.prisma.principal.create({
@@ -34,8 +35,16 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
           type: 'user',
           status: isCreateAccount ? 'active' : 'inactive',
           displayName: `${dto.firstName} ${dto.lastName}`,
+          avatarFileId: dto.avatarFileId || undefined,
           createdAt: new Date(),
           updatedAt: new Date(),
+        },
+      });
+    } else if (dto.avatarFileId) {
+      await this.prisma.principal.update({
+        where: { id: principalId.toString() },
+        data: {
+          avatarFileId: dto.avatarFileId,
         },
       });
     }
@@ -57,6 +66,10 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
         taxNumber: dto.taxNumber,
       },
     });
+
+    if (dto.avatarFileId) {
+      employee.changeAvatar(dto.avatarFileId);
+    }
 
     if (dto.addressLine || dto.city || dto.country) {
       await this.prisma.employeeAddress.create({
@@ -167,7 +180,7 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
     }
 
     const employmentId = randomUUID();
-    const hireDate = (dto as any).joinDate ? new Date((dto as any).joinDate) : new Date();
+    const hireDate = dto.joinDate ? new Date(dto.joinDate) : new Date();
 
     const mapMockUuid = (id: string | undefined, defaultVal: string) => {
       if (!id) return defaultVal;
@@ -180,8 +193,8 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
       return defaultVal;
     };
 
-    const deptId = mapMockUuid((dto as any).departmentId, '11111111-1111-1111-1111-111111111111');
-    const jobTitleId = mapMockUuid((dto as any).jobTitleId, '11111111-1111-1111-1111-111111111111');
+    const deptId = mapMockUuid(dto.departmentId, '11111111-1111-1111-1111-111111111111');
+    const jobTitleId = mapMockUuid(dto.jobTitleId, '11111111-1111-1111-1111-111111111111');
     const positionId = jobTitleId;
 
     await this.prisma.employment.create({
@@ -192,10 +205,10 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
         employmentTypeId: empType.id,
         employeeCode: dto.employeeNo,
         hireDate: hireDate,
-        status: (dto as any).status === 'active' ? 'active' : 'probation',
+        status: dto.status === 'active' ? 'active' : 'probation',
         metadata: {
-          departmentId: (dto as any).departmentId ?? '1',
-          jobTitleId: (dto as any).jobTitleId ?? '1',
+          departmentId: dto.departmentId ?? '1',
+          jobTitleId: dto.jobTitleId ?? '1',
         },
       },
     });

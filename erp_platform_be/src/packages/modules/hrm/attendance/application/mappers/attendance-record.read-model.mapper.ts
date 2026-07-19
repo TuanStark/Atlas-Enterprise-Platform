@@ -40,7 +40,8 @@ export class AttendanceRecordReadModelMapper {
                   id: entity.employment.employee.id,
                   firstName: entity.employment.employee.firstName,
                   lastName: entity.employment.employee.lastName,
-                  displayName: `${entity.employment.employee.lastName || ''} ${entity.employment.employee.firstName || ''}`.trim(),
+                  displayName:
+                    `${entity.employment.employee.lastName || ''} ${entity.employment.employee.firstName || ''}`.trim(),
                 }
               : undefined,
           }

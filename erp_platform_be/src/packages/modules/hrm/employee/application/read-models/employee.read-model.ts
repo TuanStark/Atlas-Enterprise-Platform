@@ -18,12 +18,18 @@ export interface EmployeeReadModel {
   taxNumber?: string;
   avatarFileId?: string;
   status: string;
+  email?: string;
+  phone?: string;
+  joinDate?: Date;
   contacts: EmployeeContactReadModel[];
   addresses: EmployeeAddressReadModel[];
   emergencyContacts: EmployeeEmergencyContactReadModel[];
   documents: EmployeeDocumentReadModel[];
   employments?: {
     id: string;
+    departmentId?: string;
+    jobTitleId?: string;
+    positionId?: string;
     departmentName: string;
     positionName: string;
     jobTitleName: string;
@@ -31,6 +37,7 @@ export interface EmployeeReadModel {
     startDate: Date;
     endDate?: Date;
     isCurrent: boolean;
+    status?: string;
   }[];
   createdAt: Date;
   updatedAt: Date;

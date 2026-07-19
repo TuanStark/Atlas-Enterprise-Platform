@@ -16,6 +16,7 @@ import {
   Popconfirm,
   Spin,
   Alert,
+  TreeSelect,
 } from 'antd';
 import {
   Building2,
@@ -34,10 +35,36 @@ import {
   useCreateOrgUnit,
   useUpdateOrgUnit,
   useDeleteOrgUnit,
+  useMoveOrgUnit,
 } from '@features/organization/hooks/useOrganization';
 import type { OrganizationUnit } from '@features/organization/types';
 
 const { Title, Text } = Typography;
+
+const convertNameToCode = (name: string): string => {
+  if (!name) return '';
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toUpperCase()
+    .replace(/[^A-Z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+};
+
+const mapTreeSelectData = (units: OrganizationUnit[], disableUnitId?: string): any[] => {
+  return units.map((unit) => {
+    const shouldDisable = unit.id === disableUnitId;
+    return {
+      value: unit.id,
+      title: `${unit.name} (${unit.code})`,
+      disabled: shouldDisable,
+      children: unit.children ? mapTreeSelectData(unit.children, shouldDisable ? unit.id : disableUnitId) : [],
+    };
+  });
+};
 
 export default function OrganizationPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>();
@@ -57,6 +84,7 @@ export default function OrganizationPage() {
   const createMutation = useCreateOrgUnit(selectedOrgId);
   const updateMutation = useUpdateOrgUnit(selectedOrgId);
   const deleteMutation = useDeleteOrgUnit(selectedOrgId);
+  const moveMutation = useMoveOrgUnit(selectedOrgId);
 
   // Auto-select first organization on load
   useEffect(() => {
@@ -125,9 +153,21 @@ export default function OrganizationPage() {
           organizationId: selectedOrgId,
         });
       } else {
+        const hasParentChanged = values.parentUnitId !== selectedUnit!.parentUnitId;
+        if (hasParentChanged) {
+          await moveMutation.mutateAsync({
+            unitId: selectedUnit!.id,
+            payload: { parentUnitId: values.parentUnitId || null },
+          });
+        }
         await updateMutation.mutateAsync({
           unitId: selectedUnit!.id,
-          payload: values,
+          payload: {
+            name: values.name,
+            unitTypeId: values.unitTypeId,
+            sortOrder: values.sortOrder,
+            isActive: values.isActive,
+          },
         });
         // Update local detail card view
         setSelectedUnit({
@@ -387,9 +427,21 @@ export default function OrganizationPage() {
             />
           )}
 
-          {/* Form Item: Parent unit Id hidden or selected */}
-          <Form.Item name="parentUnitId" hidden>
-            <Input />
+          {/* Form Item: Parent unit Id selection */}
+          <Form.Item
+            name="parentUnitId"
+            label="Đơn vị cấp trên (Phòng ban cha)"
+            help="Để trống nếu đây là đơn vị cấp cao nhất (Root)"
+          >
+            <TreeSelect
+              showSearch
+              style={{ width: '100%' }}
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              placeholder="Chọn đơn vị cấp trên (Để trống = Cấp cao nhất)"
+              allowClear
+              treeDefaultExpandAll
+              treeData={treeData ? mapTreeSelectData(treeData, modalMode === 'edit' ? selectedUnit?.id : undefined) : []}
+            />
           </Form.Item>
 
           <Row gutter={16}>
@@ -427,7 +479,15 @@ export default function OrganizationPage() {
             label="Tên phòng ban/đơn vị"
             rules={[{ required: true, message: 'Nhập tên phòng ban' }]}
           >
-            <Input placeholder="Ví dụ: Phòng Nghiên cứu và Phát triển" />
+            <Input
+              placeholder="Ví dụ: Phòng Nghiên cứu và Phát triển"
+              onChange={(e) => {
+                if (modalMode === 'create') {
+                  const generatedCode = convertNameToCode(e.target.value);
+                  form.setFieldsValue({ code: generatedCode });
+                }
+              }}
+            />
           </Form.Item>
 
           <Row gutter={16} align="middle">

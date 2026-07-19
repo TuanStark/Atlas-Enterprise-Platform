@@ -97,12 +97,32 @@ export class PrismaOrganizationRepository implements OrganizationRepository {
     const entities = await this.prisma.organization.findMany({
       where: {
         tenantId: tenantId.getValue(),
+        deletedAt: null,
       },
-
       orderBy: {
         name: 'asc',
       },
     });
+
+    if (entities.length === 0) {
+      const tenant = await this.prisma.tenant.findUnique({
+        where: { id: tenantId.getValue() },
+      });
+      if (tenant) {
+        const newOrg = await this.prisma.organization.create({
+          data: {
+            id: require('crypto').randomUUID(),
+            tenantId: tenantId.getValue(),
+            code: tenant.code.toUpperCase(),
+            name: tenant.name,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+        return [OrganizationPersistenceMapper.toDomain(newOrg)];
+      }
+    }
 
     return entities.map(OrganizationPersistenceMapper.toDomain);
   }

@@ -1,15 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PrismaModule } from 'src/database/prisma.module';
-
-// Domain
 import { EMPLOYEE_REPOSITORY } from './domain/repositories/employee.repository';
 import { EmployeeDomainService } from './domain/services/employee-domain.service';
-
-// Infrastructure
 import { PrismaEmployeeRepository } from './infrastructure/repositories/prisma-employee.repository';
-
-// Commands
 import { CreateEmployeeHandler } from './application/commands/create-employee/create-employee.handler';
 import { UpdateEmployeeHandler } from './application/commands/update-employee/update-employee.handler';
 import {
@@ -18,14 +12,9 @@ import {
   SyncEmployeeEmergencyContactsHandler,
   SyncEmployeeDocumentsHandler,
 } from './application/commands/employee-child.commands';
-
-// Queries
 import { GetEmployeeHandler } from './application/queries/get-employee/get-employee.handler';
 import { ListEmployeesHandler } from './application/queries/list-employees/list-employees.handler';
-
-// Controllers
 import { EmployeeController } from './presentation/controllers/employee.controller';
-
 const commandHandlers = [
   CreateEmployeeHandler,
   UpdateEmployeeHandler,
@@ -37,9 +26,11 @@ const commandHandlers = [
 const queryHandlers = [GetEmployeeHandler, ListEmployeesHandler];
 
 import { IdentityModule } from '@core/identity/identity.module';
+import { EmploymentModule } from '../employment/employment.module';
+import { OrganizationModule } from '@core/organization/organization.module';
 
 @Module({
-  imports: [CqrsModule, PrismaModule, IdentityModule],
+  imports: [CqrsModule, PrismaModule, IdentityModule, EmploymentModule, OrganizationModule],
 
   controllers: [EmployeeController],
 

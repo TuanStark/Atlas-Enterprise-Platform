@@ -18,7 +18,8 @@ export class MailService {
     const user = this.configService.get<string>('mail.user');
     const pass = this.configService.get<string>('mail.pass');
     const secure = this.configService.get<boolean>('mail.secure') || false;
-    this.fromAddress = this.configService.get<string>('mail.from') || 'Atlas Platform <noreply@atlas.com>';
+    this.fromAddress =
+      this.configService.get<string>('mail.from') || 'Atlas Platform <noreply@atlas.com>';
 
     if (!host || !user || !pass) {
       this.logger.warn(
@@ -94,4 +95,3 @@ export class MailService {
     }
   }
 }
-

@@ -12,7 +12,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
     private readonly prisma: PrismaService,
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: PasswordHasher,
-  ) { }
+  ) {}
 
   async execute(command: RegisterTenantCommand): Promise<Result<void>> {
     const dto = command.dto;
@@ -151,6 +151,19 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
             roleId: roleId,
             scopeId: globalScope.id,
             assignedAt: new Date(),
+          },
+        });
+
+        // Create default organization matching tenant name and code
+        await tx.organization.create({
+          data: {
+            id: randomUUID(),
+            tenantId: tenantId,
+            code: tenantCode.toUpperCase(),
+            name: dto.name,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           },
         });
       });

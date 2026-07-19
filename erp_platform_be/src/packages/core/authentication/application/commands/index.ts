@@ -10,5 +10,3 @@ export * from './reset-password/reset-password.command';
 export * from './reset-password/reset-password.handler';
 export * from './register-tenant/register-tenant.command';
 export * from './register-tenant/register-tenant.handler';
-
-
