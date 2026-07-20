@@ -168,6 +168,7 @@ export default function RoleDetailPage() {
 
   const isDisabled = role.isSystem || !canEditPermissions;
 
+
   // Principal roles table columns
   const principalColumns: TableColumnsType<PrincipalRole> = [
     {
@@ -365,6 +366,11 @@ export default function RoleDetailPage() {
                                         </div>
                                       );
 
+                                      const isMutating = permission
+                                        ? (assignPermission.isPending && assignPermission.variables?.permissionId === permission.id) ||
+                                          (removePermission.isPending && removePermission.variables?.permissionId === permission.id)
+                                        : false;
+
                                       return (
                                         <tr
                                           key={entry.code}
@@ -401,15 +407,19 @@ export default function RoleDetailPage() {
                                           {/* Checkbox */}
                                           <td style={{ textAlign: 'center', padding: '8px 16px' }}>
                                             <Tooltip title={tooltipContent} overlayStyle={{ maxWidth: 320 }}>
-                                              <Checkbox
-                                                checked={isAssigned}
-                                                onChange={(e) => {
-                                                  if (permission) {
-                                                    handleTogglePermission(permission.id, e.target.checked);
-                                                  }
-                                                }}
-                                                disabled={isDisabled || !permission}
-                                              />
+                                              {isMutating ? (
+                                                <Spin size="small" />
+                                              ) : (
+                                                <Checkbox
+                                                  checked={isAssigned}
+                                                  onChange={(e) => {
+                                                    if (permission) {
+                                                      handleTogglePermission(permission.id, e.target.checked);
+                                                    }
+                                                  }}
+                                                  disabled={isDisabled || !permission}
+                                                />
+                                              )}
                                             </Tooltip>
                                           </td>
                                         </tr>

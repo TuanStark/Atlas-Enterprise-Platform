@@ -56,9 +56,10 @@ export function useAssignPermissionToRole() {
   return useMutation({
     mutationFn: ({ roleId, permissionId }: { roleId: string; permissionId: string }) =>
       rbacApi.assignPermissionToRole(roleId, { permissionId }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       message.success('Đã gán quyền cho vai trò!');
       void queryClient.invalidateQueries({ queryKey: rbacKeys.roles() });
+      void queryClient.invalidateQueries({ queryKey: rbacKeys.role(variables.roleId) });
     },
     onError: (error: ApiError) => {
       message.error(error.message || 'Gán quyền thất bại');
@@ -72,9 +73,10 @@ export function useRemovePermissionFromRole() {
   return useMutation({
     mutationFn: ({ roleId, permissionId }: { roleId: string; permissionId: string }) =>
       rbacApi.removePermissionFromRole(roleId, permissionId),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       message.success('Đã thu hồi quyền khỏi vai trò!');
       void queryClient.invalidateQueries({ queryKey: rbacKeys.roles() });
+      void queryClient.invalidateQueries({ queryKey: rbacKeys.role(variables.roleId) });
     },
     onError: (error: ApiError) => {
       message.error(error.message || 'Thu hồi quyền thất bại');

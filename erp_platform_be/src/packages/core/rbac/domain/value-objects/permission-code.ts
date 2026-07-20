@@ -11,7 +11,7 @@ export class PermissionCode extends ValueObject<string> {
     if (!value) {
       throw new ValidationException('Permission code is required.');
     }
-    const regex = /^[a-z0-9]+:[a-z0-9]+$/;
+    const regex = /^[a-z0-9\._-]+:[a-z0-9\._-]+$/;
     if (!regex.test(value)) {
       throw new ValidationException('Permission code must follow module:action format.');
     }
