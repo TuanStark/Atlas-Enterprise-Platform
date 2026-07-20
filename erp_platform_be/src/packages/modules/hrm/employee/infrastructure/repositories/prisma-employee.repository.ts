@@ -7,7 +7,7 @@ import { EmployeePersistenceMapper } from '../mappers/employee.persistence.mappe
 
 @Injectable()
 export class PrismaEmployeeRepository implements EmployeeRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   private readonly includeRelations = {
     principal: true,

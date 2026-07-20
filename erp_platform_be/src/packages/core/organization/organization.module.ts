@@ -167,4 +167,4 @@ const queryHandlers = [
     POSITION_REPOSITORY,
   ],
 })
-export class OrganizationModule { }
+export class OrganizationModule {}

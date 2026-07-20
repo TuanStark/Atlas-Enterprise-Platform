@@ -47,9 +47,7 @@ export class PositionController {
   @ApiOperation({ summary: 'List all positions' })
   @ApiOkResponse({ type: [PositionReadModel], description: 'List of positions' })
   list(@Param('organizationId', ParseUUIDPipe) organizationId: string) {
-    return this.queryBus.execute(
-      new ListPositionsQuery(Identifier.create(organizationId)),
-    );
+    return this.queryBus.execute(new ListPositionsQuery(Identifier.create(organizationId)));
   }
 
   @Get(':id')
@@ -73,11 +71,7 @@ export class PositionController {
     @Body() dto: UpdatePositionDto,
   ) {
     return this.commandBus.execute(
-      new UpdatePositionCommand(
-        Identifier.create(organizationId),
-        Identifier.create(id),
-        dto,
-      ),
+      new UpdatePositionCommand(Identifier.create(organizationId), Identifier.create(id), dto),
     );
   }
 
@@ -89,10 +83,7 @@ export class PositionController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.commandBus.execute(
-      new DeletePositionCommand(
-        Identifier.create(organizationId),
-        Identifier.create(id),
-      ),
+      new DeletePositionCommand(Identifier.create(organizationId), Identifier.create(id)),
     );
   }
 }

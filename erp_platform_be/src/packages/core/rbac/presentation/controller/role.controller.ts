@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Result } from '@shared-kernel/application';
@@ -11,6 +21,7 @@ import {
   GetRoleQuery,
   ListRoleQuery,
   AssignPermissionToRoleCommand,
+  RemovePermissionFromRoleCommand,
 } from '../../application';
 
 @ApiTags('Roles')
@@ -76,5 +87,20 @@ export class RoleController extends BaseCrudControllerHelper {
     @Body() dto: AssignPermissionDto,
   ): Promise<Result<void>> {
     return this.commandBus.execute(new AssignPermissionToRoleCommand(roleId, dto.permissionId));
+  }
+
+  @Delete(':roleId/permissions/:permissionId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Remove permission from role',
+  })
+  @ApiOkResponse({
+    description: 'Permission successfully removed from role.',
+  })
+  async removePermission(
+    @Param('roleId') roleId: string,
+    @Param('permissionId') permissionId: string,
+  ): Promise<Result<void>> {
+    return this.commandBus.execute(new RemovePermissionFromRoleCommand(roleId, permissionId));
   }
 }

@@ -90,7 +90,7 @@ export const PERMISSION_REGISTRY: PermissionRegistryEntry[] = [
     code: PERMISSIONS.HRM.LEAVE.APPROVE,
     module: 'Quản lý nhân sự',
     resource: 'Nghỉ phép',
-    action: 'Duyệt',
+    action: 'Phê duyệt',
     description: 'Cho phép phê duyệt đơn nghỉ phép',
     affectedUI: ['Nút "Duyệt" trong danh sách đơn nghỉ phép'],
   },
@@ -101,6 +101,196 @@ export const PERMISSION_REGISTRY: PermissionRegistryEntry[] = [
     action: 'Từ chối',
     description: 'Cho phép từ chối đơn nghỉ phép',
     affectedUI: ['Nút "Từ chối" trong danh sách đơn nghỉ phép'],
+  },
+
+  // ─── HRM · Attendance ───────────────────────────────────────────
+  {
+    code: PERMISSIONS.HRM.ATTENDANCE.READ,
+    module: 'Quản lý nhân sự',
+    resource: 'Chấm công',
+    action: 'Xem',
+    description: 'Cho phép xem dữ liệu chấm công',
+    affectedUI: [
+      'Menu "Chấm công"',
+      'Trang lịch sử chấm công',
+    ],
+  },
+  {
+    code: PERMISSIONS.HRM.ATTENDANCE.CREATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Chấm công',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo bản ghi chấm công',
+    affectedUI: ['Nút "Check-in / Check-out"'],
+  },
+  {
+    code: PERMISSIONS.HRM.ATTENDANCE.UPDATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Chấm công',
+    action: 'Cập nhật',
+    description: 'Cho phép chỉnh sửa dữ liệu chấm công',
+    affectedUI: ['Nút "Chỉnh sửa" trên bản ghi chấm công'],
+  },
+
+  // ─── HRM · Shift ────────────────────────────────────────────────
+  {
+    code: PERMISSIONS.HRM.SHIFT.READ,
+    module: 'Quản lý nhân sự',
+    resource: 'Ca làm việc',
+    action: 'Xem',
+    description: 'Cho phép xem danh sách ca làm việc',
+    affectedUI: [
+      'Menu "Ca làm việc"',
+      'Trang quản lý ca làm',
+    ],
+  },
+  {
+    code: PERMISSIONS.HRM.SHIFT.CREATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Ca làm việc',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo ca làm việc mới',
+    affectedUI: ['Nút "Thêm ca làm" trên trang danh sách'],
+  },
+  {
+    code: PERMISSIONS.HRM.SHIFT.UPDATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Ca làm việc',
+    action: 'Cập nhật',
+    description: 'Cho phép chỉnh sửa ca làm việc',
+    affectedUI: ['Nút "Sửa" trong cột thao tác'],
+  },
+  {
+    code: PERMISSIONS.HRM.SHIFT.DELETE,
+    module: 'Quản lý nhân sự',
+    resource: 'Ca làm việc',
+    action: 'Xóa',
+    description: 'Cho phép xóa ca làm việc',
+    affectedUI: ['Nút "Xóa" trong cột thao tác'],
+  },
+
+  // ─── HRM · Payroll ──────────────────────────────────────────────
+  {
+    code: PERMISSIONS.HRM.PAYROLL.READ,
+    module: 'Quản lý nhân sự',
+    resource: 'Bảng lương',
+    action: 'Xem',
+    description: 'Cho phép xem bảng lương',
+    affectedUI: [
+      'Menu "Bảng lương"',
+      'Trang bảng lương',
+    ],
+  },
+  {
+    code: PERMISSIONS.HRM.PAYROLL.CREATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Bảng lương',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo kỳ tính lương',
+    affectedUI: ['Nút "Tạo kỳ lương mới"'],
+  },
+  {
+    code: PERMISSIONS.HRM.PAYROLL.EXPORT,
+    module: 'Quản lý nhân sự',
+    resource: 'Bảng lương',
+    action: 'Xuất dữ liệu',
+    description: 'Cho phép xuất bảng lương ra Excel',
+    affectedUI: ['Nút "Xuất Excel" trên trang bảng lương'],
+  },
+
+  // ─── HRM · Recruitment ──────────────────────────────────────────
+  {
+    code: PERMISSIONS.HRM.RECRUITMENT.READ,
+    module: 'Quản lý nhân sự',
+    resource: 'Tuyển dụng',
+    action: 'Xem',
+    description: 'Cho phép xem thông tin tuyển dụng',
+    affectedUI: [
+      'Menu "Tuyển dụng"',
+      'Trang danh sách tuyển dụng',
+    ],
+  },
+  {
+    code: PERMISSIONS.HRM.RECRUITMENT.CREATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Tuyển dụng',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo tin tuyển dụng mới',
+    affectedUI: ['Nút "Tạo tin tuyển dụng"'],
+  },
+  {
+    code: PERMISSIONS.HRM.RECRUITMENT.UPDATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Tuyển dụng',
+    action: 'Cập nhật',
+    description: 'Cho phép cập nhật tin tuyển dụng',
+    affectedUI: ['Nút "Chỉnh sửa" trong trang tuyển dụng'],
+  },
+
+  // ─── HRM · Performance ──────────────────────────────────────────
+  {
+    code: PERMISSIONS.HRM.PERFORMANCE.READ,
+    module: 'Quản lý nhân sự',
+    resource: 'Đánh giá',
+    action: 'Xem',
+    description: 'Cho phép xem đánh giá hiệu suất',
+    affectedUI: [
+      'Menu "Đánh giá hiệu suất"',
+      'Trang đánh giá hiệu suất',
+    ],
+  },
+  {
+    code: PERMISSIONS.HRM.PERFORMANCE.CREATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Đánh giá',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo kỳ đánh giá mới',
+    affectedUI: ['Nút "Tạo kỳ đánh giá"'],
+  },
+  {
+    code: PERMISSIONS.HRM.PERFORMANCE.UPDATE,
+    module: 'Quản lý nhân sự',
+    resource: 'Đánh giá',
+    action: 'Cập nhật',
+    description: 'Cho phép cập nhật đánh giá hiệu suất',
+    affectedUI: ['Nút "Cập nhật" trong trang đánh giá'],
+  },
+
+  // ─── Organization · Structure ───────────────────────────────────
+  {
+    code: PERMISSIONS.ORGANIZATION.STRUCTURE.READ,
+    module: 'Tổ chức',
+    resource: 'Cơ cấu tổ chức',
+    action: 'Xem',
+    description: 'Cho phép xem cơ cấu tổ chức',
+    affectedUI: [
+      'Menu "Cơ cấu tổ chức"',
+      'Trang sơ đồ tổ chức',
+    ],
+  },
+  {
+    code: PERMISSIONS.ORGANIZATION.STRUCTURE.CREATE,
+    module: 'Tổ chức',
+    resource: 'Cơ cấu tổ chức',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo đơn vị tổ chức mới',
+    affectedUI: ['Nút "Thêm đơn vị"'],
+  },
+  {
+    code: PERMISSIONS.ORGANIZATION.STRUCTURE.UPDATE,
+    module: 'Tổ chức',
+    resource: 'Cơ cấu tổ chức',
+    action: 'Cập nhật',
+    description: 'Cho phép chỉnh sửa cơ cấu tổ chức',
+    affectedUI: ['Nút "Sửa" trong cột thao tác'],
+  },
+  {
+    code: PERMISSIONS.ORGANIZATION.STRUCTURE.DELETE,
+    module: 'Tổ chức',
+    resource: 'Cơ cấu tổ chức',
+    action: 'Xóa',
+    description: 'Cho phép xóa đơn vị tổ chức',
+    affectedUI: ['Nút "Xóa" trong cột thao tác'],
   },
 
   // ─── Organization · Position ────────────────────────────────────
@@ -153,6 +343,14 @@ export const PERMISSION_REGISTRY: PermissionRegistryEntry[] = [
     ],
   },
   {
+    code: PERMISSIONS.ADMIN.USER.CREATE,
+    module: 'Quản trị hệ thống',
+    resource: 'Tài khoản',
+    action: 'Tạo mới',
+    description: 'Cho phép tạo tài khoản người dùng mới',
+    affectedUI: ['Nút "Thêm tài khoản"'],
+  },
+  {
     code: PERMISSIONS.ADMIN.USER.UPDATE,
     module: 'Quản trị hệ thống',
     resource: 'Tài khoản',
@@ -162,6 +360,14 @@ export const PERMISSION_REGISTRY: PermissionRegistryEntry[] = [
       'Nút "Gán vai trò" trong trang tài khoản',
       'Nút xóa tag vai trò',
     ],
+  },
+  {
+    code: PERMISSIONS.ADMIN.USER.DELETE,
+    module: 'Quản trị hệ thống',
+    resource: 'Tài khoản',
+    action: 'Xóa',
+    description: 'Cho phép xóa tài khoản người dùng',
+    affectedUI: ['Nút "Xóa" trong trang tài khoản'],
   },
 
   // ─── Admin · Role ───────────────────────────────────────────────
@@ -196,6 +402,14 @@ export const PERMISSION_REGISTRY: PermissionRegistryEntry[] = [
       'Checkbox gán/gỡ permission',
     ],
   },
+  {
+    code: PERMISSIONS.ADMIN.ROLE.DELETE,
+    module: 'Quản trị hệ thống',
+    resource: 'Vai trò',
+    action: 'Xóa',
+    description: 'Cho phép xóa vai trò',
+    affectedUI: ['Nút "Xóa" trên trang vai trò'],
+  },
 
   // ─── Admin · Audit ──────────────────────────────────────────────
   {
@@ -220,6 +434,17 @@ export const PERMISSION_REGISTRY: PermissionRegistryEntry[] = [
     affectedUI: [
       'Menu "Cài đặt hệ thống"',
       'Các trang quản lý: Lịch, Nhãn, Quy trình duyệt, Trường tùy chỉnh, Tệp',
+    ],
+  },
+  {
+    code: PERMISSIONS.ADMIN.SETTINGS.UPDATE,
+    module: 'Quản trị hệ thống',
+    resource: 'Cài đặt',
+    action: 'Cập nhật',
+    description: 'Cho phép thay đổi cài đặt hệ thống',
+    affectedUI: [
+      'Các nút "Lưu" trong trang cài đặt',
+      'Form chỉnh sửa cấu hình hệ thống',
     ],
   },
 ];

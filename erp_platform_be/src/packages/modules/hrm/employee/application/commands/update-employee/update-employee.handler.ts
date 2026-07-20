@@ -20,7 +20,8 @@ import type { UserRepository } from '@core/identity/domain';
 @CommandHandler(UpdateEmployeeCommand)
 export class UpdateEmployeeHandler
   extends BaseCommandHandler
-  implements ICommandHandler<UpdateEmployeeCommand> {
+  implements ICommandHandler<UpdateEmployeeCommand>
+{
   private readonly logger = new Logger(UpdateEmployeeHandler.name);
 
   constructor(
@@ -73,7 +74,8 @@ export class UpdateEmployeeHandler
     const principal = await this.principalRepository.findById(employee.principalId);
     if (principal) {
       if (dto.firstName || dto.lastName) {
-        const fullNameStr = `${dto.firstName ?? employee.fullName.firstName} ${dto.lastName ?? employee.fullName.lastName}`.trim();
+        const fullNameStr =
+          `${dto.firstName ?? employee.fullName.firstName} ${dto.lastName ?? employee.fullName.lastName}`.trim();
         principal.rename(fullNameStr);
       }
       if (dto.status === 'active') {
@@ -87,7 +89,9 @@ export class UpdateEmployeeHandler
       if (user) {
         if (dto.firstName || dto.lastName) {
           user.rename(dto.firstName ?? user.firstName, dto.lastName ?? user.lastName);
-          user.changeDisplayName(`${dto.firstName ?? user.firstName} ${dto.lastName ?? user.lastName}`.trim());
+          user.changeDisplayName(
+            `${dto.firstName ?? user.firstName} ${dto.lastName ?? user.lastName}`.trim(),
+          );
         }
         if (dto.status === 'active') {
           user.activate();
@@ -243,7 +247,9 @@ export class UpdateEmployeeHandler
     const hireDate = dto.joinDate ? new Date(dto.joinDate) : new Date();
 
     if (!employment) {
-      this.logger.log(`No active employment record found for employee ${employee.id}. Creating a new fallback.`);
+      this.logger.log(
+        `No active employment record found for employee ${employee.id}. Creating a new fallback.`,
+      );
 
       const allEmployments = await this.employmentRepository.findAll(command.tenantId);
       const standardEmpTypeId =

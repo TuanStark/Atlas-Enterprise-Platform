@@ -45,6 +45,10 @@ export const rbacApi = {
     await httpClient.post(`/roles/${roleId}/permissions`, dto);
   },
 
+  async removePermissionFromRole(roleId: string, permissionId: string): Promise<void> {
+    await httpClient.delete(`/roles/${roleId}/permissions/${permissionId}`);
+  },
+
   // --- Permissions ---
   async listPermissions(): Promise<Permission[]> {
     const { data } = await httpClient.get<Permission[]>('/permissions');

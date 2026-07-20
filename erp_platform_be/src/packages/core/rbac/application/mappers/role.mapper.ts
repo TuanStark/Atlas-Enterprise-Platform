@@ -24,7 +24,12 @@ export class RoleMapper {
       code: role.code.value,
       name: role.name,
       description: role.description,
-      permissionIds: role.permissions.map((p) => p.permissionId.getValue()),
+      isSystem: role.isSystem,
+      createdAt: role.createdAt?.toISOString(),
+      updatedAt: role.updatedAt?.toISOString(),
+      rolePermissions: role.permissions.map((p) => ({
+        permissionId: p.permissionId.getValue(),
+      })),
     };
   }
 }

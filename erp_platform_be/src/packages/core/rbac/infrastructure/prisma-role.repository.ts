@@ -75,6 +75,7 @@ export class PrismaRoleRepository implements RoleRepository {
       },
       include: {
         rolePermissions: true,
+        principalRoles: true,
       },
     });
 
@@ -118,6 +119,7 @@ export class PrismaRoleRepository implements RoleRepository {
       },
       include: {
         rolePermissions: true,
+        principalRoles: true,
       },
     });
     return entities.map((entity) => RolePersistenceMapper.toDomain(entity));

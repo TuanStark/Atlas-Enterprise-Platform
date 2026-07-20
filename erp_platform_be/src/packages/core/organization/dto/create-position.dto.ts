@@ -12,7 +12,10 @@ export class CreatePositionDto {
   @MaxLength(150)
   name!: string;
 
-  @ApiPropertyOptional({ description: 'Position description', example: 'Software development leadership role' })
+  @ApiPropertyOptional({
+    description: 'Position description',
+    example: 'Software development leadership role',
+  })
   @IsOptional()
   @IsString()
   description?: string;

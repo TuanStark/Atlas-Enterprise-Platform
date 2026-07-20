@@ -102,56 +102,173 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     }
 
     // 4. Seed Roles and Permissions
-    const PERMISSIONS = [
-      'role:create',
-      'role:read',
-      'role:update',
-      'role:delete',
-      'permission:create',
-      'permission:read',
-      'permission:update',
-      'permission:delete',
-      'principal:create',
-      'principal:read',
-      'principal:update',
-      'principal:delete',
-      'tenant:create',
-      'tenant:read',
-      'tenant:update',
-      'tenant:delete',
+    // Resource definitions with human-readable names
+    const RESOURCE_NAMES: Record<string, string> = {
+      // Core RBAC
+      role: 'Vai trò',
+      permission: 'Quyền hạn',
+      principal: 'Chủ thể',
+      tenant: 'Tổ chức thuê',
+      // HRM
+      'hrm.employee': 'Nhân viên',
+      'hrm.leave': 'Nghỉ phép',
+      'hrm.attendance': 'Chấm công',
+      'hrm.shift': 'Ca làm việc',
+      'hrm.payroll': 'Bảng lương',
+      'hrm.recruitment': 'Tuyển dụng',
+      'hrm.performance': 'Đánh giá',
+      // Organization
+      'org.structure': 'Cơ cấu tổ chức',
+      'org.position': 'Vị trí công việc',
+      // Admin
+      'admin.user': 'Tài khoản',
+      'admin.role': 'Vai trò hệ thống',
+      'admin.audit': 'Nhật ký kiểm toán',
+      'admin.settings': 'Cài đặt hệ thống',
+    };
+
+    const ACTION_NAMES: Record<string, string> = {
+      create: 'Tạo mới',
+      read: 'Xem',
+      update: 'Cập nhật',
+      delete: 'Xóa',
+      export: 'Xuất dữ liệu',
+      approve: 'Phê duyệt',
+      reject: 'Từ chối',
+    };
+
+    const PERMISSION_DEFINITIONS: { code: string; description: string }[] = [
+      // Core RBAC permissions
+      { code: 'role:create', description: 'Tạo vai trò mới' },
+      { code: 'role:read', description: 'Xem danh sách vai trò' },
+      { code: 'role:update', description: 'Cập nhật vai trò' },
+      { code: 'role:delete', description: 'Xóa vai trò' },
+      { code: 'permission:create', description: 'Tạo quyền hạn' },
+      { code: 'permission:read', description: 'Xem quyền hạn' },
+      { code: 'permission:update', description: 'Cập nhật quyền hạn' },
+      { code: 'permission:delete', description: 'Xóa quyền hạn' },
+      { code: 'principal:create', description: 'Tạo chủ thể' },
+      { code: 'principal:read', description: 'Xem chủ thể' },
+      { code: 'principal:update', description: 'Cập nhật chủ thể' },
+      { code: 'principal:delete', description: 'Xóa chủ thể' },
+      { code: 'tenant:create', description: 'Tạo tổ chức thuê' },
+      { code: 'tenant:read', description: 'Xem tổ chức thuê' },
+      { code: 'tenant:update', description: 'Cập nhật tổ chức thuê' },
+      { code: 'tenant:delete', description: 'Xóa tổ chức thuê' },
+
+      // HRM · Employee
+      { code: 'hrm.employee:read', description: 'Xem danh sách và chi tiết nhân viên' },
+      { code: 'hrm.employee:create', description: 'Tạo hồ sơ nhân viên mới' },
+      { code: 'hrm.employee:update', description: 'Chỉnh sửa hồ sơ nhân viên' },
+      { code: 'hrm.employee:delete', description: 'Xóa hồ sơ nhân viên' },
+      { code: 'hrm.employee:export', description: 'Xuất danh sách nhân viên ra Excel' },
+
+      // HRM · Leave
+      { code: 'hrm.leave:read', description: 'Xem danh sách đơn nghỉ phép' },
+      { code: 'hrm.leave:create', description: 'Tạo đơn nghỉ phép mới' },
+      { code: 'hrm.leave:approve', description: 'Phê duyệt đơn nghỉ phép' },
+      { code: 'hrm.leave:reject', description: 'Từ chối đơn nghỉ phép' },
+
+      // HRM · Attendance
+      { code: 'hrm.attendance:read', description: 'Xem dữ liệu chấm công' },
+      { code: 'hrm.attendance:create', description: 'Tạo bản ghi chấm công' },
+      { code: 'hrm.attendance:update', description: 'Chỉnh sửa dữ liệu chấm công' },
+
+      // HRM · Shift
+      { code: 'hrm.shift:read', description: 'Xem danh sách ca làm việc' },
+      { code: 'hrm.shift:create', description: 'Tạo ca làm việc mới' },
+      { code: 'hrm.shift:update', description: 'Chỉnh sửa ca làm việc' },
+      { code: 'hrm.shift:delete', description: 'Xóa ca làm việc' },
+
+      // HRM · Payroll
+      { code: 'hrm.payroll:read', description: 'Xem bảng lương' },
+      { code: 'hrm.payroll:create', description: 'Tạo kỳ tính lương' },
+      { code: 'hrm.payroll:export', description: 'Xuất bảng lương ra Excel' },
+
+      // HRM · Recruitment
+      { code: 'hrm.recruitment:read', description: 'Xem thông tin tuyển dụng' },
+      { code: 'hrm.recruitment:create', description: 'Tạo tin tuyển dụng mới' },
+      { code: 'hrm.recruitment:update', description: 'Cập nhật tin tuyển dụng' },
+
+      // HRM · Performance
+      { code: 'hrm.performance:read', description: 'Xem đánh giá hiệu suất' },
+      { code: 'hrm.performance:create', description: 'Tạo kỳ đánh giá mới' },
+      { code: 'hrm.performance:update', description: 'Cập nhật đánh giá hiệu suất' },
+
+      // Organization · Structure
+      { code: 'org.structure:read', description: 'Xem cơ cấu tổ chức' },
+      { code: 'org.structure:create', description: 'Tạo đơn vị tổ chức mới' },
+      { code: 'org.structure:update', description: 'Cập nhật cơ cấu tổ chức' },
+      { code: 'org.structure:delete', description: 'Xóa đơn vị tổ chức' },
+
+      // Organization · Position
+      { code: 'org.position:read', description: 'Xem danh mục vị trí công việc' },
+      { code: 'org.position:create', description: 'Thêm vị trí công việc mới' },
+      { code: 'org.position:update', description: 'Chỉnh sửa vị trí công việc' },
+      { code: 'org.position:delete', description: 'Xóa vị trí công việc' },
+
+      // Admin · User
+      { code: 'admin.user:read', description: 'Xem danh sách tài khoản' },
+      { code: 'admin.user:create', description: 'Tạo tài khoản mới' },
+      { code: 'admin.user:update', description: 'Cập nhật tài khoản, gán vai trò' },
+      { code: 'admin.user:delete', description: 'Xóa tài khoản' },
+
+      // Admin · Role
+      { code: 'admin.role:read', description: 'Xem vai trò và phân quyền' },
+      { code: 'admin.role:create', description: 'Tạo vai trò mới' },
+      { code: 'admin.role:update', description: 'Chỉnh sửa vai trò, gán/gỡ quyền' },
+      { code: 'admin.role:delete', description: 'Xóa vai trò' },
+
+      // Admin · Audit
+      { code: 'admin.audit:read', description: 'Xem nhật ký kiểm toán hệ thống' },
+
+      // Admin · Settings
+      { code: 'admin.settings:read', description: 'Xem cài đặt hệ thống' },
+      { code: 'admin.settings:update', description: 'Thay đổi cài đặt hệ thống' },
     ];
 
     // Seed permissions
-    for (const code of PERMISSIONS) {
-      const parts = code.split(':');
+    for (const permDef of PERMISSION_DEFINITIONS) {
+      const parts = permDef.code.split(':');
       const resourceCode = parts[0];
       const actionCode = parts[1];
 
       let resource = await this.prisma.resource.findUnique({ where: { code: resourceCode } });
       if (!resource) {
         resource = await this.prisma.resource.create({
-          data: { id: randomUUID(), code: resourceCode, name: resourceCode },
+          data: {
+            id: randomUUID(),
+            code: resourceCode,
+            name: RESOURCE_NAMES[resourceCode] || resourceCode,
+          },
         });
       }
 
       let action = await this.prisma.action.findUnique({ where: { code: actionCode } });
       if (!action) {
         action = await this.prisma.action.create({
-          data: { id: randomUUID(), code: actionCode, name: actionCode },
+          data: {
+            id: randomUUID(),
+            code: actionCode,
+            name: ACTION_NAMES[actionCode] || actionCode,
+          },
         });
       }
 
-      const existingPerm = await this.prisma.permission.findUnique({ where: { code } });
+      const existingPerm = await this.prisma.permission.findUnique({
+        where: { code: permDef.code },
+      });
       if (!existingPerm) {
         await this.prisma.permission.create({
           data: {
             id: randomUUID(),
             resourceId: resource.id,
             actionId: action.id,
-            code,
-            description: `Permission to ${actionCode} ${resourceCode}`,
+            code: permDef.code,
+            description: permDef.description,
           },
         });
+        this.logger.log(`Seeded permission: ${permDef.code}`);
       }
     }
 
@@ -175,10 +292,8 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       this.logger.log('Created SUPER_ADMIN role.');
     }
 
-    // Assign all permissions to SUPER_ADMIN role
-    const allPerms = await this.prisma.permission.findMany({
-      where: { code: { in: PERMISSIONS } },
-    });
+    // Assign ALL permissions to SUPER_ADMIN role
+    const allPerms = await this.prisma.permission.findMany();
     for (const perm of allPerms) {
       const existingRp = await this.prisma.rolePermission.findUnique({
         where: {

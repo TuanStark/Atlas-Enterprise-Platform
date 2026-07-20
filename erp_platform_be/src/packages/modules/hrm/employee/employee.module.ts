@@ -31,7 +31,14 @@ import { OrganizationModule } from '@core/organization/organization.module';
 import { PrincipalModule } from '@core/principal/principal.module';
 
 @Module({
-  imports: [CqrsModule, PrismaModule, IdentityModule, EmploymentModule, OrganizationModule, PrincipalModule],
+  imports: [
+    CqrsModule,
+    PrismaModule,
+    IdentityModule,
+    EmploymentModule,
+    OrganizationModule,
+    PrincipalModule,
+  ],
 
   controllers: [EmployeeController],
 

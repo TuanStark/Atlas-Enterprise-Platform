@@ -66,6 +66,22 @@ export function useAssignPermissionToRole() {
   });
 }
 
+export function useRemovePermissionFromRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ roleId, permissionId }: { roleId: string; permissionId: string }) =>
+      rbacApi.removePermissionFromRole(roleId, permissionId),
+    onSuccess: () => {
+      message.success('Đã thu hồi quyền khỏi vai trò!');
+      void queryClient.invalidateQueries({ queryKey: rbacKeys.roles() });
+    },
+    onError: (error: ApiError) => {
+      message.error(error.message || 'Thu hồi quyền thất bại');
+    },
+  });
+}
+
 // --- Permission Hooks ---
 
 export function usePermissions() {

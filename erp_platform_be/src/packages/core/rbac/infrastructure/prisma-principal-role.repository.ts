@@ -20,6 +20,17 @@ export class PrismaPrincipalRoleRepository implements PrincipalRoleRepository {
     return entities.map((e) => PrincipalRolePersistenceMapper.toDomain(e));
   }
 
+  async findByRoleIds(roleIds: Identifier[]): Promise<PrincipalRole[]> {
+    const entities = await this.prisma.principalRole.findMany({
+      where: {
+        roleId: {
+          in: roleIds.map((id) => id.getValue()),
+        },
+      },
+    });
+    return entities.map((e) => PrincipalRolePersistenceMapper.toDomain(e));
+  }
+
   async save(principalRole: PrincipalRole): Promise<void> {
     await this.prisma.principalRole.create({
       data: PrincipalRolePersistenceMapper.toPersistence(principalRole),
