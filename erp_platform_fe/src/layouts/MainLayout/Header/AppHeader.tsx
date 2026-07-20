@@ -58,7 +58,7 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
     }
   };
 
-  const displayName = user?.displayName || 'Spencer';
+  const displayName = user?.displayName || 'Quản trị';
   const roleName = user?.email?.includes('admin') ? 'Admin' : 'Quản trị viên';
 
   return (

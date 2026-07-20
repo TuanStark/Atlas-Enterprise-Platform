@@ -26,7 +26,7 @@ export function AuthLayout() {
           </div>
 
           {/* Heading */}
-          <h2 className="text-3xl font-extrabold text-text-primary tracking-tight mb-2 leading-tight">Chào mừng quay trở lại, Spencer</h2>
+          <h2 className="text-3xl font-extrabold text-text-primary tracking-tight mb-2 leading-tight">Chào mừng quay trở lại</h2>
           <p className="text-[14px] text-text-secondary leading-relaxed mb-10">
             Đăng nhập để quản lý nhân sự, bảng lương, chuyên cần, tuyển dụng, báo cáo và cài đặt.
           </p>
@@ -36,7 +36,7 @@ export function AuthLayout() {
             {/* Widget 1: Employees */}
             <div className="absolute bg-white rounded-lg p-2.5 px-3.5 shadow-[0_10px_25px_rgba(15,23,42,0.05),0_2px_4px_rgba(15,23,42,0.02)] border border-solid border-slate-200/80 flex items-center gap-3 z-10 transition-transform duration-300 hover:-translate-y-0.5 top-[10%] left-[2%] animate-[floatAnim_6s_ease-in-out_infinite_alternate]">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#f0f6ff] text-[#0a65ff]">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
               </div>
               <div>
                 <span className="text-[11px] text-text-tertiary font-medium block">Nhân viên</span>
@@ -48,7 +48,7 @@ export function AuthLayout() {
             {/* Widget 2: Attendance Rate */}
             <div className="absolute bg-white rounded-lg p-2.5 px-3.5 shadow-[0_10px_25px_rgba(15,23,42,0.05),0_2px_4px_rgba(15,23,42,0.02)] border border-solid border-slate-200/80 flex items-center gap-3 z-10 transition-transform duration-300 hover:-translate-y-0.5 top-[5%] right-[5%] animate-[floatAnim_6s_ease-in-out_infinite_alternate_1.5s]">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#ecfdf5] text-[#10b981]">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
               </div>
               <div>
                 <span className="text-[11px] text-text-tertiary font-medium block">Tỷ lệ chuyên cần</span>
@@ -60,7 +60,7 @@ export function AuthLayout() {
             {/* Widget 3: Payroll Due */}
             <div className="absolute bg-white rounded-lg p-2.5 px-3.5 shadow-[0_10px_25px_rgba(15,23,42,0.05),0_2px_4px_rgba(15,23,42,0.02)] border border-solid border-slate-200/80 flex items-center gap-3 z-10 transition-transform duration-300 hover:-translate-y-0.5 bottom-[12%] left-[-2%] animate-[floatAnim_6s_ease-in-out_infinite_alternate_0.5s]">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#faf5ff] text-[#a855f7]">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
               </div>
               <div>
                 <span className="text-[11px] text-text-tertiary font-medium block">Lương đến hạn</span>
@@ -72,7 +72,7 @@ export function AuthLayout() {
             {/* Widget 4: Open Positions */}
             <div className="absolute bg-white rounded-lg p-2.5 px-3.5 shadow-[0_10px_25px_rgba(15,23,42,0.05),0_2px_4px_rgba(15,23,42,0.02)] border border-solid border-slate-200/80 flex items-center gap-3 z-10 transition-transform duration-300 hover:-translate-y-0.5 bottom-[22%] right-[1%] animate-[floatAnim_6s_ease-in-out_infinite_alternate_2s]">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#fffbeb] text-[#f59e0b]">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
               </div>
               <div>
                 <span className="text-[11px] text-text-tertiary font-medium block">Vị trí đang tuyển</span>
