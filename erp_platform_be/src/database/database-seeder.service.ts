@@ -125,6 +125,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       'admin.role': 'Vai trò hệ thống',
       'admin.audit': 'Nhật ký kiểm toán',
       'admin.settings': 'Cài đặt hệ thống',
+      'admin.impersonate': 'Đóng vai tài khoản',
     };
 
     const ACTION_NAMES: Record<string, string> = {
@@ -135,6 +136,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       export: 'Xuất dữ liệu',
       approve: 'Phê duyệt',
       reject: 'Từ chối',
+      execute: 'Thực thi',
     };
 
     const PERMISSION_DEFINITIONS: { code: string; description: string }[] = [
@@ -225,6 +227,9 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       // Admin · Settings
       { code: 'admin.settings:read', description: 'Xem cài đặt hệ thống' },
       { code: 'admin.settings:update', description: 'Thay đổi cài đặt hệ thống' },
+
+      // Admin · Impersonation
+      { code: 'admin.impersonate:execute', description: 'Đóng vai tài khoản khác (Act As)' },
     ];
 
     // Seed permissions
@@ -334,6 +339,51 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
         },
       });
       this.logger.log('Assigned SUPER_ADMIN role to Admin principal.');
+    }
+
+    // 5.5 Seed Role Hierarchy for Impersonation support
+    // Hierarchy: SUPER_ADMIN > ADMIN > HR_MANAGER/FINANCE_MANAGER > USER
+    const ROLE_HIERARCHY_SEEDS = [
+      { parentCode: 'SUPER_ADMIN', childCode: 'ADMIN' },
+      { parentCode: 'SUPER_ADMIN', childCode: 'HR_MANAGER' },
+      { parentCode: 'SUPER_ADMIN', childCode: 'FINANCE_MANAGER' },
+      { parentCode: 'SUPER_ADMIN', childCode: 'USER' },
+      { parentCode: 'ADMIN', childCode: 'HR_MANAGER' },
+      { parentCode: 'ADMIN', childCode: 'FINANCE_MANAGER' },
+      { parentCode: 'ADMIN', childCode: 'USER' },
+      { parentCode: 'HR_MANAGER', childCode: 'USER' },
+      { parentCode: 'FINANCE_MANAGER', childCode: 'USER' },
+    ];
+
+    for (const hierarchy of ROLE_HIERARCHY_SEEDS) {
+      const parentRole = await this.prisma.role.findFirst({
+        where: { tenantId: tenant.id, code: hierarchy.parentCode },
+      });
+      const childRole = await this.prisma.role.findFirst({
+        where: { tenantId: tenant.id, code: hierarchy.childCode },
+      });
+
+      if (parentRole && childRole) {
+        const existing = await this.prisma.roleHierarchy.findUnique({
+          where: {
+            parentRoleId_childRoleId: {
+              parentRoleId: parentRole.id,
+              childRoleId: childRole.id,
+            },
+          },
+        });
+        if (!existing) {
+          await this.prisma.roleHierarchy.create({
+            data: {
+              parentRoleId: parentRole.id,
+              childRoleId: childRole.id,
+            },
+          });
+          this.logger.log(
+            `Seeded role hierarchy: ${hierarchy.parentCode} > ${hierarchy.childCode}`,
+          );
+        }
+      }
     }
 
     // 6. Seed mock HRM data (Departments, Positions, Job Titles)

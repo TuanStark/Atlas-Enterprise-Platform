@@ -5,6 +5,7 @@ export * from './entities/role-permission';
 export * from './repositories/permission.repository';
 export * from './repositories/role.repository';
 export * from './repositories/principal-role.repository';
+export * from './repositories/role-hierarchy.repository';
 export * from './repositories/permission-resolver.port';
 export * from './repositories/permission-cache.port';
 export * from './value-objects/permission-code';

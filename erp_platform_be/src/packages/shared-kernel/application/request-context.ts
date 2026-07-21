@@ -6,4 +6,5 @@ export interface RequestContext {
   roles: readonly string[];
   permissions: readonly string[];
   avatarUrl?: string;
+  impersonatorId?: string;
 }

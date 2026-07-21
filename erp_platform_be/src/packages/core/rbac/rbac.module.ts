@@ -21,11 +21,14 @@ import {
   RemoveRoleFromPrincipalHandler,
   ListPrincipalRolesHandler,
   GetPrincipalPermissionsHandler,
+  CheckRoleHierarchyHandler,
+  GetDescendantRoleIdsHandler,
 } from './application';
 import {
   PERMISSION_REPOSITORY,
   ROLE_REPOSITORY,
   PRINCIPAL_ROLE_REPOSITORY,
+  ROLE_HIERARCHY_REPOSITORY,
   PERMISSION_RESOLVER,
   PERMISSION_CACHE,
 } from './domain';
@@ -33,6 +36,7 @@ import {
   PrismaPermissionRepository,
   PrismaRoleRepository,
   PrismaPrincipalRoleRepository,
+  PrismaRoleHierarchyRepository,
   PrismaPermissionResolver,
 } from './infrastructure';
 import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-cache';
@@ -55,6 +59,8 @@ import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-
     RemoveRoleFromPrincipalHandler,
     ListPrincipalRolesHandler,
     GetPrincipalPermissionsHandler,
+    CheckRoleHierarchyHandler,
+    GetDescendantRoleIdsHandler,
     {
       provide: PERMISSION_REPOSITORY,
       useClass: PrismaPermissionRepository,
@@ -66,6 +72,10 @@ import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-
     {
       provide: PRINCIPAL_ROLE_REPOSITORY,
       useClass: PrismaPrincipalRoleRepository,
+    },
+    {
+      provide: ROLE_HIERARCHY_REPOSITORY,
+      useClass: PrismaRoleHierarchyRepository,
     },
     {
       provide: PERMISSION_RESOLVER,
@@ -82,6 +92,7 @@ import { MemoryPermissionCache } from './infrastructure/cache/memory-permission-
     PERMISSION_REPOSITORY,
     ROLE_REPOSITORY,
     PRINCIPAL_ROLE_REPOSITORY,
+    ROLE_HIERARCHY_REPOSITORY,
     PERMISSION_RESOLVER,
     AuthorizationGuard,
   ],

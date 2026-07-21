@@ -8,13 +8,17 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
   RegisterTenantDto,
+  SwitchAccountDto,
 } from '../application/dto';
+import { AuthErrorCode, AuthMessages } from '../application/constant/constant';
 import { LoginCommand } from '../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../application/commands/refresh-token/refresh-token.command';
 import { LogoutCommand } from '../application/commands/logout/logout.command';
 import { ForgotPasswordCommand } from '../application/commands/forgot-password/forgot-password.command';
 import { ResetPasswordCommand } from '../application/commands/reset-password/reset-password.command';
 import { RegisterTenantCommand } from '../application/commands/register-tenant/register-tenant.command';
+import { SwitchAccountCommand } from '../application/commands/switch-account/switch-account.command';
+import { EndImpersonationCommand } from '../application/commands/end-impersonation/end-impersonation.command';
 import { Public } from '@core/rbac/presentation/decorators/public.decorator';
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
 import type { RequestContext } from '@shared-kernel/application/request-context';
@@ -122,6 +126,7 @@ export class AuthController {
       permissions: context.permissions,
       tenantId: context.tenantId,
       avatarUrl: context.avatarUrl,
+      impersonatorId: context.impersonatorId || null,
       tenant: tenant
         ? {
             id: tenant.id,
@@ -132,5 +137,32 @@ export class AuthController {
           }
         : null,
     };
+  }
+
+  @Post('switch-account')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Impersonate a lower-privilege user within the same tenant' })
+  @ApiOkResponse({ type: LoginResponseDto })
+  switchAccount(@CurrentContext() context: RequestContext, @Body() dto: SwitchAccountDto) {
+    return this.commandBus.execute(
+      new SwitchAccountCommand(context.principalId, context.tenantId, dto),
+    );
+  }
+
+  @Post('end-impersonation')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'End impersonation and restore original admin session' })
+  @ApiOkResponse({ type: LoginResponseDto })
+  endImpersonation(@CurrentContext() context: RequestContext) {
+    if (!context.impersonatorId) {
+      return Result.failure({
+        statusCode: HttpStatus.BAD_REQUEST,
+        code: AuthErrorCode.NOT_IMPERSONATING,
+        message: AuthMessages.ERROR.NOT_IMPERSONATING,
+      });
+    }
+    return this.commandBus.execute(
+      new EndImpersonationCommand(context.impersonatorId, context.tenantId),
+    );
   }
 }

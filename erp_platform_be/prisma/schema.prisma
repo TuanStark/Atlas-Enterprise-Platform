@@ -169,6 +169,8 @@ enum AuditAction {
   reject
   export
   import
+  impersonate
+  end_impersonation
 
   @@map("audit_action")
 }

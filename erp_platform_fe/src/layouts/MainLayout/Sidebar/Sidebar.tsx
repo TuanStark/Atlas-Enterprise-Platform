@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useCanAccess } from '@shared/hooks/usePermission';
 import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
+import { AccountSwitcher } from '@features/account-switch/components/AccountSwitcher';
 import logoHrm from '@/assets/logo-hrm.jpeg';
 
 const { Sider } = Layout;
@@ -271,6 +272,9 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
           />
         </div>
 
+        {/* Account Switcher — Impersonation (Act As) */}
+        <AccountSwitcher collapsed={collapsed} />
+
         {/* Collapse Toggle */}
         <button
           className="flex items-center justify-center w-full py-3.5 border-0 border-t border-solid border-black/5 bg-transparent text-text-secondary cursor-pointer transition-all duration-150 hover:bg-black/5 hover:text-text-primary max-[768px]:!hidden"
@@ -283,3 +287,4 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     </Sider>
   );
 }
+

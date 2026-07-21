@@ -58,8 +58,28 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
     }
   };
 
-  const displayName = user?.displayName || 'Quản trị';
-  const roleName = user?.email?.includes('admin') ? 'Admin' : 'Quản trị viên';
+  const displayName = user?.displayName || user?.username || user?.email || 'Người dùng';
+
+  const formatRoleName = (roles?: string[]) => {
+    if (!roles || roles.length === 0) return 'Nhân viên';
+
+    const systemRoleNames: Record<string, string> = {
+      SUPER_ADMIN: 'Quản trị hệ thống',
+      ADMIN: 'Quản trị viên',
+      USER: 'Nhân viên',
+    };
+
+    const humanizeRole = (code: string) =>
+      systemRoleNames[code] ||
+      code
+        .split('_')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+
+    return humanizeRole(roles[0]);
+  };
+
+  const roleName = formatRoleName(user?.roles);
 
   return (
     <Header

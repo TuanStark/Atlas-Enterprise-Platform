@@ -11,6 +11,8 @@ import {
   ForgotPasswordHandler,
   ResetPasswordHandler,
   RegisterTenantHandler,
+  SwitchAccountHandler,
+  EndImpersonationHandler,
 } from './application/commands';
 import { PasswordResetService } from './application/services/password-reset.service';
 import { JwtTokenServiceImpl } from './infrastructure/jwt/jwt-token.service';
@@ -41,6 +43,8 @@ import { MailModule } from 'src/packages/shared/mail/mail.module';
     ForgotPasswordHandler,
     ResetPasswordHandler,
     RegisterTenantHandler,
+    SwitchAccountHandler,
+    EndImpersonationHandler,
     PasswordResetService,
     {
       provide: JWT_TOKEN_SERVICE,

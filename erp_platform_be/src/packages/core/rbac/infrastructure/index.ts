@@ -4,4 +4,5 @@ export * from './role.persistence.mapper';
 export * from './prisma-role.repository';
 export * from './principal-role.persistence.mapper';
 export * from './prisma-principal-role.repository';
+export * from './prisma-role-hierarchy.repository';
 export * from './prisma-permission-resolver';

@@ -104,6 +104,7 @@ export class AuthorizationGuard implements CanActivate {
         .filter((code): code is string => !!code),
       permissions: resolved.filter((p) => p.effect === EffectType.allow).map((p) => p.code),
       avatarUrl: (principal as any).avatarFileId ?? undefined,
+      impersonatorId: (payload as any).impersonatorId ?? undefined,
     };
 
     request.principalId = principal.id;

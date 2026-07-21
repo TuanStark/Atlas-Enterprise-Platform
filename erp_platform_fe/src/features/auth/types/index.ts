@@ -19,6 +19,7 @@ export interface AuthUser {
     logoFileId?: string;
   } | null;
   avatarUrl?: string | null;
+  impersonatorId?: string | null;
 }
 
 export interface AuthState {

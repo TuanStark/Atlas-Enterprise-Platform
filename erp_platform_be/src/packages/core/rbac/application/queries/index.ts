@@ -10,3 +10,5 @@ export * from './list-principal-roles/list-principal-roles.query';
 export * from './list-principal-roles/list-principal-roles.handler';
 export * from './get-principal-permissions/get-principal-permissions.query';
 export * from './get-principal-permissions/get-principal-permissions.handler';
+export * from './role-hierarchy/check-role-hierarchy.query';
+export * from './role-hierarchy/get-descendant-role-ids.query';

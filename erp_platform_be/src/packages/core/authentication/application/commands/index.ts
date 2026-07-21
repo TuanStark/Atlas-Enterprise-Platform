@@ -10,3 +10,7 @@ export * from './reset-password/reset-password.command';
 export * from './reset-password/reset-password.handler';
 export * from './register-tenant/register-tenant.command';
 export * from './register-tenant/register-tenant.handler';
+export * from './switch-account/switch-account.command';
+export * from './switch-account/switch-account.handler';
+export * from './end-impersonation/end-impersonation.command';
+export * from './end-impersonation/end-impersonation.handler';

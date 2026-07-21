@@ -17,6 +17,7 @@ import { ChangePasswordHandler } from './application/commands/change-password/ch
 import { GetUserHandler } from './application/queries/get-user/get-user.handler';
 import { ListUserHandler } from './application/queries/list-user/list-user.handler';
 import { GetUserByEmailHandler } from './application/queries/get-user-by-email/get-user-by-email.handler';
+import { ListSwitchableUsersHandler } from './application/queries/list-switchable-users/list-switchable-users.handler';
 import { PrismaUserRepository } from './infrastructure/persistence/prisma-user.repository';
 import { PrismaCredentialRepository } from './infrastructure/persistence/prisma-credential.repository';
 import { PrismaRefreshTokenRepository } from './infrastructure/persistence/prisma-refresh-token.repository';
@@ -38,6 +39,7 @@ import { IdentityServiceImpl } from './infrastructure/services/identity.service'
     GetUserHandler,
     ListUserHandler,
     GetUserByEmailHandler,
+    ListSwitchableUsersHandler,
 
     {
       provide: USER_REPOSITORY,

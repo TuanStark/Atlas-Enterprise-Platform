@@ -6,6 +6,10 @@ import { ChangePasswordDto, CreateUserDto, UpdateUserDto, UserDto } from '../../
 import { CreateUserCommand } from '@core/identity/application/commands/create-user/create-user.command';
 import { GetUserQuery } from '@core/identity/application/queries/get-user/get-user.query';
 import { ListUserQuery } from '@core/identity/application/queries/list-user/list-user.query';
+import {
+  ListSwitchableUsersQuery,
+  SwitchableUserDto,
+} from '@core/identity/application/queries/list-switchable-users/list-switchable-users.handler';
 import { UpdateUserCommand } from '@core/identity/application/commands/update-user/update-user.command';
 import { LockUserCommand } from '@core/identity/application/commands/lock-user/lock-user.command';
 import { UnlockUserCommand } from '@core/identity/application/commands/unlock-user/unlock-user.command';
@@ -81,6 +85,17 @@ export class IdentityController {
       code: 'USER_UPDATED',
       message: 'Profile updated successfully.',
     });
+  }
+
+  @Get('switchable')
+  @ApiOperation({ summary: 'List users that the current user can impersonate (Act As)' })
+  @ApiOkResponse({ description: 'List of switchable users based on role hierarchy' })
+  async listSwitchableUsers(
+    @CurrentContext() context: RequestContext,
+  ): Promise<SwitchableUserDto[]> {
+    return this.queryBus.execute(
+      new ListSwitchableUsersQuery(context.principalId, context.tenantId),
+    );
   }
 
   @Post()

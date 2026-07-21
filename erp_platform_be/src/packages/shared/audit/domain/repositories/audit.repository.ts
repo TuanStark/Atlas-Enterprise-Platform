@@ -22,7 +22,9 @@ export interface AuditLogCreateInput {
     | 'approve'
     | 'reject'
     | 'export'
-    | 'import';
+    | 'import'
+    | 'impersonate'
+    | 'end_impersonation';
   actorPrincipalId?: string;
   ipAddress?: string;
   userAgent?: string;

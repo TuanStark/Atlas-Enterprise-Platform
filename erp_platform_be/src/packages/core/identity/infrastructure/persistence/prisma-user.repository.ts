@@ -171,6 +171,27 @@ export class PrismaUserRepository implements UserRepository {
     return entity ? UserPersistenceMapper.toDomain(entity) : null;
   }
 
+  async findByPrincipalIds(principalIds: Identifier[]): Promise<User[]> {
+    if (!principalIds.length) {
+      return [];
+    }
+
+    const entities = await this.prisma.user.findMany({
+      where: {
+        principalId: {
+          in: principalIds.map((id) => id.getValue()),
+        },
+        principal: {
+          deletedAt: null,
+          status: 'active',
+        },
+      },
+      ...this.includeRelations,
+    });
+
+    return entities.map((entity) => UserPersistenceMapper.toDomain(entity));
+  }
+
   async findByTenant(tenantId: Identifier): Promise<User[]> {
     const entities = await this.prisma.user.findMany({
       where: {
