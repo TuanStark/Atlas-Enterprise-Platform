@@ -1,9 +1,19 @@
 import { httpClient } from '@shared/api';
-import type { SwitchableUser, SwitchAccountRequest, SwitchAccountResponse } from '../types';
+import type {
+  PaginatedSwitchableUsersResponse,
+  SwitchAccountRequest,
+  SwitchAccountResponse,
+} from '../types';
 
 export const accountSwitchApi = {
-  async listSwitchableUsers(): Promise<SwitchableUser[]> {
-    const { data } = await httpClient.get<SwitchableUser[]>('/users/switchable');
+  async listSwitchableUsers(params?: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<PaginatedSwitchableUsersResponse> {
+    const { data } = await httpClient.get<PaginatedSwitchableUsersResponse>('/users/switchable', {
+      params,
+    });
     return data;
   },
 

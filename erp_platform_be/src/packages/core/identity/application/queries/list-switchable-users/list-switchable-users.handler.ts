@@ -16,6 +16,9 @@ export class ListSwitchableUsersQuery {
   constructor(
     public readonly currentPrincipalId: string,
     public readonly tenantId: string,
+    public readonly search?: string,
+    public readonly limit: number = 10,
+    public readonly offset: number = 0,
   ) {}
 }
 
@@ -28,6 +31,12 @@ export interface SwitchableUserDto {
   roles: string[];
 }
 
+export interface PaginatedSwitchableUsersDto {
+  items: SwitchableUserDto[];
+  total: number;
+  hasMore: boolean;
+}
+
 @QueryHandler(ListSwitchableUsersQuery)
 export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableUsersQuery> {
   constructor(
@@ -36,8 +45,8 @@ export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableU
     private readonly queryBus: QueryBus,
   ) {}
 
-  async execute(query: ListSwitchableUsersQuery): Promise<SwitchableUserDto[]> {
-    const { currentPrincipalId, tenantId } = query;
+  async execute(query: ListSwitchableUsersQuery): Promise<PaginatedSwitchableUsersDto> {
+    const { currentPrincipalId, tenantId, search, limit = 10, offset = 0 } = query;
 
     const currentRolesResult = await this.queryBus.execute<
       ListPrincipalRolesQuery,
@@ -45,7 +54,7 @@ export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableU
     >(new ListPrincipalRolesQuery(currentPrincipalId));
 
     if (!currentRolesResult.isSuccess() || !currentRolesResult.data.length) {
-      return [];
+      return { items: [], total: 0, hasMore: false };
     }
 
     const currentRoleIds = currentRolesResult.data.map((pr) => pr.roleId);
@@ -55,16 +64,17 @@ export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableU
     );
 
     if (!descendantRoleIds.length) {
-      return [];
+      return { items: [], total: 0, hasMore: false };
     }
 
     const tenantUsers = await this.userRepository.findByTenant(Identifier.create(tenantId));
 
     if (!tenantUsers.length) {
-      return [];
+      return { items: [], total: 0, hasMore: false };
     }
 
-    const result: SwitchableUserDto[] = [];
+    const matchedUsers: SwitchableUserDto[] = [];
+    const searchKeyword = search ? search.toLowerCase().trim() : '';
 
     for (const user of tenantUsers) {
       if (user.principalId.getValue() === currentPrincipalId) {
@@ -97,17 +107,38 @@ export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableU
         }
       }
 
-      result.push({
+      const displayName =
+        user.displayName || `${user.firstName} ${user.lastName}`.trim() || user.email.value;
+      const email = user.email.value;
+
+      if (searchKeyword) {
+        const matchesName = displayName.toLowerCase().includes(searchKeyword);
+        const matchesEmail = email.toLowerCase().includes(searchKeyword);
+        const matchesRole = roleCodes.some((rc) => rc.toLowerCase().includes(searchKeyword));
+
+        if (!matchesName && !matchesEmail && !matchesRole) {
+          continue;
+        }
+      }
+
+      matchedUsers.push({
         principalId: user.principalId.getValue(),
         username: user.email.value,
-        email: user.email.value,
-        displayName:
-          user.displayName || `${user.firstName} ${user.lastName}`.trim() || user.email.value,
+        email,
+        displayName,
         avatarUrl: user.avatarUrl || null,
         roles: roleCodes,
       });
     }
 
-    return result;
+    const total = matchedUsers.length;
+    const items = matchedUsers.slice(offset, offset + limit);
+    const hasMore = offset + limit < total;
+
+    return {
+      items,
+      total,
+      hasMore,
+    };
   }
 }

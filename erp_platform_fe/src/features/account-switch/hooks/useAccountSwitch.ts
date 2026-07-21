@@ -4,21 +4,20 @@ import { accountSwitchApi } from '../api/accountSwitchApi';
 import { useAuthStore } from '@features/auth/store/authStore';
 import { authApi } from '@features/auth/api/authApi';
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '@shared/api';
-import type { SwitchableUser } from '../types';
+import type { PaginatedSwitchableUsersResponse } from '../types';
 import type { ApiError } from '@shared/types';
-
 
 const accountSwitchKeys = {
   all: ['account-switch'] as const,
-  switchableUsers: () => [...accountSwitchKeys.all, 'switchable-users'] as const,
+  switchableUsers: (params?: { search?: string; limit?: number; offset?: number }) =>
+    [...accountSwitchKeys.all, 'switchable-users', params] as const,
 };
 
-export function useSwitchableUsers() {
-  return useQuery<SwitchableUser[], ApiError>({
-    queryKey: accountSwitchKeys.switchableUsers(),
-    queryFn: accountSwitchApi.listSwitchableUsers,
-    staleTime: 30_000,
-    retry: false,
+export function useSwitchableUsers(params?: { search?: string; limit?: number; offset?: number }) {
+  return useQuery<PaginatedSwitchableUsersResponse, ApiError>({
+    queryKey: accountSwitchKeys.switchableUsers(params),
+    queryFn: () => accountSwitchApi.listSwitchableUsers(params),
+    staleTime: 15_000,
   });
 }
 
@@ -35,7 +34,6 @@ export function useSwitchAccount() {
       localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
 
       const meUser = await authApi.me();
-
       useAuthStore.getState().login(meUser, response.accessToken, response.refreshToken);
 
       await queryClient.invalidateQueries();

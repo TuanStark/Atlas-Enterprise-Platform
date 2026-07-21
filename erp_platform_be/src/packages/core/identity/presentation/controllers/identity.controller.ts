@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, HttpStatus, Inject } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  HttpStatus,
+  Inject,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Result } from '@shared-kernel/application';
@@ -8,7 +19,7 @@ import { GetUserQuery } from '@core/identity/application/queries/get-user/get-us
 import { ListUserQuery } from '@core/identity/application/queries/list-user/list-user.query';
 import {
   ListSwitchableUsersQuery,
-  SwitchableUserDto,
+  PaginatedSwitchableUsersDto,
 } from '@core/identity/application/queries/list-switchable-users/list-switchable-users.handler';
 import { UpdateUserCommand } from '@core/identity/application/commands/update-user/update-user.command';
 import { LockUserCommand } from '@core/identity/application/commands/lock-user/lock-user.command';
@@ -89,12 +100,21 @@ export class IdentityController {
 
   @Get('switchable')
   @ApiOperation({ summary: 'List users that the current user can impersonate (Act As)' })
-  @ApiOkResponse({ description: 'List of switchable users based on role hierarchy' })
+  @ApiOkResponse({ description: 'Paginated list of switchable users based on role hierarchy' })
   async listSwitchableUsers(
     @CurrentContext() context: RequestContext,
-  ): Promise<SwitchableUserDto[]> {
+    @Query('search') search?: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<PaginatedSwitchableUsersDto> {
     return this.queryBus.execute(
-      new ListSwitchableUsersQuery(context.principalId, context.tenantId),
+      new ListSwitchableUsersQuery(
+        context.principalId,
+        context.tenantId,
+        search,
+        limit ? Number(limit) : 10,
+        offset ? Number(offset) : 0,
+      ),
     );
   }
 

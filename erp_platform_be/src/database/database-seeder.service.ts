@@ -341,47 +341,34 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       this.logger.log('Assigned SUPER_ADMIN role to Admin principal.');
     }
 
-    // 5.5 Seed Role Hierarchy for Impersonation support
-    // Hierarchy: SUPER_ADMIN > ADMIN > HR_MANAGER/FINANCE_MANAGER > USER
-    const ROLE_HIERARCHY_SEEDS = [
-      { parentCode: 'SUPER_ADMIN', childCode: 'ADMIN' },
-      { parentCode: 'SUPER_ADMIN', childCode: 'HR_MANAGER' },
-      { parentCode: 'SUPER_ADMIN', childCode: 'FINANCE_MANAGER' },
-      { parentCode: 'SUPER_ADMIN', childCode: 'USER' },
-      { parentCode: 'ADMIN', childCode: 'HR_MANAGER' },
-      { parentCode: 'ADMIN', childCode: 'FINANCE_MANAGER' },
-      { parentCode: 'ADMIN', childCode: 'USER' },
-      { parentCode: 'HR_MANAGER', childCode: 'USER' },
-      { parentCode: 'FINANCE_MANAGER', childCode: 'USER' },
-    ];
-
-    for (const hierarchy of ROLE_HIERARCHY_SEEDS) {
-      const parentRole = await this.prisma.role.findFirst({
-        where: { tenantId: tenant.id, code: hierarchy.parentCode },
-      });
-      const childRole = await this.prisma.role.findFirst({
-        where: { tenantId: tenant.id, code: hierarchy.childCode },
-      });
-
-      if (parentRole && childRole) {
-        const existing = await this.prisma.roleHierarchy.findUnique({
-          where: {
-            parentRoleId_childRoleId: {
-              parentRoleId: parentRole.id,
-              childRoleId: childRole.id,
-            },
-          },
-        });
-        if (!existing) {
-          await this.prisma.roleHierarchy.create({
-            data: {
-              parentRoleId: parentRole.id,
-              childRoleId: childRole.id,
-            },
-          });
-          this.logger.log(
-            `Seeded role hierarchy: ${hierarchy.parentCode} > ${hierarchy.childCode}`,
-          );
+    // 5.5 Seed Role Hierarchy for Impersonation support (SUPER_ADMIN -> all other roles in each tenant)
+    const allTenants = await this.prisma.tenant.findMany();
+    for (const t of allTenants) {
+      const tenantRoles = await this.prisma.role.findMany({ where: { tenantId: t.id } });
+      const superRole = tenantRoles.find((r) => r.code === 'SUPER_ADMIN');
+      if (superRole) {
+        for (const r of tenantRoles) {
+          if (r.id !== superRole.id) {
+            const existing = await this.prisma.roleHierarchy.findUnique({
+              where: {
+                parentRoleId_childRoleId: {
+                  parentRoleId: superRole.id,
+                  childRoleId: r.id,
+                },
+              },
+            });
+            if (!existing) {
+              await this.prisma.roleHierarchy.create({
+                data: {
+                  parentRoleId: superRole.id,
+                  childRoleId: r.id,
+                },
+              });
+              this.logger.log(
+                `Seeded role hierarchy for tenant ${t.code}: SUPER_ADMIN -> ${r.code}`,
+              );
+            }
+          }
         }
       }
     }

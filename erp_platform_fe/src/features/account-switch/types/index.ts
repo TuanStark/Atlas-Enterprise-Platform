@@ -7,6 +7,12 @@ export interface SwitchableUser {
   roles: string[];
 }
 
+export interface PaginatedSwitchableUsersResponse {
+  items: SwitchableUser[];
+  total: number;
+  hasMore: boolean;
+}
+
 export interface SwitchAccountRequest {
   targetPrincipalId: string;
 }
