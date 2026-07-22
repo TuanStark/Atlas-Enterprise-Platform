@@ -186,7 +186,7 @@ export default function UserListPage() {
             {principalRoles.map((pr: PrincipalRole) => (
               <Tooltip key={`${pr.roleId}-${pr.scopeId}`} title={`Scope: ${pr.scope?.name || 'Global'}`}>
                 <Tag
-                  color={pr.role?.code === 'SUPER_ADMIN' ? 'red' : pr.role?.code === 'HR_MANAGER' ? 'blue' : 'default'}
+                  color={pr.role?.code === 'SUPER_ADMIN' ? 'red' : pr.role?.code === 'ADMIN' ? 'purple' : pr.role?.code === 'HR_MANAGER' ? 'blue' : 'default'}
                   closable={canManageRoles && pr.role?.code !== 'SUPER_ADMIN'}
                   onClose={(e) => {
                     e.preventDefault();

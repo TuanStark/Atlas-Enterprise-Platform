@@ -76,7 +76,7 @@ export function AccountSwitchModal({ open, onClose }: AccountSwitchModalProps) {
   const formatRoleLabel = (roleCode: string) => {
     const roleMap: Record<string, { label: string; color: string }> = {
       SUPER_ADMIN: { label: 'Quản trị hệ thống', color: 'red' },
-      ADMIN: { label: 'Quản trị viên', color: 'volcano' },
+      ADMIN: { label: 'Quản trị doanh nghiệp', color: 'purple' },
       HR_MANAGER: { label: 'Quản lý Nhân sự', color: 'blue' },
       FINANCE_MANAGER: { label: 'Quản lý Tài chính', color: 'gold' },
       USER: { label: 'Nhân viên', color: 'default' },

@@ -65,7 +65,7 @@ export function AppHeader({ collapsed, onToggleCollapse }: AppHeaderProps) {
 
     const systemRoleNames: Record<string, string> = {
       SUPER_ADMIN: 'Quản trị hệ thống',
-      ADMIN: 'Quản trị viên',
+      ADMIN: 'Quản trị doanh nghiệp',
       USER: 'Nhân viên',
     };
 

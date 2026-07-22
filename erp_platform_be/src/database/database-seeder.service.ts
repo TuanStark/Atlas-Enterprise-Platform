@@ -277,7 +277,16 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       }
     }
 
-    // Seed SUPER_ADMIN role
+    // Migrate legacy non-system tenant SUPER_ADMIN roles to ADMIN
+    await this.prisma.role.updateMany({
+      where: {
+        code: 'SUPER_ADMIN',
+        tenantId: { not: tenant.id }, // Non-SYSTEM tenants
+      },
+      data: { code: 'ADMIN', name: 'Tenant Admin', description: 'Quản trị viên cao nhất của doanh nghiệp.' },
+    });
+
+    // Seed SUPER_ADMIN role for SYSTEM Tenant
     let superAdminRole = await this.prisma.role.findFirst({
       where: { tenantId: tenant.id, code: 'SUPER_ADMIN' },
     });
@@ -288,38 +297,60 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           tenantId: tenant.id,
           code: 'SUPER_ADMIN',
           name: 'Super Admin',
-          description: 'Full system access with all permissions.',
+          description: 'Quản trị hệ thống toàn sàn (Platform Super Admin).',
           isSystem: true,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       });
-      this.logger.log('Created SUPER_ADMIN role.');
+      this.logger.log('Created SUPER_ADMIN role for SYSTEM tenant.');
     }
 
-    // Assign ALL permissions to SUPER_ADMIN role
-    const allPerms = await this.prisma.permission.findMany();
-    for (const perm of allPerms) {
-      const existingRp = await this.prisma.rolePermission.findUnique({
-        where: {
-          roleId_permissionId: {
-            roleId: superAdminRole.id,
-            permissionId: perm.id,
-          },
+    // Seed ADMIN role for SYSTEM Tenant as well (for dual system & tenant operations)
+    let adminRole = await this.prisma.role.findFirst({
+      where: { tenantId: tenant.id, code: 'ADMIN' },
+    });
+    if (!adminRole) {
+      adminRole = await this.prisma.role.create({
+        data: {
+          id: randomUUID(),
+          tenantId: tenant.id,
+          code: 'ADMIN',
+          name: 'Tenant Admin',
+          description: 'Quản trị viên doanh nghiệp.',
+          isSystem: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       });
-      if (!existingRp) {
-        await this.prisma.rolePermission.create({
-          data: {
-            roleId: superAdminRole.id,
-            permissionId: perm.id,
-            effect: 'allow',
+      this.logger.log('Created ADMIN role for SYSTEM tenant.');
+    }
+
+    // Assign ALL permissions to SUPER_ADMIN & ADMIN roles
+    const allPerms = await this.prisma.permission.findMany();
+    for (const perm of allPerms) {
+      for (const targetRole of [superAdminRole, adminRole]) {
+        const existingRp = await this.prisma.rolePermission.findUnique({
+          where: {
+            roleId_permissionId: {
+              roleId: targetRole.id,
+              permissionId: perm.id,
+            },
           },
         });
+        if (!existingRp) {
+          await this.prisma.rolePermission.create({
+            data: {
+              roleId: targetRole.id,
+              permissionId: perm.id,
+              effect: 'allow',
+            },
+          });
+        }
       }
     }
 
-    // 5. Assign SUPER_ADMIN role to Admin Principal
+    // 5. Assign SUPER_ADMIN role to System Admin Principal
     const existingPr = await this.prisma.principalRole.findUnique({
       where: {
         principalId_roleId_scopeId: {
@@ -338,21 +369,21 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           assignedAt: new Date(),
         },
       });
-      this.logger.log('Assigned SUPER_ADMIN role to Admin principal.');
+      this.logger.log('Assigned SUPER_ADMIN role to System Admin principal.');
     }
 
-    // 5.5 Seed Role Hierarchy for Impersonation support (SUPER_ADMIN -> all other roles in each tenant)
+    // 5.5 Seed Role Hierarchy (ADMIN -> all other roles in each tenant)
     const allTenants = await this.prisma.tenant.findMany();
     for (const t of allTenants) {
       const tenantRoles = await this.prisma.role.findMany({ where: { tenantId: t.id } });
-      const superRole = tenantRoles.find((r) => r.code === 'SUPER_ADMIN');
-      if (superRole) {
+      const tenantAdminRole = tenantRoles.find((r) => r.code === 'ADMIN' || r.code === 'SUPER_ADMIN');
+      if (tenantAdminRole) {
         for (const r of tenantRoles) {
-          if (r.id !== superRole.id) {
+          if (r.id !== tenantAdminRole.id) {
             const existing = await this.prisma.roleHierarchy.findUnique({
               where: {
                 parentRoleId_childRoleId: {
-                  parentRoleId: superRole.id,
+                  parentRoleId: tenantAdminRole.id,
                   childRoleId: r.id,
                 },
               },
@@ -360,12 +391,12 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
             if (!existing) {
               await this.prisma.roleHierarchy.create({
                 data: {
-                  parentRoleId: superRole.id,
+                  parentRoleId: tenantAdminRole.id,
                   childRoleId: r.id,
                 },
               });
               this.logger.log(
-                `Seeded role hierarchy for tenant ${t.code}: SUPER_ADMIN -> ${r.code}`,
+                `Seeded role hierarchy for tenant ${t.code}: ${tenantAdminRole.code} -> ${r.code}`,
               );
             }
           }

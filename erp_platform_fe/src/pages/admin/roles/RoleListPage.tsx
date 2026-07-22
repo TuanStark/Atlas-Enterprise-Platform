@@ -79,9 +79,10 @@ export default function RoleListPage() {
   const getRoleColor = (code?: string): string => {
     switch (code) {
       case 'SUPER_ADMIN': return '#f5222d';
+      case 'ADMIN': return '#722ed1';
       case 'HR_MANAGER': return '#1890ff';
       case 'HR_SPECIALIST': return '#13c2c2';
-      case 'RECRUITER': return '#722ed1';
+      case 'RECRUITER': return '#2f54eb';
       case 'PAYROLL_OFFICER': return '#fa8c16';
       case 'EMPLOYEE': return '#52c41a';
       case 'ASSET_MANAGER': return '#eb2f96';
@@ -91,6 +92,7 @@ export default function RoleListPage() {
 
   const getRoleIcon = (code?: string) => {
     if (code === 'SUPER_ADMIN') return <Lock size={28} />;
+    if (code === 'ADMIN') return <Shield size={28} />;
     if (code === 'HR_MANAGER') return <Users size={28} />;
     return <Shield size={28} />;
   };

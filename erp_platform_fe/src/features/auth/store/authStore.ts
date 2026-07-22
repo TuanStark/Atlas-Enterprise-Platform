@@ -68,7 +68,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         return (
           user.permissions.includes(permKey) ||
           user.permissions.includes('*') ||
-          user.roles.includes('SUPER_ADMIN')
+          user.roles.includes('SUPER_ADMIN') ||
+          user.roles.includes('ADMIN')
         );
       },
 
@@ -79,7 +80,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       hasRole: (role: string) => {
         const user = get().user;
         if (!user) return false;
-        return user.roles.includes(role) || user.roles.includes('SUPER_ADMIN');
+        return user.roles.includes(role) || user.roles.includes('SUPER_ADMIN') || user.roles.includes('ADMIN');
       },
     }),
     {

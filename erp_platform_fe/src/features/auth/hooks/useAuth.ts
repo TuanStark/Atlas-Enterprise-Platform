@@ -70,7 +70,8 @@ export function usePermission(resource: string, action: string): boolean {
   return (
     user.permissions.includes(permKey) ||
     user.permissions.includes('*') ||
-    user.roles.includes('SUPER_ADMIN')
+    user.roles.includes('SUPER_ADMIN') ||
+    user.roles.includes('ADMIN')
   );
 }
 
@@ -78,5 +79,5 @@ export function usePermission(resource: string, action: string): boolean {
 export function useHasRole(role: string): boolean {
   const user = useCurrentUser();
   if (!user) return false;
-  return user.roles.includes(role) || user.roles.includes('SUPER_ADMIN');
+  return user.roles.includes(role) || user.roles.includes('SUPER_ADMIN') || user.roles.includes('ADMIN');
 }

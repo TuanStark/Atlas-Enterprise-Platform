@@ -117,21 +117,21 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
           },
         });
 
-        //Create SUPER_ADMIN Role for this tenant
+        //Create ADMIN Role for this tenant
         await tx.role.create({
           data: {
             id: roleId,
             tenantId: tenantId,
-            code: 'SUPER_ADMIN',
-            name: 'Super Admin',
-            description: 'Quyền quản trị tối cao của doanh nghiệp.',
+            code: 'ADMIN',
+            name: 'Tenant Admin',
+            description: 'Quyền quản trị cao nhất của doanh nghiệp.',
             isSystem: true,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
         });
 
-        //Assign all system permissions to the new SUPER_ADMIN role
+        //Assign all standard tenant permissions to the new ADMIN role
         const allPermissions = await tx.permission.findMany();
         const rolePermissions = allPermissions.map((perm) => ({
           roleId: roleId,
@@ -144,7 +144,7 @@ export class RegisterTenantHandler implements ICommandHandler<RegisterTenantComm
           });
         }
 
-        //Assign SUPER_ADMIN role to Admin Principal
+        //Assign ADMIN role to Admin Principal
         await tx.principalRole.create({
           data: {
             principalId: principalId,

@@ -13,7 +13,7 @@ export function useCanAccessCode(permissionCode: string): boolean {
 
 export function useHasAnyRole(roles: string[]): boolean {
   const userRoles = useAuthStore((state) => state.user?.roles ?? []);
-  return roles.some((role) => userRoles.includes(role) || userRoles.includes('SUPER_ADMIN'));
+  return roles.some((role) => userRoles.includes(role) || userRoles.includes('SUPER_ADMIN') || userRoles.includes('ADMIN'));
 }
 
 interface PermissionGateProps {
