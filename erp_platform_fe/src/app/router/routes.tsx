@@ -49,6 +49,10 @@ const CustomFieldPage = lazy(() => import('@pages/admin/custom-fields/CustomFiel
 const NotificationCenterPage = lazy(() => import('@pages/admin/notifications/NotificationCenterPage'));
 const FileManagementPage = lazy(() => import('@pages/admin/files/FileManagementPage'));
 
+// --- System Platform Admin Pages ---
+const SystemTenantPage = lazy(() => import('@pages/system/SystemTenantPage'));
+const SystemAuditLogPage = lazy(() => import('@pages/system/SystemAuditLogPage'));
+
 /**
  * Route Definitions — Organized by module, matching backend structure
  *
@@ -191,6 +195,10 @@ export const routes: RouteObject[] = [
 
       // Admin — Settings
       { path: '/admin/settings', element: <SettingsPage /> },
+
+      // Platform System Admin (SUPER_ADMIN Only)
+      { path: '/system-admin/tenants', element: <SystemTenantPage /> },
+      { path: '/system-admin/audit', element: <SystemAuditLogPage /> },
 
       // Profile
       { path: '/profile', element: <ProfilePage /> },

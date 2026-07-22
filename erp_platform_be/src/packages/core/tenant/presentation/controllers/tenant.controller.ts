@@ -25,8 +25,10 @@ import {
   GetTenantQuery,
   ListTenantsQuery,
 } from '@core/tenant/application';
+import { RequireSystemAdmin } from '@core/rbac/presentation/decorators/require-system-admin.decorator';
 
 @ApiTags('Tenants')
+@RequireSystemAdmin()
 @Controller('tenants')
 export class TenantController extends BaseCrudControllerHelper {
   constructor(commandBus: CommandBus, queryBus: QueryBus) {

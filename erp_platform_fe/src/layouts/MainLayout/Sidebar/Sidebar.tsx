@@ -23,8 +23,10 @@ import {
   History,
   Clock,
   Briefcase,
+  ShieldAlert,
 } from 'lucide-react';
 import { useCanAccess } from '@shared/hooks/usePermission';
+import { useAuthStore } from '@features/auth/store/authStore';
 import { useActiveTenant } from '@features/tenant/hooks/useActiveTenant';
 import { AccountSwitcher } from '@features/account-switch/components/AccountSwitcher';
 import logoHrm from '@/assets/logo-hrm.jpeg';
@@ -44,6 +46,7 @@ interface PermissionMenuItem {
   icon?: React.ReactNode;
   label: string;
   permission?: { resource: string; action: string };
+  systemOnly?: boolean;
   children?: PermissionMenuItem[];
 }
 
@@ -111,7 +114,7 @@ const MENU_DEFINITION: PermissionMenuItem[] = [
   {
     key: 'admin',
     icon: <Shield size={16} />,
-    label: 'Quản trị hệ thống',
+    label: 'Quản trị doanh nghiệp',
     permission: { resource: 'admin.user', action: 'read' },
     children: [
       { key: '/admin/users', icon: <UserCog size={14} />, label: 'Quản lý tài khoản', permission: { resource: 'admin.user', action: 'read' } },
@@ -125,22 +128,38 @@ const MENU_DEFINITION: PermissionMenuItem[] = [
       { key: '/admin/settings', icon: <Settings size={14} />, label: 'Cài đặt hệ thống', permission: { resource: 'admin.settings', action: 'read' } },
     ],
   },
+  {
+    key: 'system-admin',
+    icon: <ShieldAlert size={16} />,
+    label: 'Quản trị Nền tảng',
+    systemOnly: true,
+    children: [
+      { key: '/system-admin/tenants', icon: <Building2 size={14} />, label: 'Quản lý Doanh nghiệp (Tenants)' },
+      { key: '/system-admin/audit', icon: <History size={14} />, label: 'Nhật ký Hệ thống Toàn sàn' },
+    ],
+  },
 ];
 
 /**
  * useFilteredMenu — Filters menu items based on current user's RBAC permissions.
  *
+ * Items with `systemOnly` are only rendered for SUPER_ADMIN role.
  * Items without `permission` are always shown (public within auth context).
  * Items with `permission` are only shown if `useCanAccess` returns true.
  * Parent items are hidden if ALL children are hidden.
  */
 function useFilteredMenu(): MenuItem[] {
   const checkPermission = useCanAccess;
+  const isSuperAdmin = useAuthStore((state) => state.user?.roles.includes('SUPER_ADMIN') ?? false);
 
-  function filterItems(items: PermissionMenuItem[]): MenuItem[] {
+  function filterItems(items: (PermissionMenuItem & { systemOnly?: boolean })[]): MenuItem[] {
     const result: MenuItem[] = [];
 
     for (const item of items) {
+      if (item.systemOnly && !isSuperAdmin) {
+        continue;
+      }
+
       if (item.permission && !checkPermission(item.permission.resource, item.permission.action)) {
         continue;
       }
@@ -187,6 +206,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     ? (() => {
       if (location.pathname.startsWith('/hrm/')) return ['hrm'];
       if (location.pathname.startsWith('/admin/')) return ['admin'];
+      if (location.pathname.startsWith('/system-admin/')) return ['system-admin'];
       return [];
     })()
     : [];

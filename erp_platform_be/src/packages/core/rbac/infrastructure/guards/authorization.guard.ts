@@ -17,6 +17,7 @@ import type { PermissionResolver } from '@core/rbac/domain';
 import type { PermissionCache } from '@core/rbac/domain';
 import { IS_PUBLIC_KEY } from '../../presentation/decorators/public.decorator';
 import { PERMISSIONS_KEY } from '../../presentation/decorators/require-permission.decorator';
+import { IS_PLATFORM_ONLY_KEY } from '../../presentation/decorators/require-system-admin.decorator';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 
 interface JwtPayload {
@@ -110,6 +111,22 @@ export class AuthorizationGuard implements CanActivate {
     request.principalId = principal.id;
     request.tenantId = principal.tenantId;
 
+    const isPlatformOnly = this.reflector.getAllAndOverride<boolean>(IS_PLATFORM_ONLY_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    const isSuperAdmin = principal.principalRoles.some((pr) => pr.role?.code === 'SUPER_ADMIN');
+    const isTenantAdmin = principal.principalRoles.some((pr) => pr.role?.code === 'ADMIN');
+    const hasWildcard = resolved.some((p) => p.code === '*');
+
+    if (isPlatformOnly) {
+      if (!isSuperAdmin) {
+        throw new ForbiddenException('Chỉ tài khoản System Super Admin mới có quyền truy cập chức năng này.');
+      }
+      return true;
+    }
+
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -118,10 +135,6 @@ export class AuthorizationGuard implements CanActivate {
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
     }
-
-    const isSuperAdmin = principal.principalRoles.some((pr) => pr.role?.code === 'SUPER_ADMIN');
-    const isTenantAdmin = principal.principalRoles.some((pr) => pr.role?.code === 'ADMIN');
-    const hasWildcard = resolved.some((p) => p.code === '*');
 
     if (isSuperAdmin || isTenantAdmin || hasWildcard) {
       return true;
