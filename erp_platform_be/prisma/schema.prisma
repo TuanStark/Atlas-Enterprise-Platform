@@ -2,8 +2,8 @@
 // converted from your PostgreSQL DDL by Antigravity.
 
 generator client {
-  provider = "prisma-client-js"
-  // output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
