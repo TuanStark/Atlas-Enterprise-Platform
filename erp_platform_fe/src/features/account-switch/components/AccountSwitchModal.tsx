@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Modal, Input, Avatar, Button, Tag, Spin, Empty, Typography } from 'antd';
 import { Search, ArrowRightLeft, ShieldAlert, ChevronDown } from 'lucide-react';
 import { useSwitchableUsers, useSwitchAccount } from '../hooks/useAccountSwitch';
+import { useCurrentUser } from '@features/auth/hooks/useAuth';
 import type { SwitchableUser } from '../types';
 
 const { Text, Title } = Typography;
@@ -98,35 +99,63 @@ export function AccountSwitchModal({ open, onClose }: AccountSwitchModalProps) {
 
   const displayUsers = offset === 0 ? (data?.items ?? accumulatedUsers) : accumulatedUsers;
 
+  const currentUser = useCurrentUser();
+  const isSuperAdmin = currentUser?.roles?.includes('SUPER_ADMIN');
+
   return (
     <Modal
       open={open}
       onCancel={onClose}
       footer={null}
-      width={580}
+      width={600}
       destroyOnClose
       centered
       className="account-switch-modal"
       title={
-        <div className="flex items-center gap-2.5 pt-1 pb-2 border-0 border-b border-solid border-black/5">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-            <ArrowRightLeft size={18} />
+        <div className="flex items-center justify-between pt-1 pb-2 border-0 border-b border-solid border-black/5 pr-4">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                isSuperAdmin ? 'bg-red-50 text-red-600' : 'bg-purple-50 text-purple-600'
+              }`}
+            >
+              <ArrowRightLeft size={18} />
+            </div>
+            <div>
+              <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
+                {isSuperAdmin
+                  ? 'Đóng vai Hỗ trợ Kỹ thuật Nền tảng'
+                  : 'Đóng vai Tài khoản Nội bộ Doanh nghiệp'}
+              </Title>
+            </div>
           </div>
-          <div>
-            <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
-              Chuyển đổi tài khoản
-            </Title>
-          </div>
+          <Tag color={isSuperAdmin ? 'red' : 'purple'} style={{ fontWeight: 600 }}>
+            {isSuperAdmin ? 'System Super Admin' : 'Tenant Admin'}
+          </Tag>
         </div>
       }
     >
       <div className="py-3">
-        <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 border border-solid border-amber-200 text-amber-900 mb-4 text-xs">
-          <ShieldAlert size={16} className="text-amber-600 shrink-0 mt-0.5" />
+        <div
+          className={`flex items-start gap-2.5 p-3 rounded-lg border border-solid mb-4 text-xs ${
+            isSuperAdmin
+              ? 'bg-red-50 border-red-200 text-red-900'
+              : 'bg-purple-50 border-purple-200 text-purple-900'
+          }`}
+        >
+          <ShieldAlert
+            size={16}
+            className={`shrink-0 mt-0.5 ${isSuperAdmin ? 'text-red-600' : 'text-purple-600'}`}
+          />
           <div>
-            <span className="font-semibold">Lưu ý an toàn:</span> Mọi thao tác thực hiện trong phiên
-            đóng vai sẽ được hệ thống ghi nhận chính xác danh tính người quản trị trong Nhật ký kiểm
-            toán (Audit Log).
+            <span className="font-semibold">
+              {isSuperAdmin
+                ? 'Lưu ý Hỗ trợ Kỹ thuật Cross-Tenant:'
+                : 'Lưu ý Đóng vai Nội bộ:'}
+            </span>{' '}
+            {isSuperAdmin
+              ? 'Với vai trò System Super Admin, bạn có quyền đóng vai tài khoản trên toàn sàn SaaS để hỗ trợ khách hàng. Mọi thao tác đều được ghi vết trong Platform Support Audit Log.'
+              : 'Phạm vi đóng vai được giới hạn nghiêm ngặt trong nội bộ doanh nghiệp. Mọi thao tác thực hiện sẽ ghi vết người đóng vai trong Nhật ký kiểm toán.'}
           </div>
         </div>
 

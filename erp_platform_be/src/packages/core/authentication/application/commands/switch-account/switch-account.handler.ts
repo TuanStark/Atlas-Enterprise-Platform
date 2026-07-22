@@ -16,6 +16,8 @@ import { PrincipalStatus } from '@core/principal/domain';
 import {
   ListPrincipalRolesQuery,
   PrincipalRoleDto,
+  GetRoleQuery,
+  RoleDto,
   CheckRoleHierarchyQuery,
 } from '@core/rbac/application';
 
@@ -30,7 +32,7 @@ export class SwitchAccountHandler implements ICommandHandler<SwitchAccountComman
     private readonly transaction: TransactionRunner,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-  ) {}
+  ) { }
 
   async execute(command: SwitchAccountCommand): Promise<Result<LoginResponseDto>> {
     const { currentPrincipalId, tenantId, dto } = command;
@@ -58,7 +60,25 @@ export class SwitchAccountHandler implements ICommandHandler<SwitchAccountComman
 
     const targetPrincipal = targetPrincipalResult.data;
 
-    if (targetPrincipal.tenantId !== tenantId) {
+    const currentRolesResult = await this.queryBus.execute<
+      ListPrincipalRolesQuery,
+      Result<PrincipalRoleDto[]>
+    >(new ListPrincipalRolesQuery(currentPrincipalId));
+
+    let isSuperAdmin = false;
+    if (currentRolesResult.isSuccess()) {
+      for (const pr of currentRolesResult.data) {
+        const roleResult = await this.queryBus.execute<GetRoleQuery, Result<RoleDto>>(
+          new GetRoleQuery(pr.roleId),
+        );
+        if (roleResult.isSuccess() && roleResult.data.code === 'SUPER_ADMIN') {
+          isSuperAdmin = true;
+          break;
+        }
+      }
+    }
+
+    if (!isSuperAdmin && targetPrincipal.tenantId !== tenantId) {
       return Result.failure({
         statusCode: HttpStatus.FORBIDDEN,
         code: AuthErrorCode.CROSS_TENANT,
@@ -87,33 +107,30 @@ export class SwitchAccountHandler implements ICommandHandler<SwitchAccountComman
       });
     }
 
-    const currentRolesResult = await this.queryBus.execute<
-      ListPrincipalRolesQuery,
-      Result<PrincipalRoleDto[]>
-    >(new ListPrincipalRolesQuery(currentPrincipalId));
+    if (!isSuperAdmin) {
+      const targetRolesResult = await this.queryBus.execute<
+        ListPrincipalRolesQuery,
+        Result<PrincipalRoleDto[]>
+      >(new ListPrincipalRolesQuery(dto.targetPrincipalId));
 
-    const targetRolesResult = await this.queryBus.execute<
-      ListPrincipalRolesQuery,
-      Result<PrincipalRoleDto[]>
-    >(new ListPrincipalRolesQuery(dto.targetPrincipalId));
+      const currentRoleIds = currentRolesResult.isSuccess()
+        ? currentRolesResult.data.map((pr) => pr.roleId)
+        : [];
+      const targetRoleIds = targetRolesResult.isSuccess()
+        ? targetRolesResult.data.map((pr) => pr.roleId)
+        : [];
 
-    const currentRoleIds = currentRolesResult.isSuccess()
-      ? currentRolesResult.data.map((pr) => pr.roleId)
-      : [];
-    const targetRoleIds = targetRolesResult.isSuccess()
-      ? targetRolesResult.data.map((pr) => pr.roleId)
-      : [];
+      const hasHierarchyRelation = await this.queryBus.execute<CheckRoleHierarchyQuery, boolean>(
+        new CheckRoleHierarchyQuery(currentRoleIds, targetRoleIds),
+      );
 
-    const hasHierarchyRelation = await this.queryBus.execute<CheckRoleHierarchyQuery, boolean>(
-      new CheckRoleHierarchyQuery(currentRoleIds, targetRoleIds),
-    );
-
-    if (!hasHierarchyRelation) {
-      return Result.failure({
-        statusCode: HttpStatus.FORBIDDEN,
-        code: AuthErrorCode.INSUFFICIENT_HIERARCHY,
-        message: AuthMessages.ERROR.INSUFFICIENT_HIERARCHY,
-      });
+      if (!hasHierarchyRelation) {
+        return Result.failure({
+          statusCode: HttpStatus.FORBIDDEN,
+          code: AuthErrorCode.INSUFFICIENT_HIERARCHY,
+          message: AuthMessages.ERROR.INSUFFICIENT_HIERARCHY,
+        });
+      }
     }
 
     const accessToken = await this.jwtService.generateImpersonationToken(

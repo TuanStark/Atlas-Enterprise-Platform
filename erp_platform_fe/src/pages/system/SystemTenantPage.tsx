@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Card, Button, Tag, Space, Typography, Input, Modal, Form, message, Badge, Row, Col } from 'antd';
-import { Plus, Search, CheckCircle, XCircle, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Table, Card, Button, Tag, Space, Typography, Input, Modal, Form, message, Badge, Row, Col, Divider } from 'antd';
+import { Plus, Search, CheckCircle, XCircle, ShieldAlert, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { httpClient } from '@shared/api/httpClient';
+import { useSwitchAccount } from '@features/account-switch/hooks/useAccountSwitch';
 
 const { Title, Text } = Typography;
 
@@ -32,20 +33,31 @@ export default function SystemTenantPage() {
     },
   });
 
-  // Mutation to create tenant
+  // Mutation to onboard new tenant + initial admin user
   const createTenantMutation = useMutation({
     mutationFn: async (values: any) => {
-      const res = await httpClient.post('/tenants', values);
+      const payload = {
+        code: values.code,
+        name: values.name,
+        legalName: values.legalName,
+        taxCode: values.taxCode,
+        phone: values.phone,
+        adminEmail: values.adminEmail,
+        adminPassword: values.adminPassword,
+        adminFirstName: values.adminFirstName,
+        adminLastName: values.adminLastName,
+      };
+      const res = await httpClient.post('/auth/register-tenant', payload);
       return res.data;
     },
     onSuccess: () => {
-      message.success('Tạo doanh nghiệp mới thành công!');
+      message.success('Khởi tạo doanh nghiệp & tài khoản Admin đầu tiên thành công!');
       setIsModalOpen(false);
       form.resetFields();
       void queryClient.invalidateQueries({ queryKey: ['system-tenants'] });
     },
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || 'Không thể tạo doanh nghiệp.');
+      message.error(err?.response?.data?.message || 'Khởi tạo doanh nghiệp thất bại.');
     },
   });
 
@@ -69,6 +81,28 @@ export default function SystemTenantPage() {
       t.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.code?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  const switchAccount = useSwitchAccount();
+
+  const handleSupportImpersonate = async (tenantRecord: TenantData) => {
+    try {
+      const res = await httpClient.get<any[]>(`/users?tenantId=${tenantRecord.id}`);
+      const tenantUsers = res.data || [];
+      if (tenantUsers.length === 0) {
+        message.warning('Doanh nghiệp này chưa có tài khoản người dùng.');
+        return;
+      }
+      const adminUser = tenantUsers.find((u) => u.roles?.includes('ADMIN')) || tenantUsers[0];
+      const targetPrincipalId = adminUser.principalId || adminUser.principal?.id;
+      if (!targetPrincipalId) {
+        message.error('Không tìm thấy Principal ID của tài khoản quản trị.');
+        return;
+      }
+      switchAccount.mutate(targetPrincipalId);
+    } catch {
+      message.error('Không thể kết nối đến tài khoản doanh nghiệp.');
+    }
+  };
 
   const columns = [
     {
@@ -121,16 +155,27 @@ export default function SystemTenantPage() {
       title: 'Thao tác',
       key: 'actions',
       render: (_: any, record: TenantData) => (
-        <Button
-          size="small"
-          danger={record.status === 'ACTIVE'}
-          icon={record.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle size={14} />}
-          onClick={() =>
-            toggleStatusMutation.mutate({ id: record.id, status: record.status })
-          }
-        >
-          {record.status === 'ACTIVE' ? 'Tạm dừng' : 'Kích hoạt'}
-        </Button>
+        <Space size={6}>
+          <Button
+            size="small"
+            type="default"
+            icon={<ArrowRightLeft size={13} />}
+            loading={switchAccount.isPending}
+            onClick={() => handleSupportImpersonate(record)}
+          >
+            Hỗ trợ Kỹ thuật
+          </Button>
+          <Button
+            size="small"
+            danger={record.status === 'ACTIVE'}
+            icon={record.status === 'ACTIVE' ? <XCircle size={14} /> : <CheckCircle size={14} />}
+            onClick={() =>
+              toggleStatusMutation.mutate({ id: record.id, status: record.status })
+            }
+          >
+            {record.status === 'ACTIVE' ? 'Tạm dừng' : 'Kích hoạt'}
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -186,35 +231,98 @@ export default function SystemTenantPage() {
         />
       </Card>
 
-      {/* Modal create tenant */}
+      {/* Modal create tenant + initial admin account */}
       <Modal
-        title="Tạo Doanh nghiệp mới (Onboard Tenant)"
+        title="Tạo Doanh nghiệp mới & Tài khoản Admin ban đầu"
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createTenantMutation.isPending}
+        width={600}
       >
         <Form form={form} layout="vertical" onFinish={(values) => createTenantMutation.mutate(values)}>
-          <Form.Item
-            name="code"
-            label="Mã Doanh nghiệp (Code)"
-            rules={[{ required: true, message: 'Vui lòng nhập mã doanh nghiệp' }]}
-          >
-            <Input placeholder="ví dụ: vinamilk, fpt" />
-          </Form.Item>
-          <Form.Item
-            name="name"
-            label="Tên Doanh nghiệp"
-            rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
-          >
-            <Input placeholder="Công ty Cổ phần Tập đoàn..." />
-          </Form.Item>
-          <Form.Item name="legalName" label="Tên Pháp lý">
-            <Input placeholder="Tên đăng ký kinh doanh" />
-          </Form.Item>
-          <Form.Item name="taxCode" label="Mã số thuế">
-            <Input placeholder="MST doanh nghiệp" />
-          </Form.Item>
+          <Divider style={{ margin: '12px 0', fontSize: 13, color: '#1890ff' }}>
+            1. THÔNG TIN DOANH NGHIỆP (ENTERPRISE WORKSPACE)
+          </Divider>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="code"
+                label="Mã Doanh nghiệp (Tenant Code)"
+                rules={[{ required: true, message: 'Vui lòng nhập mã doanh nghiệp' }]}
+              >
+                <Input placeholder="ví dụ: vinamilk, fpt" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="Tên Doanh nghiệp"
+                rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
+              >
+                <Input placeholder="Công ty Cổ phần Tập đoàn..." />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="legalName" label="Tên Pháp lý">
+                <Input placeholder="Tên đăng ký kinh doanh" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="taxCode" label="Mã số thuế">
+                <Input placeholder="Mã số thuế doanh nghiệp" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Divider style={{ margin: '12px 0', fontSize: 13, color: '#722ed1' }}>
+            2. TÀI KHOẢN QUẢN TRỊ VIÊN ĐẦU TIÊN (TENANT ADMIN)
+          </Divider>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="adminLastName"
+                label="Họ"
+                rules={[{ required: true, message: 'Vui lòng nhập họ' }]}
+              >
+                <Input placeholder="Nguyễn" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="adminFirstName"
+                label="Tên"
+                rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+              >
+                <Input placeholder="Văn A" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="adminEmail"
+                label="Email đăng nhập Admin"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập email admin' },
+                  { type: 'email', message: 'Email không hợp lệ' },
+                ]}
+              >
+                <Input placeholder="admin@company.com" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="adminPassword"
+                label="Mật khẩu ban đầu"
+                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu admin' }]}
+              >
+                <Input.Password placeholder="Mật khẩu bảo mật" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
     </div>

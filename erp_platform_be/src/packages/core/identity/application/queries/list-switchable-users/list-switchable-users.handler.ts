@@ -53,30 +53,44 @@ export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableU
       Result<PrincipalRoleDto[]>
     >(new ListPrincipalRolesQuery(currentPrincipalId));
 
-    if (!currentRolesResult.isSuccess() || !currentRolesResult.data.length) {
+    if (!currentRolesResult.isSuccess()) {
       return { items: [], total: 0, hasMore: false };
     }
 
-    const currentRoleIds = currentRolesResult.data.map((pr) => pr.roleId);
+    let isSuperAdmin = false;
+    for (const pr of currentRolesResult.data) {
+      const roleResult = await this.queryBus.execute<GetRoleQuery, Result<RoleDto>>(
+        new GetRoleQuery(pr.roleId),
+      );
+      if (roleResult.isSuccess() && roleResult.data.code === 'SUPER_ADMIN') {
+        isSuperAdmin = true;
+        break;
+      }
+    }
 
-    const descendantRoleIds = await this.queryBus.execute<GetDescendantRoleIdsQuery, string[]>(
-      new GetDescendantRoleIdsQuery(currentRoleIds),
-    );
+    const candidateUsers = isSuperAdmin
+      ? await this.userRepository.findAll()
+      : await this.userRepository.findByTenant(Identifier.create(tenantId));
 
-    if (!descendantRoleIds.length) {
+    if (!candidateUsers.length) {
       return { items: [], total: 0, hasMore: false };
     }
 
-    const tenantUsers = await this.userRepository.findByTenant(Identifier.create(tenantId));
-
-    if (!tenantUsers.length) {
-      return { items: [], total: 0, hasMore: false };
+    let descendantRoleIds: string[] = [];
+    if (!isSuperAdmin) {
+      const currentRoleIds = currentRolesResult.data.map((pr) => pr.roleId);
+      descendantRoleIds = await this.queryBus.execute<GetDescendantRoleIdsQuery, string[]>(
+        new GetDescendantRoleIdsQuery(currentRoleIds),
+      );
+      if (!descendantRoleIds.length) {
+        return { items: [], total: 0, hasMore: false };
+      }
     }
 
     const matchedUsers: SwitchableUserDto[] = [];
     const searchKeyword = search ? search.toLowerCase().trim() : '';
 
-    for (const user of tenantUsers) {
+    for (const user of candidateUsers) {
       if (user.principalId.getValue() === currentPrincipalId) {
         continue;
       }
@@ -90,11 +104,13 @@ export class ListSwitchableUsersHandler implements IQueryHandler<ListSwitchableU
         continue;
       }
 
-      const userRoleIds = userRolesResult.data.map((pr) => pr.roleId);
-      const isSwitchable = userRoleIds.some((roleId) => descendantRoleIds.includes(roleId));
+      if (!isSuperAdmin) {
+        const userRoleIds = userRolesResult.data.map((pr) => pr.roleId);
+        const isSwitchable = userRoleIds.some((roleId) => descendantRoleIds.includes(roleId));
 
-      if (!isSwitchable) {
-        continue;
+        if (!isSwitchable) {
+          continue;
+        }
       }
 
       const roleCodes: string[] = [];
