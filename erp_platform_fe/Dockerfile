@@ -1,64 +1,78 @@
-# ==============================================================================
-# STAGE 1: Builder (Compile React/Vite TypeScript to static assets)
-# ==============================================================================
-FROM node:20-alpine AS builder
+# ==========================================
+# STAGE 1: Base & Dependencies
+# ==========================================
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
 
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
+
+# ==========================================
+# STAGE 2: Builder (Compile Vite React App)
+# ==========================================
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
 ENV NODE_ENV=production
+
 RUN npm run build
 
-# ==============================================================================
-# STAGE 2: Production Nginx Server (Standalone Self-Contained Image)
-# ==============================================================================
-FROM nginx:1.27-alpine-slim AS runner
+# ==========================================
+# STAGE 3: Production Runner (Nginx Non-Root ~25MB)
+# ==========================================
+FROM nginxinc/nginx-unprivileged:1.27-alpine-slim AS runner
 
 LABEL maintainer="Senior Software Engineer & DevOps Architect" \
       version="1.0" \
       description="Production Docker Image for Atlas ERP React Frontend"
 
-# Clean up default Nginx website files
+USER root
 RUN rm -rf /usr/share/nginx/html/*
+USER 101
 
-# Inline-generate Nginx SPA configuration directly inside Dockerfile
-RUN cat << 'EOF' > /etc/nginx/conf.d/default.conf
+COPY <<-'EOF' /etc/nginx/conf.d/default.conf
 server {
-    listen 80;
+    listen 8080;
     server_name localhost;
 
     root /usr/share/nginx/html;
     index index.html;
 
-    # Performance: Gzip Compression
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
     gzip_proxied expired no-cache no-store private auth;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
 
-    # Security Headers (OWASP Best Practices)
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-    # Caching cho static assets (/assets/*.js, *.css, *.png)
     location /assets/ {
         expires 1y;
-        add_header Cache-Control "public, immutable";
+        add_header Cache-Control "public, max-age=31536000, immutable";
     }
 
-    # SPA Client-Side Routing Fallback (React Router / Vite)
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires 0;
+    }
+
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Healthcheck endpoint cho Kubernetes Liveness/Readiness Probes
     location /healthz {
         access_log off;
         default_type text/plain;
@@ -67,9 +81,11 @@ server {
 }
 EOF
 
-# Copy compiled static assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder --chown=101:101 /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
