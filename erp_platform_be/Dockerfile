@@ -23,7 +23,7 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
-RUN npm ci --production
+RUN npm prune --omit=dev --ignore-scripts
 
 # STAGE 3: Production Runner (Non-root, Security-hardened Runtime)
 FROM node:20-alpine AS runner
