@@ -1,0 +1,72 @@
+---
+# ==============================================================================
+# ANSIBLE PLAYBOOK: CẤU HÌNH SERVER NODE MÔI TRƯỜNG KUBERNETES enterprise
+# ==============================================================================
+- name: Hardening & Provisioning K8s Worker Nodes
+  hosts: k8s_workers:k8s_master
+  become: yes
+  vars:
+    docker_version: "24.0.7"
+    sysctl_config:
+      net.bridge.bridge-nf-call-iptables: 1
+      net.bridge.bridge-nf-call-ip6tables: 1
+      net.ipv4.ip_forward: 1
+      vm.max_map_count: 262144
+
+  tasks:
+    - name: 1. Tắt SWAP (Bắt buộc cho Kubernetes Kubelet)
+      shell: |
+        swapoff -a
+        sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+    - name: 2. Cài đặt các gói hệ thống cơ bản
+      apt:
+        name:
+          - curl
+          - wget
+          - apt-transport-https
+          - ca-certificates
+          - gnupg
+          - lsb-release
+          - ufw
+          - htop
+        state: present
+        update_cache: yes
+
+    - name: 3. Cấu hình Kernel Parameters cho K8s Networking
+      sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+      loop: "{{ sysctl_config | dict2items }}"
+
+    - name: 4. Cấu hình Firewall UFW (Bảo mật Port K8s)
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "22"      # SSH
+        - "80"      # HTTP Ingress
+        - "443"     # HTTPS Ingress
+        - "6443"    # K8s API Server
+        - "10250"   # Kubelet API
+        - "30000:32767" # K8s NodePort Range
+
+    - name: 5. Khởi tạo Container Runtime (containerd / Docker)
+      shell: |
+        mkdir -p /etc/containerd
+        containerd config default > /etc/containerd/config.toml
+        sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+        systemctl restart containerd
+        systemctl enable containerd
+      ignore_errors: yes
+
+    - name: 6. Kiểm tra trạng thái sẵn sàng của Node
+      command: systemctl is-active containerd
+      register: containerd_status
+      changed_when: false
+
+    - debug:
+        msg: "Server Node {{ inventory_hostname }} đã được cấu hình thành công chuẩn Enterprise! Containerd Status: {{ containerd_status.stdout }}"

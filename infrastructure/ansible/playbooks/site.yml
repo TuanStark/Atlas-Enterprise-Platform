@@ -1,0 +1,16 @@
+---
+# ==============================================================================
+# MASTER ANSIBLE PLAYBOOK: ATLAS ENTERPRISE PLATFORM NODE HARDENING
+# ==============================================================================
+- name: Enterprise Server Node Hardening & K8s Preparation
+  hosts: k8s_workers:k8s_master
+  become: yes
+  roles:
+    - os_hardening
+    - ssh_hardening
+    - containerd
+
+  post_tasks:
+    - name: Kiểm tra hoàn tất cấu hình Server Nodes
+      debug:
+        msg: "🎉 Server Node {{ inventory_hostname }} đã đạt tiêu chuẩn Enterprise Security Hardening & Containerd Runtime sẵn sàng cho K8s!"

@@ -1,0 +1,19 @@
+---
+# Role 3: Containerd Runtime Setup & Systemd Cgroup Config
+- name: Khởi tạo thư mục cấu hình containerd
+  file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
+
+- name: Cài đặt Containerd Configuration với Systemd Cgroup Driver
+  shell: |
+    containerd config default > /etc/containerd/config.toml
+    sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+  ignore_errors: yes
+
+- name: Khởi động và Bật Tự Động Dịch Vụ Containerd
+  service:
+    name: containerd
+    state: restarted
+    enabled: yes

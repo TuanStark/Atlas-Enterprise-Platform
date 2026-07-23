@@ -1,0 +1,24 @@
+---
+# Role 2: SSH Security Hardening (CIS Benchmark)
+- name: Tắt SSH Root Login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin no'
+
+- name: Tắt SSH Password Authentication (Chỉ dùng SSH Key)
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+
+- name: Cấu hình SSH Idle Timeout (5 phút ngắt kết nối tự động)
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?ClientAliveInterval'
+    line: 'ClientAliveInterval 300'
+
+- name: Restart dịch vụ SSHD
+  service:
+    name: sshd
+    state: restarted
