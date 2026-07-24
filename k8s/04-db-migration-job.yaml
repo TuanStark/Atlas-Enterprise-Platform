@@ -1,0 +1,27 @@
+# ==============================================================================
+# KUBERNETES JOB: AUTOMATED DATABASE PRISMA MIGRATION
+# ==============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-db-migration
+  namespace: hrm-system
+  labels:
+    app: prisma-db-migration
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      name: prisma-db-migration
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: prisma-migrate
+          image: erp-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["npx", "prisma", "migrate", "deploy"]
+          envFrom:
+            - configMapRef:
+                name: hrm-config
+            - secretRef:
+                name: hrm-secret

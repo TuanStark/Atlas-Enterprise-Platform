@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hrm-system
+  labels:
+    environment: production
+    app.kubernetes.io/name: atlas-hrm
+    app.kubernetes.io/part-of: atlas-enterprise-platform
