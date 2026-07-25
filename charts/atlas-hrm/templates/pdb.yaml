@@ -1,5 +1,5 @@
 # ==============================================================================
-# POD DISRUPTION BUDGETS — ĐẢM BẢO TÍNH SẴN SÀNG KHI DRAIN/UPGRADE NODE
+# POD DISRUPTION BUDGETS (PDB)
 # ==============================================================================
 {{- if .Values.pdb.backend.enabled }}
 apiVersion: policy/v1
@@ -10,6 +10,16 @@ metadata:
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
 spec:
+
+  # ==========================================================================
+  # [BẢN CHẤT - Bảo kê hệ thống khi Drain Node]
+  # Tình huống: Đội hạ tầng (Ops) bảo trì K8s, gõ lệnh `kubectl drain node-1` để dọn sạch server vật lý số 1.
+  # 🚩 Nếu không có PDB: Và nếu xui xẻo cả 2 Pod backend của bạn đều nằm trên Node-1 -> K8s sẽ tàn nhẫn XÓA CÙNG LÚC cả 2 Pod -> DOWNTIME toàn hệ thống!
+  # 🟩 Senior Review: PDB chính là "Tờ lệnh bảo kê". 
+  # `minAvailable: 1` nghĩa là ép K8s lúc nào cũng phải chừa lại ít nhất 1 Pod sống sót nhận traffic. 
+  # Lúc K8s muốn Drain Node-1, nó chỉ dám xóa 1 Pod, phải đợi Pod mới tạo xong bên Node-2, chạy ngon lành mới dám quay lại xóa nốt Pod còn lại trên Node-1.
+  # ==========================================================================
+  
   {{- if .Values.pdb.backend.minAvailable }}
   minAvailable: {{ .Values.pdb.backend.minAvailable }}
   {{- else }}

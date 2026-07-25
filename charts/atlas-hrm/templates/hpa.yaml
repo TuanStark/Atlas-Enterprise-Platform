@@ -31,23 +31,33 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.hpa.backend.targetMemory }}
     {{- end }}
+    
+  # ==========================================================================
+  # [BẢN CHẤT - HPA Scale Behavior]
+  # 🚩 Lỗi Junior: Không có mục Behavior. K8s HPA sẽ vấp phải hiện tượng "Flapping" (Giật cục).
+  # Ví dụ: Mạng chậm tí -> CPU tăng vọt ảo -> HPA đẻ thốc 10 Pod -> 5s sau CPU giảm -> HPA tắt vội 8 Pod -> Vòng lặp đẻ/tắt diễn ra liên tục, làm sập mạng Node.
+  # 🟩 Senior Review: Scale UP thì phải NHANH (hứng traffic). Scale DOWN thì phải CHẬM (đợi chắc chắn traffic giảm thật mới tắt).
+  # ==========================================================================
   behavior:
+    # ── CHIẾN LƯỢC SCALE DOWN (GIẢM POD) ──
     scaleDown:
-      stabilizationWindowSeconds: 300
+      stabilizationWindowSeconds: 300 # Phanh chờ 5 phút (300s): Đợi cho traffic giảm ổn định 5 phút mới bắt đầu rút Pod.
       policies:
         - type: Percent
-          value: 25
+          value: 25                   # Dù giảm cũng chỉ được tắt TỐI ĐA 25% số lượng Pod mỗi phút (rút từ từ, không tắt cái rụp).
           periodSeconds: 60
+          
+    # ── CHIẾN LƯỢC SCALE UP (TĂNG POD) ──
     scaleUp:
-      stabilizationWindowSeconds: 30
+      stabilizationWindowSeconds: 30  # Chân ga siêu nhạy: Chỉ cần CPU vọt quá 30 giây là cho đẻ Pod ngay lập tức bảo vệ hệ thống.
       policies:
         - type: Percent
-          value: 50
+          value: 50                   # Cho phép tăng mạnh 50% số lượng Pod hiện tại mỗi 60s.
           periodSeconds: 60
         - type: Pods
-          value: 2
+          value: 2                    # Hoặc tăng cứng thêm 2 Pod.
           periodSeconds: 60
-      selectPolicy: Max
+      selectPolicy: Max               # K8s sẽ chọn rule nào (Percent hay Pods) đẻ ra NHIỀU pod hơn để áp dụng.
 {{- end }}
 ---
 {{- if .Values.hpa.frontend.enabled }}

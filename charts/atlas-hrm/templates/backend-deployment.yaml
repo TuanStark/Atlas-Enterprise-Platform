@@ -11,33 +11,60 @@ metadata:
 spec:
   replicas: {{ .Values.backend.replicaCount }}
   revisionHistoryLimit: {{ .Values.backend.revisionHistoryLimit | default 5 }}
+  
+  # ==========================================================================
+  # [BẢN CHẤT - Chiến lược Cập nhật (Strategy)]
+  # Quyết định cách K8s thay thế Pod cũ bằng Pod mới khi deploy version mới.
+  # 🚩 Lỗi Junior: Bỏ trống (dùng default K8s). Dễ rớt request nếu số lượng Pod ít (vd 2 pod, sập 1 để update, tải dồn lên 1 gây quá tải).
+  # 🟩 Senior Review: Bắt buộc cấu hình Zero-Downtime Deployment.
+  # ==========================================================================
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 1         # Chỉ tạo thêm TỐI ĐA 1 Pod mới cùng lúc (để không cạn kiệt CPU/RAM của Node).
+      maxUnavailable: 0   # TUYỆT ĐỐI KHÔNG tắt Pod cũ nào cho đến khi Pod mới đã 100% sẵn sàng (Pass Readiness).
+      
+  # ==========================================================================
+  # [BẢN CHẤT - Sợi dây liên kết (Labels & Selector)]
+  # Deployment dùng `matchLabels` để "săn tìm" và quản lý Pod. 
+  # 🚩 Lỗi Junior: Sửa `matchLabels` ở một Deployment đang chạy.
+  # 🚫 Nguyên tắc K8s: KHÔNG ĐƯỢC PHÉP thay đổi matchLabels sau khi tạo. Bắt buộc phải xóa Deployment tạo lại.
+  # ==========================================================================
   selector:
     matchLabels:
       {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 6 }}
+      
   template:
     metadata:
       labels:
         {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 8 }}
+        
+      # ==========================================================================
+      # [BẢN CHẤT - Ép K8s Restart (Checksum Annotation)]
+      # K8s chỉ tạo Pod mới khi block `spec.template` (vd: image tag) thay đổi. 
+      # Nếu chỉ đổi biến môi trường trong ConfigMap/Secret, K8s sẽ phớt lờ, Pod vẫn ôm cấu hình cũ.
+      # 🟩 Senior Review: Dùng hàm `sha256sum` băm nội dung config. Hễ config đổi -> mã hash đổi -> block template đổi -> K8s bắt buộc sinh Pod mới.
+      # ==========================================================================
       annotations:
-        # Force rolling restart khi ConfigMap/Secret thay đổi
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/sealed-secret.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.backend.terminationGracePeriodSeconds | default 30 }}
-      # SecurityContext chuẩn K8s Restricted Profile (Non-root user nestjs UID 1001)
+      
+      # ==========================================================================
+      # [BẢN CHẤT - Phòng thủ cấp độ Pod (Security Context)]
+      # Ngăn chặn hacker "thoát xác" khỏi container nếu ứng dụng dính mã độc RCE (Remote Code Execution).
+      # 🟩 Senior Review: Nếu app chạy bằng ROOT (UID 0), PR sẽ bị Reject ngay lập tức.
+      # ==========================================================================
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1001
+        runAsNonRoot: true    # Ép buộc container KHÔNG chạy bằng Root.
+        runAsUser: 1001       # Chạy bằng user 'nestjs' (tạo sẵn từ Dockerfile). Bị hack cũng chỉ là user quèn.
         runAsGroup: 1001
-        fsGroup: 1001
+        fsGroup: 1001         # K8s tự cấp quyền ghi file (mount volumes) cho group 1001.
         seccompProfile:
-          type: RuntimeDefault
+          type: RuntimeDefault  # Bọc container lại, chặn gọi các lệnh Kernel nguy hiểm (như mount ổ đĩa vật lý).
+          
       {{- with .Values.backend.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -67,15 +94,34 @@ spec:
                 name: {{ include "atlas-hrm.fullname" . }}-config
             - secretRef:
                 name: {{ include "atlas-hrm.fullname" . }}-secret
+                
+          # ==========================================================================
+          # [BẢN CHẤT - Bài toán chia tiền (Resources)]
+          # 🚩 Lỗi Junior: Không set Limits -> App leak RAM ăn sập cả Node vật lý (Noisy Neighbor).
+          #                Set Limits RAM = Requests RAM -> Ứng dụng thi thoảng cần vọt (spike) lúc Garbage Collection sẽ bị OOMKilled giết chết.
+          # 🟩 Senior Review: Requests = Mức TỐI THIỂU K8s dùng xếp lịch. Limits = Cảnh sát chặn trần.
+          # ==========================================================================
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
+            
+          # ==========================================================================
+          # [BẢN CHẤT - Phòng thủ cấp độ Container]
+          # ==========================================================================
           securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false  # Cấm user quèn gõ lệnh `sudo` leo quyền.
+            readOnlyRootFilesystem: false    # (false vì NestJS cần ghi log/tmp. Lý tưởng: true + mount ổ tmpfs).
             capabilities:
               drop:
-                - ALL
-          # ── Tam Giác Health Check Probes ──
+                - ALL                        # Tước bỏ MỌI đặc quyền hạt nhân (VD: cấm đổi IP, cấm sờ network stack).
+                
+          # ==========================================================================
+          # [BẢN CHẤT - Tam giác Health Check (Probes)]
+          # Nếu không có, K8s sẽ đẩy traffic ngay khi container bật lên -> App đang loading -> User nhận 502 Bad Gateway.
+          # ==========================================================================
+          
+          # 1. Khám Khởi Động (Startup Probe): 
+          # Chuyên phục vụ app chạy Node.js/Java mất nhiều giây khởi động (kết nối DB, init modules). 
+          # Nếu Fail quá 12 lần (60s) -> K8s giết luôn.
           startupProbe:
             httpGet:
               path: /health
@@ -84,6 +130,10 @@ spec:
             periodSeconds: 5
             failureThreshold: 12
             timeoutSeconds: 3
+            
+          # 2. Khám Sẵn Sàng (Readiness Probe):
+          # Khi app bị quá tải, kết nối DB chậm lại. 
+          # Nếu Fail -> RÚT app khỏi danh sách nhận traffic (NHƯNG KHÔNG GIẾT), để app nghỉ ngơi. Hồi phục thì nhận traffic lại.
           readinessProbe:
             httpGet:
               path: /health
@@ -92,6 +142,10 @@ spec:
             periodSeconds: 10
             failureThreshold: 3
             timeoutSeconds: 3
+            
+          # 3. Khám Sống Sót (Liveness Probe):
+          # Khi app bị treo cứng (deadlock), vỡ RAM không phản hồi. 
+          # Nếu Fail liên tục -> XÁC ĐỊNH LÀ ĐÃ CHẾT LÂM SÀNG -> K8s vác dao ra GIẾT NGAY và tạo Pod mới.
           livenessProbe:
             httpGet:
               path: /health
@@ -100,6 +154,7 @@ spec:
             periodSeconds: 15
             failureThreshold: 3
             timeoutSeconds: 3
+            
           volumeMounts:
             - name: uploads-storage
               mountPath: /app/uploads

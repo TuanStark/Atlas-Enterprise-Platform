@@ -1,9 +1,16 @@
 # ==============================================================================
 # NETWORK POLICIES — ENTERPRISE MICRO-SEGMENTATION
-# Zero-Trust: deny-all mặc định, chỉ allow traffic cần thiết
 # ==============================================================================
 {{- if .Values.networkPolicy.enabled }}
-# ── Default Deny All Ingress ──
+
+# ==========================================================================
+# [BẢN CHẤT - Mô hình Zero-Trust]
+# Kubernetes mặc định là "mạng phẳng" - Pod nào cũng có thể gọi Pod nào. 
+# Nếu hacker chiếm được Frontend qua XSS, họ có thể ping thẳng vào cổng 5432 của DB (rất nguy hiểm).
+# 🟩 Senior Review: Nguyên tắc số 1 luôn là Default Deny (Đóng cửa cài then TẤT CẢ). Sau đó mới "đục tường" mở từng lỗ nhỏ (Whitelist).
+# ==========================================================================
+
+# ── 1. Default Deny All Ingress ──
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -12,11 +19,17 @@ metadata:
   labels:
     {{- include "atlas-hrm.labels" . | nindent 4 }}
 spec:
-  podSelector: {}
+  podSelector: {} # Áp dụng cho TOÀN BỘ Pods trong Namespace này.
   policyTypes:
-    - Ingress
+    - Ingress     # Block toàn bộ traffic ĐI VÀO (Vì không có rule cho phép nào ở dưới).
 ---
-# ── Backend: Chỉ cho phép traffic từ Ingress Controller & Frontend ──
+# ==========================================================================
+# [BẢN CHẤT - Whitelist Backend]
+# Backend chỉ được phép nhận traffic từ đúng 2 luồng hợp pháp.
+# 1. Từ Nginx Ingress Controller (traffic từ Internet).
+# 2. Từ Frontend Pod (traffic nội bộ).
+# Ai khác gọi vào -> DROP.
+# ==========================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -31,7 +44,7 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    # Cho phép từ Ingress Controller namespace
+    # Rule 1: Cho phép từ Nginx Ingress Controller (tìm theo Label của namespace)
     - from:
         - namespaceSelector:
             matchLabels:
@@ -39,14 +52,18 @@ spec:
       ports:
         - protocol: TCP
           port: {{ .Values.config.port }}
-    # Cho phép traffic nội bộ trong cùng namespace (frontend → backend)
+    # Rule 2: Cho phép từ Frontend nội bộ (bất kỳ pod nào trong cùng namespace)
     - from:
         - podSelector: {}
       ports:
         - protocol: TCP
           port: {{ .Values.config.port }}
 ---
-# ── PostgreSQL: Chỉ cho phép từ Backend & Migration Job ──
+# ==========================================================================
+# [BẢN CHẤT - Whitelist Database]
+# Tuyệt đối CẤM Frontend đụng vào Database. Chỉ Backend và Migration Job được phép chạm vào port 5432.
+# 🟩 Senior Review: Nếu hacker chiếm được Frontend Web, họ cũng chỉ kẹt ở đó, không thể sờ vào dữ liệu khách hàng.
+# ==========================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
