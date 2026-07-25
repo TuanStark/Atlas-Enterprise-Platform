@@ -1,0 +1,37 @@
+# ==============================================================================
+# PRODUCTION ENVIRONMENT OVERRIDES
+# ==============================================================================
+
+global:
+  environment: production
+  namespace: hrm-system
+
+config:
+  nodeEnv: production
+
+backend:
+  replicaCount: 3
+  image:
+    tag: v1.0.0
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+frontend:
+  replicaCount: 3
+  image:
+    tag: v1.0.0
+
+ingress:
+  host: hrm.atlas-enterprise.com
+
+hpa:
+  backend:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPU: 70

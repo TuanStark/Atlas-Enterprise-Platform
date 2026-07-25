@@ -1,0 +1,36 @@
+# ==============================================================================
+# DEVELOPMENT ENVIRONMENT OVERRIDES
+# ==============================================================================
+
+global:
+  environment: development
+  namespace: hrm-dev
+
+config:
+  nodeEnv: development
+
+backend:
+  replicaCount: 1
+  image:
+    tag: dev-latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+frontend:
+  replicaCount: 1
+  image:
+    tag: dev-latest
+
+ingress:
+  host: dev-hrm.local
+
+hpa:
+  backend:
+    enabled: false
+  frontend:
+    enabled: false

@@ -1,0 +1,81 @@
+# ==============================================================================
+# DEFAULT VALUES FOR ATLAS HRM HELM CHART
+# ==============================================================================
+
+global:
+  environment: production
+  namespace: hrm-system
+
+# ConfigMap & Secret Configs
+config:
+  nodeEnv: production
+  port: 3000
+  host: "0.0.0.0"
+  postgresHost: "postgres-service"
+  postgresPort: 5432
+  postgresDb: "erp_db"
+  redisHost: "redis-service"
+  redisPort: 6379
+
+secrets:
+  postgresUser: "postgres"
+  postgresPassword: "postgres_password_secure_123"
+  databaseUrl: "postgresql://postgres:postgres_password_secure_123@postgres-service:5432/erp_db?schema=public"
+  jwtSecret: "super_secret_jwt_key_atlas_hrm_2026"
+  jwtExpiresIn: "7d"
+
+# Storage PVC Claims
+storage:
+  postgresStorage: 10Gi
+  redisStorage: 2Gi
+  uploadsStorage: 5Gi
+
+# Backend Microservice Configuration
+backend:
+  replicaCount: 2
+  image:
+    repository: erp-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Frontend SPA Configuration
+frontend:
+  replicaCount: 2
+  image:
+    repository: erp-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  host: hrm.local
+  className: nginx
+  proxyBodySize: "50m"
+
+# HPA Auto-scaling Configuration
+hpa:
+  backend:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPU: 70
+  frontend:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPU: 70
