@@ -1,17 +1,34 @@
 # ==============================================================================
-# PRODUCTION ENVIRONMENT OVERRIDES
+# PRODUCTION ENVIRONMENT — values-prod.yaml
+# ==============================================================================
+# Deploy qua ArgoCD (KHÔNG deploy thủ công)
+# ArgoCD auto-sync từ branch main → charts/atlas-hrm + values-prod.yaml
 # ==============================================================================
 
 global:
   environment: production
   namespace: hrm-system
 
-config:
-  nodeEnv: production
+# ── SealedSecrets (BẮT BUỘC cho Production) ──
+secrets:
+  useSealedSecrets: true
+  sealedData: {}
+  # Hướng dẫn tạo SealedSecret cho Production:
+  # 1. kubectl create secret generic hrm-prod-secret \
+  #      --from-literal=POSTGRES_USER=atlas_prod_user \
+  #      --from-literal=POSTGRES_PASSWORD=<STRONG_RANDOM_PASSWORD> \
+  #      --from-literal=DATABASE_URL="postgresql://atlas_prod_user:<PASS>@postgres-service:5432/erp_db?schema=public" \
+  #      --from-literal=JWT_SECRET=<STRONG_RANDOM_256BIT_KEY> \
+  #      --from-literal=JWT_EXPIRES_IN=7d \
+  #      --dry-run=client -o yaml | kubeseal --format yaml
+  # 2. Copy encryptedData values vào sealedData block ở trên
 
+# ── Production Resources (3+ replicas, high limits) ──
 backend:
   replicaCount: 3
   image:
+    registry: ghcr.io
+    repository: tuanstark/atlas-erp-backend
     tag: v1.0.0
   resources:
     requests:
@@ -20,18 +37,76 @@ backend:
     limits:
       cpu: 1000m
       memory: 1Gi
+  # Spread backend pods qua các node khác nhau
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: backend
 
 frontend:
   replicaCount: 3
   image:
+    registry: ghcr.io
+    repository: tuanstark/atlas-erp-frontend
     tag: v1.0.0
+  resources:
+    requests:
+      cpu: 200m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
 
+# ── Production Ingress (TLS BẮT BUỘC) ──
 ingress:
   host: hrm.atlas-enterprise.com
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
 
+# ── HPA Max Scale ──
 hpa:
   backend:
     enabled: true
     minReplicas: 3
     maxReplicas: 15
     targetCPU: 70
+    targetMemory: 80
+  frontend:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+    targetCPU: 70
+
+# ── Full Security ──
+networkPolicy:
+  enabled: true
+
+pdb:
+  backend:
+    enabled: true
+    minAvailable: 2
+  frontend:
+    enabled: true
+    minAvailable: 2
+
+# ── Production Storage ──
+postgres:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+storage:
+  postgres:
+    size: 50Gi
+  redis:
+    size: 5Gi
+  uploads:
+    size: 20Gi

@@ -1,0 +1,120 @@
+# ==============================================================================
+# NETWORK POLICIES — ENTERPRISE MICRO-SEGMENTATION
+# Zero-Trust: deny-all mặc định, chỉ allow traffic cần thiết
+# ==============================================================================
+{{- if .Values.networkPolicy.enabled }}
+# ── Default Deny All Ingress ──
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-default-deny
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# ── Backend: Chỉ cho phép traffic từ Ingress Controller & Frontend ──
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-backend-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Cho phép từ Ingress Controller namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: {{ .Values.config.port }}
+    # Cho phép traffic nội bộ trong cùng namespace (frontend → backend)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.config.port }}
+---
+# ── PostgreSQL: Chỉ cho phép từ Backend & Migration Job ──
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-postgres-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "postgres" "root" .) | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "postgres" "root" .) | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: backend
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: migration
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+# ── Redis: Chỉ cho phép từ Backend ──
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-redis-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "redis" "root" .) | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "redis" "root" .) | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: backend
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+# ── Frontend: Chỉ cho phép từ Ingress Controller ──
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-frontend-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "frontend" "root" .) | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+{{- end }}

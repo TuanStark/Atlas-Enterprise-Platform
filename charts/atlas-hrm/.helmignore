@@ -1,0 +1,21 @@
+# Patterns to ignore when packaging Helm chart
+.git
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+.DS_Store
+# CI/CD files
+.github/
+.gitlab-ci.yml
+# Documentation
+README.md
+docs/
+LICENSE
+# Test files
+tests/
+ci/

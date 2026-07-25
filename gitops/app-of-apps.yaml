@@ -1,0 +1,33 @@
+# ==============================================================================
+# ARGOCD APP-OF-APPS PATTERN
+# Quản lý TẤT CẢ ArgoCD Applications từ 1 điểm duy nhất
+# ArgoCD sẽ tự động tạo & quản lý các Application con trong argocd-apps/
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atlas-enterprise-root
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: atlas-enterprise-platform
+    app.kubernetes.io/component: app-of-apps
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: "https://github.com/TuanStark/Atlas-Enterprise-Platform.git"
+    targetRevision: main
+    path: gitops/argocd-apps
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

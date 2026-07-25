@@ -1,0 +1,59 @@
+# ==============================================================================
+# PERSISTENT VOLUME CLAIMS — PostgreSQL, Redis & Application Uploads
+# ==============================================================================
+{{- if .Values.storage.postgres.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-postgres-pvc
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "postgres" "root" .) | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.storage.postgres.accessMode | default "ReadWriteOnce" }}
+  {{- if .Values.storage.postgres.storageClass }}
+  storageClassName: {{ .Values.storage.postgres.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.postgres.size }}
+{{- end }}
+---
+{{- if .Values.storage.redis.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-redis-pvc
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "redis" "root" .) | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.storage.redis.accessMode | default "ReadWriteOnce" }}
+  {{- if .Values.storage.redis.storageClass }}
+  storageClassName: {{ .Values.storage.redis.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.redis.size }}
+{{- end }}
+---
+{{- if .Values.storage.uploads.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-uploads-pvc
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "uploads" "root" .) | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.storage.uploads.accessMode | default "ReadWriteOnce" }}
+  {{- if .Values.storage.uploads.storageClass }}
+  storageClassName: {{ .Values.storage.uploads.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.uploads.size }}
+{{- end }}

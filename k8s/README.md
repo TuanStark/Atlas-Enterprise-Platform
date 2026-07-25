@@ -1,12 +1,15 @@
-# ☸️ Kubernetes Enterprise Manifests - Atlas HRM Platform
+# ☸️ Kubernetes Raw Manifests — Atlas HRM Platform
 
-> **Bộ Manifests Kubernetes Production-Ready dành cho Atlas Enterprise Platform**
-
-![AWS Architecture](../docs/AWS-HRM.png)
+> ⚠️ **DEPRECATED — CHỈ DÙNG LÀM TÀI LIỆU THAM KHẢO**
+>
+> Thư mục này chứa các raw YAML manifests gốc, được giữ lại **CHỈ cho mục đích học tập và tham khảo**.
+>
+> **Toàn bộ deployment production hiện tại sử dụng Helm + ArgoCD GitOps.**
+> Xem: [`charts/atlas-hrm/`](../charts/atlas-hrm/) và [`gitops/`](../gitops/)
 
 ---
 
-## 📋 MỤC LỤC MANIFESTS
+## 📋 MỤC LỤC MANIFESTS (Reference Only)
 
 | STT | Manifest File | Mô tả chức năng |
 | :---: | :--- | :--- |
@@ -23,33 +26,35 @@
 
 ---
 
-## 🚀 HƯỚNG DẪN TRIỂN KHAI THỰC THI (RUNBOOK)
+## 🔀 MIGRATION GUIDE: Raw YAML → Helm + ArgoCD
 
-### 1. Triển khai theo thứ tự chuẩn:
+### Phương pháp deploy chuẩn enterprise hiện tại:
 
 ```bash
-# 1. Tạo Namespace, ConfigMap & Secret
-kubectl apply -f k8s/00-namespace.yaml
-kubectl apply -f k8s/01-configmap.yaml
-kubectl apply -f k8s/01-secret.yaml
+# 1. Dev Environment (local)
+helm upgrade --install atlas-hrm charts/atlas-hrm/ \
+  -f charts/atlas-hrm/values-dev.yaml \
+  --namespace hrm-dev --create-namespace
 
-# 2. Tạo Storage PersistentVolumeClaims
-kubectl apply -f k8s/02-storage.yaml
+# 2. Staging Environment
+helm upgrade --install atlas-hrm charts/atlas-hrm/ \
+  -f charts/atlas-hrm/values-staging.yaml \
+  --namespace hrm-staging --create-namespace
 
-# 3. Deploy Databases (PostgreSQL 17 & Redis 8)
-kubectl apply -f k8s/03-postgres-redis.yaml
-
-# 4. Chạy DB Migration Job (Prisma)
-kubectl apply -f k8s/04-db-migration-job.yaml
-
-# 5. Deploy Backend NestJS & Frontend React
-kubectl apply -f k8s/05-backend-deployment.yaml
-kubectl apply -f k8s/06-frontend-deployment.yaml
-
-# 6. Deploy Ingress Controller & HPA
-kubectl apply -f k8s/07-ingress.yaml
-kubectl apply -f k8s/08-hpa.yaml
+# 3. Production Environment (qua ArgoCD — KHÔNG deploy thủ công)
+# ArgoCD auto-sync từ gitops/argocd-apps/production.yaml
+kubectl apply -f gitops/app-of-apps.yaml
 ```
+
+### Tại sao chuyển sang Helm + ArgoCD?
+
+| Raw YAML | Helm + ArgoCD |
+|:---|:---|
+| Hardcode giá trị, khó thay đổi theo env | Template + values-{env}.yaml linh hoạt |
+| Secret plaintext commit vào Git | SealedSecrets encrypted, an toàn |
+| Deploy thủ công `kubectl apply` | GitOps auto-sync khi push code |
+| Không rollback dễ dàng | `helm rollback` hoặc ArgoCD history |
+| Không có CI/CD | GitHub Actions tự động build, test, deploy |
 
 ---
 
@@ -60,7 +65,7 @@ kubectl apply -f k8s/08-hpa.yaml
 kubectl get all,pvc,ingress -n hrm-system
 
 # Xem log thực thi của Backend
-kubectl logs -n hrm-system -l app=backend -f
+kubectl logs -n hrm-system -l app.kubernetes.io/component=backend -f
 
 # Xem trạng thái HPA Auto-scaling
 kubectl get hpa -n hrm-system

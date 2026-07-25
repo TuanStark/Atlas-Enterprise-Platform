@@ -1,36 +1,73 @@
 # ==============================================================================
-# DEVELOPMENT ENVIRONMENT OVERRIDES
+# DEVELOPMENT ENVIRONMENT — values-dev.yaml
+# ==============================================================================
+# Deploy: helm upgrade --install atlas-hrm charts/atlas-hrm/ -f charts/atlas-hrm/values-dev.yaml
 # ==============================================================================
 
 global:
   environment: development
   namespace: hrm-dev
 
-config:
-  nodeEnv: development
+# ── Development Secrets (plaintext OK cho dev local) ──
+secrets:
+  useSealedSecrets: false
+  postgresUser: "postgres"
+  postgresPassword: "dev_password_123"
+  databaseUrl: "postgresql://postgres:dev_password_123@postgres-service:5432/erp_db?schema=public"
+  jwtSecret: "dev_jwt_secret_not_for_production"
+  jwtExpiresIn: "30d"
 
+# ── Minimal Resources (1 replica, no HPA) ──
 backend:
   replicaCount: 1
   image:
+    registry: ""
+    repository: erp-backend
     tag: dev-latest
+    pullPolicy: Always
   resources:
     requests:
       cpu: 100m
       memory: 128Mi
     limits:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 500m
+      memory: 512Mi
 
 frontend:
   replicaCount: 1
   image:
+    registry: ""
+    repository: erp-frontend
     tag: dev-latest
+    pullPolicy: Always
 
+# ── Dev Ingress ──
 ingress:
   host: dev-hrm.local
+  tls:
+    enabled: false
 
+# ── Disable production features ──
 hpa:
   backend:
     enabled: false
   frontend:
     enabled: false
+
+networkPolicy:
+  enabled: false
+
+pdb:
+  backend:
+    enabled: false
+  frontend:
+    enabled: false
+
+# ── Smaller storage ──
+storage:
+  postgres:
+    size: 2Gi
+  redis:
+    size: 1Gi
+  uploads:
+    size: 2Gi

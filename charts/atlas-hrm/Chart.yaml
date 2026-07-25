@@ -2,8 +2,24 @@ apiVersion: v2
 name: atlas-hrm
 description: Enterprise Helm Chart for Atlas Enterprise Platform (HRM System)
 type: application
-version: 1.0.0
+version: 1.1.0
 appVersion: 1.0.0
+
 maintainers:
   - name: Senior DevOps Architect
     email: devops@atlas-enterprise.com
+
+keywords:
+  - nestjs
+  - react
+  - hrm
+  - enterprise
+  - kubernetes
+
+home: https://github.com/TuanStark/Atlas-Enterprise-Platform
+sources:
+  - https://github.com/TuanStark/Atlas-Enterprise-Platform
+
+annotations:
+  artifacthub.io/license: UNLICENSED
+  artifacthub.io/signKey: ""

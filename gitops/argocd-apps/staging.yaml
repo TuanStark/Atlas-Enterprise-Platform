@@ -1,0 +1,46 @@
+# ==============================================================================
+# ARGOCD APPLICATION — STAGING ENVIRONMENT
+# Auto-sync: BẬT (staging auto-deploy từ main branch)
+# Branch: main
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atlas-hrm-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: atlas-enterprise-platform
+    app.kubernetes.io/environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: atlas-enterprise
+
+  source:
+    repoURL: "https://github.com/TuanStark/Atlas-Enterprise-Platform.git"
+    targetRevision: main
+    path: charts/atlas-hrm
+    helm:
+      valueFiles:
+        - values-staging.yaml
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: hrm-staging
+
+  # Auto-sync cho staging — mirror production nhưng tự động deploy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

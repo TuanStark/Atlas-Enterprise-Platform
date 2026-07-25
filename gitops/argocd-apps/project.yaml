@@ -1,0 +1,42 @@
+# ==============================================================================
+# ARGOCD APP PROJECT — ATLAS ENTERPRISE PLATFORM
+# Isolate quyền & scope cho tất cả ArgoCD Applications
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: atlas-enterprise
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Atlas Enterprise Platform — HRM System GitOps Project"
+
+  # Chỉ cho phép deploy từ repo này
+  sourceRepos:
+    - "https://github.com/TuanStark/Atlas-Enterprise-Platform.git"
+
+  # Chỉ cho phép deploy vào các namespace của Atlas
+  destinations:
+    - namespace: hrm-dev
+      server: "https://kubernetes.default.svc"
+    - namespace: hrm-staging
+      server: "https://kubernetes.default.svc"
+    - namespace: hrm-system
+      server: "https://kubernetes.default.svc"
+    - namespace: argocd
+      server: "https://kubernetes.default.svc"
+
+  # Cho phép tạo namespace tự động
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+
+  # Cho phép tất cả resource types trong namespaced scope
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  # Orphaned resources monitoring
+  orphanedResources:
+    warn: true

@@ -1,0 +1,40 @@
+# ==============================================================================
+# POD DISRUPTION BUDGETS — ĐẢM BẢO TÍNH SẴN SÀNG KHI DRAIN/UPGRADE NODE
+# ==============================================================================
+{{- if .Values.pdb.backend.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-backend-pdb
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
+spec:
+  {{- if .Values.pdb.backend.minAvailable }}
+  minAvailable: {{ .Values.pdb.backend.minAvailable }}
+  {{- else }}
+  maxUnavailable: {{ .Values.pdb.backend.maxUnavailable | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 6 }}
+{{- end }}
+---
+{{- if .Values.pdb.frontend.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-frontend-pdb
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 4 }}
+spec:
+  {{- if .Values.pdb.frontend.minAvailable }}
+  minAvailable: {{ .Values.pdb.frontend.minAvailable }}
+  {{- else }}
+  maxUnavailable: {{ .Values.pdb.frontend.maxUnavailable | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "frontend" "root" .) | nindent 6 }}
+{{- end }}

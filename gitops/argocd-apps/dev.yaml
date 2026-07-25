@@ -1,0 +1,46 @@
+# ==============================================================================
+# ARGOCD APPLICATION — DEVELOPMENT ENVIRONMENT
+# Auto-sync: BẬT (dev tự động deploy khi push code)
+# Branch: develop
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atlas-hrm-dev
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: atlas-enterprise-platform
+    app.kubernetes.io/environment: development
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: atlas-enterprise
+
+  source:
+    repoURL: "https://github.com/TuanStark/Atlas-Enterprise-Platform.git"
+    targetRevision: develop
+    path: charts/atlas-hrm
+    helm:
+      valueFiles:
+        - values-dev.yaml
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: hrm-dev
+
+  # Auto-sync cho dev — deploy tự động khi có thay đổi trên branch develop
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m

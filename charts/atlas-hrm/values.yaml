@@ -1,42 +1,135 @@
 # ==============================================================================
-# DEFAULT VALUES FOR ATLAS HRM HELM CHART
+# ATLAS HRM HELM CHART — DEFAULT VALUES
+# ==============================================================================
+# File này chứa giá trị MẶC ĐỊNH cho tất cả environments.
+# Từng environment (dev/staging/prod) sẽ override qua values-{env}.yaml
 # ==============================================================================
 
+# ── Global Configuration ──
 global:
   environment: production
   namespace: hrm-system
+  createNamespace: true
 
-# ConfigMap & Secret Configs
+# ── Naming Overrides ──
+nameOverride: ""
+fullnameOverride: ""
+
+# ── ServiceAccount ──
+serviceAccount:
+  create: true
+  name: ""
+  automountToken: false
+  annotations: {}
+  # Ví dụ AWS IRSA:
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/atlas-hrm-role
+
+# ── ConfigMap (Non-sensitive env vars) ──
 config:
   nodeEnv: production
   port: 3000
   host: "0.0.0.0"
   postgresHost: "postgres-service"
-  postgresPort: 5432
+  postgresPort: "5432"
   postgresDb: "erp_db"
   redisHost: "redis-service"
-  redisPort: 6379
+  redisPort: "6379"
+  extraEnv: {}
+  # Thêm biến tuỳ ý:
+  # extraEnv:
+  #   LOG_LEVEL: "info"
+  #   CORS_ORIGIN: "https://hrm.atlas-enterprise.com"
 
+# ── Secrets ──
 secrets:
-  postgresUser: "postgres"
-  postgresPassword: "postgres_password_secure_123"
-  databaseUrl: "postgresql://postgres:postgres_password_secure_123@postgres-service:5432/erp_db?schema=public"
-  jwtSecret: "super_secret_jwt_key_atlas_hrm_2026"
+  # Bật SealedSecrets cho staging/prod (mã hoá, an toàn commit Git)
+  useSealedSecrets: false
+  # Giá trị plaintext (CHỈ dùng cho DEV — values-dev.yaml sẽ override)
+  postgresUser: ""
+  postgresPassword: ""
+  databaseUrl: ""
+  jwtSecret: ""
   jwtExpiresIn: "7d"
+  # Encrypted values cho SealedSecrets (values-prod.yaml sẽ override)
+  sealedData: {}
+  # Ví dụ:
+  # sealedData:
+  #   POSTGRES_PASSWORD: "AgBy8hF2..."  # Output từ kubeseal CLI
 
-# Storage PVC Claims
+# ── PostgreSQL Database ──
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "17-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  tolerations: []
+
+# ── Redis Cache ──
+redis:
+  enabled: true
+  password: false
+  image:
+    repository: redis
+    tag: "8-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  nodeSelector: {}
+  tolerations: []
+
+# ── Storage (PVC) ──
 storage:
-  postgresStorage: 10Gi
-  redisStorage: 2Gi
-  uploadsStorage: 5Gi
+  postgres:
+    enabled: true
+    size: 10Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  redis:
+    enabled: true
+    size: 2Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  uploads:
+    enabled: true
+    size: 5Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
 
-# Backend Microservice Configuration
+# ── Database Migration (Prisma) ──
+migration:
+  enabled: true
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 600
+
+# ── Backend (NestJS) ──
 backend:
   replicaCount: 2
+  revisionHistoryLimit: 5
+  terminationGracePeriodSeconds: 30
   image:
-    repository: erp-backend
+    registry: ghcr.io
+    repository: tuanstark/atlas-erp-backend
     tag: latest
     pullPolicy: IfNotPresent
+    pullSecrets: []
+    # pullSecrets:
+    #   - name: ghcr-pull-secret
   resources:
     requests:
       cpu: 250m
@@ -44,14 +137,30 @@ backend:
     limits:
       cpu: 500m
       memory: 512Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  # Ví dụ spread pods qua các zone:
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: DoNotSchedule
+  #     labelSelector:
+  #       matchLabels:
+  #         app.kubernetes.io/component: backend
 
-# Frontend SPA Configuration
+# ── Frontend (React Vite + Nginx) ──
 frontend:
   replicaCount: 2
+  revisionHistoryLimit: 5
+  terminationGracePeriodSeconds: 15
   image:
-    repository: erp-frontend
+    registry: ghcr.io
+    repository: tuanstark/atlas-erp-frontend
     tag: latest
     pullPolicy: IfNotPresent
+    pullSecrets: []
   resources:
     requests:
       cpu: 100m
@@ -59,23 +168,46 @@ frontend:
     limits:
       cpu: 250m
       memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-# Ingress Configuration
+# ── Ingress ──
 ingress:
   enabled: true
-  host: hrm.local
   className: nginx
+  host: hrm.local
   proxyBodySize: "50m"
+  annotations: {}
+  tls:
+    enabled: false
+    clusterIssuer: letsencrypt-prod
 
-# HPA Auto-scaling Configuration
+# ── HPA (Horizontal Pod Autoscaler) ──
 hpa:
   backend:
     enabled: true
     minReplicas: 2
     maxReplicas: 10
     targetCPU: 70
+    targetMemory: ""
   frontend:
     enabled: true
     minReplicas: 2
     maxReplicas: 5
     targetCPU: 70
+
+# ── Network Policies (Zero-Trust) ──
+networkPolicy:
+  enabled: true
+
+# ── Pod Disruption Budget ──
+pdb:
+  backend:
+    enabled: true
+    minAvailable: 1
+    maxUnavailable: ""
+  frontend:
+    enabled: true
+    minAvailable: 1
+    maxUnavailable: ""

@@ -1,0 +1,49 @@
+# ==============================================================================
+# PRISMA DATABASE MIGRATION JOB
+# Chạy 1 lần khi install/upgrade để apply schema changes
+# ==============================================================================
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-migration-{{ .Release.Revision }}
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "migration" "root" .) | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: {{ .Values.migration.backoffLimit | default 3 }}
+  activeDeadlineSeconds: {{ .Values.migration.activeDeadlineSeconds | default 300 }}
+  ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished | default 600 }}
+  template:
+    metadata:
+      labels:
+        {{- include "atlas-hrm.selectorLabels" (dict "component" "migration" "root" .) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
+      containers:
+        - name: prisma-migrate
+          image: {{ include "atlas-hrm.image" .Values.backend.image }}
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          command: ["npx", "prisma", "migrate", "deploy"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "atlas-hrm.fullname" . }}-config
+            - secretRef:
+                name: {{ include "atlas-hrm.fullname" . }}-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      {{- with .Values.backend.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

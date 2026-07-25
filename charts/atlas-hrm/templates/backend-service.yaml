@@ -1,0 +1,19 @@
+# ==============================================================================
+# NESTJS BACKEND — CLUSTERIP SERVICE
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-backend
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.config.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 4 }}

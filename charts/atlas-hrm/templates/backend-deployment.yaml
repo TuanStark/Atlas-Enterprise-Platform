@@ -1,80 +1,117 @@
+# ==============================================================================
+# NESTJS BACKEND — DEPLOYMENT (Enterprise Hardened)
+# ==============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
-  namespace: {{ .Values.global.namespace }}
+  name: {{ include "atlas-hrm.fullname" . }}-backend
+  namespace: {{ include "atlas-hrm.namespace" . }}
   labels:
-    app: backend
-    env: {{ .Values.global.environment }}
+    {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
 spec:
   replicas: {{ .Values.backend.replicaCount }}
+  revisionHistoryLimit: {{ .Values.backend.revisionHistoryLimit | default 5 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
-      app: backend
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 6 }}
   template:
     metadata:
       labels:
-        app: backend
+        {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 8 }}
+      annotations:
+        # Force rolling restart khi ConfigMap/Secret thay đổi
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/sealed-secret.yaml") . | sha256sum }}
     spec:
+      serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.backend.terminationGracePeriodSeconds | default 30 }}
+      # SecurityContext chuẩn K8s Restricted Profile (Non-root user nestjs UID 1001)
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
         runAsGroup: 1001
         fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          image: {{ include "atlas-hrm.image" .Values.backend.image }}
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           ports:
-            - containerPort: 3000
+            - name: http
+              containerPort: {{ .Values.config.port }}
+              protocol: TCP
           envFrom:
             - configMapRef:
-                name: hrm-config
+                name: {{ include "atlas-hrm.fullname" . }}-config
             - secretRef:
-                name: hrm-secret
+                name: {{ include "atlas-hrm.fullname" . }}-secret
           resources:
-            requests:
-              cpu: {{ .Values.backend.resources.requests.cpu }}
-              memory: {{ .Values.backend.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.backend.resources.limits.cpu }}
-              memory: {{ .Values.backend.resources.limits.memory }}
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          # ── Tam Giác Health Check Probes ──
           startupProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: http
             initialDelaySeconds: 5
             periodSeconds: 5
-            failureThreshold: 10
+            failureThreshold: 12
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: http
             initialDelaySeconds: 5
             periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: http
             initialDelaySeconds: 10
             periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
           volumeMounts:
             - name: uploads-storage
               mountPath: /app/uploads
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: uploads-storage
           persistentVolumeClaim:
-            claimName: uploads-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: backend-service
-  namespace: {{ .Values.global.namespace }}
-spec:
-  type: ClusterIP
-  ports:
-    - port: 3000
-      targetPort: 3000
-  selector:
-    app: backend
+            claimName: {{ include "atlas-hrm.fullname" . }}-uploads-pvc
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.backend.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

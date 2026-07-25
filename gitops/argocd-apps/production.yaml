@@ -1,0 +1,60 @@
+# ==============================================================================
+# ARGOCD APPLICATION — PRODUCTION ENVIRONMENT
+# Auto-sync: TẮT (production yêu cầu manual sync / approval)
+# Branch: main
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atlas-hrm-production
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: atlas-enterprise-platform
+    app.kubernetes.io/environment: production
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Thông báo Slack/Teams khi out-of-sync
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: atlas-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: atlas-deployments
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: atlas-alerts
+spec:
+  project: atlas-enterprise
+
+  source:
+    repoURL: "https://github.com/TuanStark/Atlas-Enterprise-Platform.git"
+    targetRevision: main
+    path: charts/atlas-hrm
+    helm:
+      valueFiles:
+        - values-prod.yaml
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: hrm-system
+
+  # ⚠️ KHÔNG auto-sync production — phải manual approve qua ArgoCD UI/CLI
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+
+  # Ignore differences cho auto-generated fields
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /spec/minReplicas
+        - /spec/maxReplicas

@@ -1,0 +1,87 @@
+# ==============================================================================
+# STAGING ENVIRONMENT — values-staging.yaml
+# ==============================================================================
+# Deploy: helm upgrade --install atlas-hrm charts/atlas-hrm/ -f charts/atlas-hrm/values-staging.yaml
+# Mô phỏng gần giống production để phát hiện bug trước khi lên prod
+# ==============================================================================
+
+global:
+  environment: staging
+  namespace: hrm-staging
+
+# ── SealedSecrets (encrypted, an toàn commit Git) ──
+secrets:
+  useSealedSecrets: true
+  sealedData: {}
+  # Hướng dẫn tạo SealedSecret:
+  # 1. kubectl create secret generic hrm-staging-secret \
+  #      --from-literal=POSTGRES_USER=postgres \
+  #      --from-literal=POSTGRES_PASSWORD=staging_secure_pass \
+  #      --from-literal=DATABASE_URL="postgresql://postgres:staging_secure_pass@postgres-service:5432/erp_db?schema=public" \
+  #      --from-literal=JWT_SECRET=staging_jwt_key \
+  #      --from-literal=JWT_EXPIRES_IN=7d \
+  #      --dry-run=client -o yaml | kubeseal --format yaml
+  # 2. Copy encryptedData values vào sealedData block ở trên
+
+# ── Staging Resources (2 replicas, moderate limits) ──
+backend:
+  replicaCount: 2
+  image:
+    registry: ghcr.io
+    repository: tuanstark/atlas-erp-backend
+    tag: staging-latest
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+frontend:
+  replicaCount: 2
+  image:
+    registry: ghcr.io
+    repository: tuanstark/atlas-erp-frontend
+    tag: staging-latest
+
+# ── Staging Ingress (TLS enabled) ──
+ingress:
+  host: staging-hrm.atlas-enterprise.com
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-staging
+
+# ── HPA enabled (nhưng giới hạn thấp hơn prod) ──
+hpa:
+  backend:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPU: 70
+  frontend:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPU: 70
+
+# ── Network & PDB enabled ──
+networkPolicy:
+  enabled: true
+
+pdb:
+  backend:
+    enabled: true
+    minAvailable: 1
+  frontend:
+    enabled: true
+    minAvailable: 1
+
+# ── Moderate storage ──
+storage:
+  postgres:
+    size: 5Gi
+  redis:
+    size: 2Gi
+  uploads:
+    size: 3Gi
