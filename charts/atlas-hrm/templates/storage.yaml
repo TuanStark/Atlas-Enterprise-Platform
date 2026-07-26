@@ -1,6 +1,12 @@
 # ==============================================================================
-# PERSISTENT VOLUME CLAIMS — PostgreSQL, Redis & Application Uploads
+# PERSISTENT VOLUME CLAIMS (PVC)
 # ==============================================================================
+
+# [BẢN CHẤT - Tách Biệt Compute và Storage]
+# Pod của Kubernetes là dạng Stateless (Vô quốc tịch). Nghĩa là Pod sập -> Mọi dữ liệu ghi bên trong Pod BAY MÀU NGAY LẬP TỨC.
+# 🟩 Senior Review: Để chạy Database (Stateful) trên K8s, BẮT BUỘC phải dùng PVC (Persistent Volume Claim).
+# PVC giống như 1 cái "Ổ cứng di động" (USB) cắm ngoài. Nếu Pod sập, K8s tạo Pod mới và cắm lại cái USB đó vào -> Dữ liệu hoàn toàn nguyên vẹn.
+
 {{- if .Values.storage.postgres.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -11,13 +17,16 @@ metadata:
     {{- include "atlas-hrm.componentLabels" (dict "component" "postgres" "root" .) | nindent 4 }}
 spec:
   accessModes:
+    # ReadWriteOnce (RWO): Chỉ cho phép 1 Node được quyền Mount ổ cứng này (Chuẩn khắt khe cho Database).
+    # Không dùng ReadWriteMany (RWX) cho Database vì có thể khiến 2 ứng dụng cùng ghi đè gây cháy dữ liệu (conflict lock file).
     - {{ .Values.storage.postgres.accessMode | default "ReadWriteOnce" }}
-  {{- if .Values.storage.postgres.storageClass }}
-  storageClassName: {{ .Values.storage.postgres.storageClass }}
-  {{- end }}
   resources:
     requests:
       storage: {{ .Values.storage.postgres.size }}
+  {{- if .Values.storage.postgres.storageClass }}
+  # 🟩 Senior Review: Nên dùng StorageClass (vd: gp3 trên AWS, ssd trên GCP) để cấu hình ổ cứng SSD tối ưu IOPS cho Database thay vì ổ từ tính thông thường.
+  storageClassName: {{ .Values.storage.postgres.storageClass | quote }}
+  {{- end }}
 {{- end }}
 ---
 {{- if .Values.storage.redis.enabled }}
@@ -31,12 +40,12 @@ metadata:
 spec:
   accessModes:
     - {{ .Values.storage.redis.accessMode | default "ReadWriteOnce" }}
-  {{- if .Values.storage.redis.storageClass }}
-  storageClassName: {{ .Values.storage.redis.storageClass }}
-  {{- end }}
   resources:
     requests:
       storage: {{ .Values.storage.redis.size }}
+  {{- if .Values.storage.redis.storageClass }}
+  storageClassName: {{ .Values.storage.redis.storageClass | quote }}
+  {{- end }}
 {{- end }}
 ---
 {{- if .Values.storage.uploads.enabled }}
@@ -46,14 +55,18 @@ metadata:
   name: {{ include "atlas-hrm.fullname" . }}-uploads-pvc
   namespace: {{ include "atlas-hrm.namespace" . }}
   labels:
-    {{- include "atlas-hrm.componentLabels" (dict "component" "uploads" "root" .) | nindent 4 }}
+    {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
 spec:
   accessModes:
+    # [BẢN CHẤT - Hạn chế của PVC Local]
+    # 🚩 Lưu ý chết người: Nếu Backend chạy HPA ra 3 Replicas (Pods) trên 3 Nodes vật lý khác nhau, 
+    # Việc dùng ReadWriteOnce (RWO) sẽ gây lỗi (chỉ Pod đầu tiên gắn được ổ cứng, 2 Pod kia bị treo ở trạng thái ContainerCreating).
+    # 🟩 Senior Review: Để chia sẻ thư mục Uploads giữa nhiều pod, bắt buộc phải đổi sang ReadWriteMany (NFS/EFS) hoặc lý tưởng nhất là sửa Code Backend đẩy file lên Amazon S3 thay vì lưu ở đĩa cục bộ.
     - {{ .Values.storage.uploads.accessMode | default "ReadWriteOnce" }}
-  {{- if .Values.storage.uploads.storageClass }}
-  storageClassName: {{ .Values.storage.uploads.storageClass }}
-  {{- end }}
   resources:
     requests:
       storage: {{ .Values.storage.uploads.size }}
+  {{- if .Values.storage.uploads.storageClass }}
+  storageClassName: {{ .Values.storage.uploads.storageClass | quote }}
+  {{- end }}
 {{- end }}
