@@ -1,5 +1,5 @@
 # ==============================================================================
-# NETWORK POLICIES — ENTERPRISE MICRO-SEGMENTATION
+# NETWORK POLICIES — ENTERPRISE MICRO-SEGMENTATION - FIREWALL CỦA K8S
 # ==============================================================================
 {{- if .Values.networkPolicy.enabled }}
 
