@@ -1,3 +1,14 @@
+# ==============================================================================
+# NAMESPACE (Isolation & Quotas)
+# ==============================================================================
+
+# [BẢN CHẤT - Phân lô bán nền trên Cụm K8s]
+# Namespace tạo ra một "Mảnh đất ảo" độc lập. Giúp chia cụm K8s vật lý khổng lồ thành nhiều cụm logic nhỏ lẻ để không dẫm chân lên nhau.
+# 🟩 Senior Review: Tại sao lại cần có cái công tắc `if createNamespace` này?
+# Lý do là ở môi trường Prod/Enterprise thật sự, Đội Hạ Tầng (Cluster Admin) KHÔNG BAO GIỜ cho phép công cụ tự động (CI/CD) tự tiện quy hoạch đất.
+# Đội Hạ Tầng sẽ Cầm trịch: Tự tay tạo Namespace -> Áp đặt Resource Quotas (VD: Namespace này chỉ được xài tối đa 16 Core CPU, 32GB RAM) -> Gắn RoleBinding.
+# Lúc này, Helm Chart sẽ tắt công tắc này đi (`createNamespace: false`), và chỉ đóng vai trò ngoan ngoãn nhảy vào vùng đất đã được cấp sẵn đó để xây nhà.
+
 {{- if .Values.global.createNamespace }}
 apiVersion: v1
 kind: Namespace
