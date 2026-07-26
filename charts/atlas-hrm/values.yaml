@@ -200,6 +200,10 @@ hpa:
 # ── Network Policies (Zero-Trust) ──
 networkPolicy:
   enabled: true
+  ingressControllerNamespace: "ingress-nginx"
+  allowEgressToInternet: false
+  # [Van an toàn] - Nếu CNI của hệ thống chặn Kubelet Healthcheck, hãy điền dải IP của các Worker Node (VPC CIDR) vào đây (VD: "10.0.0.0/8")
+  kubeletIpBlock: ""
 
 # ── Pod Disruption Budget ──
 pdb:

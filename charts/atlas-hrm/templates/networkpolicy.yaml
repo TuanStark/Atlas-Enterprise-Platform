@@ -1,16 +1,15 @@
 # ==============================================================================
-# NETWORK POLICIES — ENTERPRISE MICRO-SEGMENTATION - FIREWALL CỦA K8S
+# NETWORK POLICIES — CHUẨN BẢO MẬT ENTERPRISE (ZERO-TRUST TOÀN DIỆN)
 # ==============================================================================
 {{- if .Values.networkPolicy.enabled }}
 
 # ==========================================================================
-# [BẢN CHẤT - Mô hình Zero-Trust]
-# Kubernetes mặc định là "mạng phẳng" - Pod nào cũng có thể gọi Pod nào. 
-# Nếu hacker chiếm được Frontend qua XSS, họ có thể ping thẳng vào cổng 5432 của DB (rất nguy hiểm).
-# 🟩 Senior Review: Nguyên tắc số 1 luôn là Default Deny (Đóng cửa cài then TẤT CẢ). Sau đó mới "đục tường" mở từng lỗ nhỏ (Whitelist).
+# BƯỚC 1: DEFAULT DENY ALL (KHÓA CHẶT INGRESS & EGRESS)
+# Kỹ thuật: Thiết lập podSelector rỗng {} áp dụng cho toàn bộ Namespace.
+# Bản chất: Chuyển K8s từ trạng thái "Flat Network" sang "Zero-Trust".
+# Block toàn bộ chiều đi vào (Ingress) và chiều đi ra (Egress). 
+# Pods bị cô lập hoàn toàn, buộc phải đục lỗ (Whitelist) tường minh ở các bước sau.
 # ==========================================================================
-
-# ── 1. Default Deny All Ingress ──
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -19,16 +18,88 @@ metadata:
   labels:
     {{- include "atlas-hrm.labels" . | nindent 4 }}
 spec:
-  podSelector: {} # Áp dụng cho TOÀN BỘ Pods trong Namespace này.
+  podSelector: {} # Chọn toàn bộ Pods trong Namespace
   policyTypes:
-    - Ingress     # Block toàn bộ traffic ĐI VÀO (Vì không có rule cho phép nào ở dưới).
+    - Ingress
+    - Egress      # Chuẩn Enterprise: Khóa chặt chiều đi ra để chống Data Exfiltration
+
 ---
 # ==========================================================================
-# [BẢN CHẤT - Whitelist Backend]
-# Backend chỉ được phép nhận traffic từ đúng 2 luồng hợp pháp.
-# 1. Từ Nginx Ingress Controller (traffic từ Internet).
-# 2. Từ Frontend Pod (traffic nội bộ).
-# Ai khác gọi vào -> DROP.
+# BƯỚC 2: WHITELIST DNS (MỞ KẾT NỐI COREDNS)
+# Kỹ thuật: Cho phép Egress (UDP/TCP port 53) tới namespace kube-system.
+# Bản chất: Do Egress đã bị khóa ở Bước 1, các Pod không thể phân giải tên miền 
+# nội bộ (ví dụ: gọi "atlas-hrm-backend" sẽ bị Timeout). 
+# Bước này là bắt buộc để khôi phục khả năng DNS Resolution của Cluster.
+# ==========================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-dns-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.labels" . | nindent 4 }}
+spec:
+  podSelector: {} # Áp dụng cho mọi Pods
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system # Nơi CoreDNS đang chạy
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# ==========================================================================
+# BƯỚC 3: WHITELIST FRONTEND (TẦNG PRESENTATION)
+# Kỹ thuật: Ingress từ Ingress Controller port 8080. Egress bị cấm hoàn toàn.
+# Bản chất: Frontend chỉ làm nhiệm vụ trả về file tĩnh (HTML/JS/CSS). 
+# Khóa chặt Egress giúp ngăn chặn Hacker dùng Frontend làm bàn đạp (Lateral Movement)
+# hoặc gọi ra Internet tải mã độc nếu bị khai thác RCE.
+# ==========================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-frontend-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "frontend" "root" .) | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    {{- if .Values.networkPolicy.kubeletIpBlock }}
+    # [Van an toàn]: Đục lỗ cho Kubelet Healthcheck (Liveness/Readiness probes)
+    - from:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicy.kubeletIpBlock | quote }}
+      ports:
+        - protocol: TCP
+          port: 8080
+    {{- end }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingressControllerNamespace | quote }}
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# ==========================================================================
+# BƯỚC 4: WHITELIST BACKEND (TẦNG APPLICATION LOGIC)
+# Kỹ thuật: Ingress từ Nginx và Frontend. Egress tới Postgres, Redis và tùy chọn Internet.
+# Bản chất: Dựa theo kiến trúc 3 tầng, Backend là trung tâm xử lý nghiệp vụ:
+# 1. Nhận request từ ngoài (Ingress Controller) và web (Frontend).
+# 2. Chủ động gọi ra Database và Cache.
+# Tuyệt đối không nhận traffic từ các Pod lạ để tránh truy cập API trái phép.
 # ==========================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -43,26 +114,94 @@ spec:
       {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 6 }}
   policyTypes:
     - Ingress
+    - Egress
   ingress:
-    # Rule 1: Cho phép từ Nginx Ingress Controller (tìm theo Label của namespace)
+    {{- if .Values.networkPolicy.kubeletIpBlock }}
+    # [Van an toàn]: Kubelet Healthcheck
+    - from:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicy.kubeletIpBlock | quote }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.config.port }}
+    {{- end }}
+    # Nhận traffic từ Ingress Controller
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingressControllerNamespace | quote }}
       ports:
         - protocol: TCP
           port: {{ .Values.config.port }}
-    # Rule 2: Cho phép từ Frontend nội bộ (bất kỳ pod nào trong cùng namespace)
+    # Nhận traffic nội bộ từ Frontend
     - from:
-        - podSelector: {}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: frontend
       ports:
         - protocol: TCP
           port: {{ .Values.config.port }}
+  egress:
+    # Cho phép gọi sang Postgres Database
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Cho phép gọi sang Redis Cache
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- if .Values.networkPolicy.allowEgressToInternet }}
+    # Mở lỗ gọi ra External APIs (Internet) nếu được cấu hình
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+    {{- end }}
+
 ---
 # ==========================================================================
-# [BẢN CHẤT - Whitelist Database]
-# Tuyệt đối CẤM Frontend đụng vào Database. Chỉ Backend và Migration Job được phép chạm vào port 5432.
-# 🟩 Senior Review: Nếu hacker chiếm được Frontend Web, họ cũng chỉ kẹt ở đó, không thể sờ vào dữ liệu khách hàng.
+# BƯỚC 5: WHITELIST MIGRATION JOB
+# Kỹ thuật: Khóa Ingress. Mở Egress tới Postgres.
+# Bản chất: Job chỉ chạy 1 lần lúc deploy để cập nhật Schema DB.
+# Nó không cần lắng nghe bất cứ ai (Cấm Ingress), chỉ cần gọi vào Database.
+# ==========================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "atlas-hrm.fullname" . }}-migration-policy
+  namespace: {{ include "atlas-hrm.namespace" . }}
+  labels:
+    {{- include "atlas-hrm.componentLabels" (dict "component" "migration" "root" .) | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "atlas-hrm.selectorLabels" (dict "component" "migration" "root" .) | nindent 6 }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# ==========================================================================
+# BƯỚC 6: WHITELIST POSTGRES (TẦNG LƯU TRỮ LÕI)
+# Kỹ thuật: Mở port 5432 Ingress cho Backend và Migration. Cấm toàn bộ Egress.
+# Bản chất: Đảm bảo nguyên tắc Least Privilege (Quyền tối thiểu).
+# Database là "Két sắt", tuyệt đối cấm Ingress/Frontend chọc thẳng vào.
+# Đồng thời khóa chặt Egress để nếu Database bị hack (SQL Injection to OS Shell), 
+# Hacker cũng không thể tuồn dữ liệu ra ngoài Internet.
 # ==========================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -88,8 +227,14 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+
 ---
-# ── Redis: Chỉ cho phép từ Backend ──
+# ==========================================================================
+# BƯỚC 7: WHITELIST REDIS (TẦNG CACHING)
+# Kỹ thuật: Mở port 6379 Ingress cho Backend. Cấm toàn bộ Egress.
+# Bản chất: Tương tự như Postgres, Redis chứa session data rất nhạy cảm.
+# Chỉ cho phép Backend truy cập. Khóa Egress chống Data Exfiltration.
+# ==========================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -111,27 +256,4 @@ spec:
       ports:
         - protocol: TCP
           port: 6379
----
-# ── Frontend: Chỉ cho phép từ Ingress Controller ──
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: {{ include "atlas-hrm.fullname" . }}-frontend-policy
-  namespace: {{ include "atlas-hrm.namespace" . }}
-  labels:
-    {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 4 }}
-spec:
-  podSelector:
-    matchLabels:
-      {{- include "atlas-hrm.selectorLabels" (dict "component" "frontend" "root" .) | nindent 6 }}
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
-      ports:
-        - protocol: TCP
-          port: 8080
 {{- end }}
