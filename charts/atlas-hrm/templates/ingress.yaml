@@ -2,6 +2,12 @@
 # NGINX INGRESS — ROUTING RULES WITH TLS SUPPORT
 # ==============================================================================
 {{- if .Values.ingress.enabled }}
+
+# [BẢN CHẤT - Cánh Cổng Giao Tiếp Khách (Edge Router)]
+# K8s Ingress không phải là Load Balancer thật, nó chỉ là 1 file khai báo (Rules). 
+# Nginx Ingress Controller (chạy ngầm trong cluster) sẽ đọc file này để tự sinh ra file nginx.conf.
+# 🟩 Senior Review: Ingress là chốt chặn ĐẦU TIÊN của hệ thống. Đây là nơi tốt nhất để cài đặt chứng chỉ bảo mật TLS (SSL) và cấu hình CORS. Đừng bao giờ bắt ứng dụng Backend tự gánh việc giải mã SSL (rất tốn CPU).
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -13,17 +19,30 @@ metadata:
     {{- if .Values.ingress.className }}
     kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
     {{- end }}
+    
+    # [BẢN CHẤT - Tối ưu hóa Nginx Cấp Độ Enterprise]
+    # 🚩 Lỗi Junior: Upload file vài MB thì bị báo lỗi 413 Request Entity Too Large.
+    # 🟩 Senior Review: Nginx mặc định giới hạn body size = 1MB. Với các hệ thống ERP có tính năng upload hồ sơ, bắt buộc phải mở rộng `proxy-body-size`.
     nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ingress.proxyBodySize | default "50m" | quote }}
+    
+    # [BẢN CHẤT - Xử lý CORS tập trung (API Gateway Pattern)]
+    # 🟩 Senior Review: Thay vì bắt từng microservice tự code logic CORS rườm rà, ta đẩy trách nhiệm chặn CORS ra lớp Ingress (Gateway). Code backend sẽ sạch hơn rất nhiều.
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    
     {{- if .Values.ingress.tls.enabled }}
+    # [BẢN CHẤT - Ép buộc bảo mật (TLS Termination)]
+    # Tự động đá người dùng từ HTTP sang HTTPS (Force Redirect).
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Gọi cert-manager (cài sẵn trên cụm) tự động xin cấp chứng chỉ Let's Encrypt (Miễn phí, tự động gia hạn, không cần mua SSL gia hạn bằng tay nữa).
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | default "letsencrypt-prod" | quote }}
     {{- else }}
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     {{- end }}
+    
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -31,16 +50,22 @@ spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
+  
   {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.ingress.host }}
-      secretName: {{ include "atlas-hrm.fullname" . }}-tls
+      secretName: {{ include "atlas-hrm.fullname" . }}-tls # Tên cái hộp bí mật mà cert-manager cất chứng chỉ SSL sau khi lấy về thành công.
   {{- end }}
+  
   rules:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
+          # [BẢN CHẤT - Định tuyến (Routing Paths)]
+          # 🚩 Lỗi Junior: Bỏ Frontend và Backend chung 1 path, hoặc cấu hình sai thứ tự (K8s ưu tiên match path chính xác nhất).
+          # 🟩 Senior Review: Tách biệt rạch ròi. API Backend vào `/api`, còn lại `/` (React SPA) vào Frontend.
+          
           # 1. API Requests → NestJS Backend Service
           - path: /api
             pathType: Prefix
@@ -49,6 +74,7 @@ spec:
                 name: {{ include "atlas-hrm.fullname" . }}-backend
                 port:
                   number: {{ .Values.config.port }}
+                  
           # 2. Static Assets & SPA → React Frontend Service
           - path: /
             pathType: Prefix
