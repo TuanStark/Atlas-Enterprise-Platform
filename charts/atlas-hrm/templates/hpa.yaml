@@ -1,66 +1,94 @@
 # ==============================================================================
 # HORIZONTAL POD AUTOSCALER (HPA v2) — BACKEND & FRONTEND
 # ==============================================================================
+# [BẢN CHẤT HPA]:
+# HPA không can thiệp trực tiếp vào code. Nó hỏi K8s Metrics-Server mỗi 15s để lấy
+# mức tiêu thụ CPU/Memory trung bình. Sau đó nó tự điều chỉnh chỉ số `replicas` trong Deployment.
+# ==============================================================================
+
 {{- if .Values.hpa.backend.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
+  # Tên gọi duy nhất của HPA object trong namespace
   name: {{ include "atlas-hrm.fullname" . }}-backend-hpa
   namespace: {{ include "atlas-hrm.namespace" . }}
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
 spec:
+  # ── 1. ĐỐI TƯỢNG ĐIỀU KHIỂN (Target Ref) ──
+  # HPA cần biết nó sẽ tăng/giảm số lượng Pod cho ai.
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "atlas-hrm.fullname" . }}-backend
-  minReplicas: {{ .Values.hpa.backend.minReplicas }}
-  maxReplicas: {{ .Values.hpa.backend.maxReplicas }}
+    name: {{ include "atlas-hrm.fullname" . }}-backend  # Trỏ đúng tên con Backend Deployment
+
+  # ── 2. ĐIỀU KIỆN BIÊN (SỐ POD TỐI THIỂU & TỐI ĐA) ──
+  minReplicas: {{ .Values.hpa.backend.minReplicas }}  # Đảm bảo HA (High Availability), không bao giờ tụt dưới con số này
+  maxReplicas: {{ .Values.hpa.backend.maxReplicas }}  # Chốt trần chi phí, tránh bị nổ ngân sách AWS khi bị DDoS
+
+  # ── 3. CHỈ SỐ ĐO LƯỜNG & NGƯỠNG KÍCH HOẠT (Metrics) ──
   metrics:
+    # --- Đo theo CPU ---
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .Values.hpa.backend.targetCPU }}
+          averageUtilization: {{ .Values.hpa.backend.targetCPU }} # Ví dụ: 70% (Tính theo tỉ lệ CPU Request của Deployment)
     {{- if .Values.hpa.backend.targetMemory }}
+    # --- Đo theo Memory (RAM) ---
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: {{ .Values.hpa.backend.targetMemory }}
+          averageUtilization: {{ .Values.hpa.backend.targetMemory }} # Ví dụ: 80% RAM Request
     {{- end }}
-    
-  # ==========================================================================
-  # [BẢN CHẤT - HPA Scale Behavior]
-  # 🚩 Lỗi Junior: Không có mục Behavior. K8s HPA sẽ vấp phải hiện tượng "Flapping" (Giật cục).
-  # Ví dụ: Mạng chậm tí -> CPU tăng vọt ảo -> HPA đẻ thốc 10 Pod -> 5s sau CPU giảm -> HPA tắt vội 8 Pod -> Vòng lặp đẻ/tắt diễn ra liên tục, làm sập mạng Node.
-  # 🟩 Senior Review: Scale UP thì phải NHANH (hứng traffic). Scale DOWN thì phải CHẬM (đợi chắc chắn traffic giảm thật mới tắt).
-  # ==========================================================================
+
+  # ── 4. CHÍNH SÁCH ĐÀN HỒI NÂNG CAO (Behavior Tuning) ──
+  # 🟩 Senior Review: Đây là phần quan trọng nhất giúp ứng dụng chạy êm, tránh bị Flapping (bật/tắt liên tục).
   behavior:
-    # ── CHIẾN LƯỢC SCALE DOWN (GIẢM POD) ──
+
+    # ──── A. CHIẾN LƯỢC THU HẸP (Scale Down - Giảm Pod khi vắng khách) ────
     scaleDown:
-      stabilizationWindowSeconds: 300 # Phanh chờ 5 phút (300s): Đợi cho traffic giảm ổn định 5 phút mới bắt đầu rút Pod.
+      # stabilizationWindowSeconds: Cửa sổ hoãn quyết định (Phanh chờ).
+      # K8s sẽ theo dõi trong 5 phút (300s) vừa qua. Nếu CPU thực sự THẤP ỔN ĐỊNH trong suốt 5 phút đó
+      # thì K8s mới bắt đầu tắt bớt Pod. Nếu CPU giật lên lại trong 5 phút này -> HỦY LỆNH TẮT.
+      stabilizationWindowSeconds: 300 # 5 phút
+
       policies:
+        # Tốc độ tắt Pod: Mỗi 60 giây (`periodSeconds: 60`), chỉ được phép tắt TỐI ĐA 25% số Pod hiện tại.
+        # Ví dụ: Đang có 8 Pod -> Lần 1 chỉ tắt 2 Pod -> Còn 6 Pod. Tránh tắt cái rụp gây sập ứng dụng.
         - type: Percent
-          value: 25                   # Dù giảm cũng chỉ được tắt TỐI ĐA 25% số lượng Pod mỗi phút (rút từ từ, không tắt cái rụp).
+          value: 25
           periodSeconds: 60
-          
-    # ── CHIẾN LƯỢC SCALE UP (TĂNG POD) ──
+
+    # ──── B. CHIẾN LƯỢC MỞ RỘNG (Scale Up - Đẻ Pod khi kẹt xe) ────
     scaleUp:
-      stabilizationWindowSeconds: 30  # Chân ga siêu nhạy: Chỉ cần CPU vọt quá 30 giây là cho đẻ Pod ngay lập tức bảo vệ hệ thống.
+      # stabilizationWindowSeconds: Nhạy bén khởi động.
+      # Chỉ cần CPU vọt lên quá 30 giây -> K8s ra quyết định đẻ Pod ngay lập tức để cấp cứu cho Backend.
+      stabilizationWindowSeconds: 30
+
       policies:
+        # Rule 1: Đẻ thêm tối đa 50% số Pod hiện tại trong mỗi 60 giây.
         - type: Percent
-          value: 50                   # Cho phép tăng mạnh 50% số lượng Pod hiện tại mỗi 60s.
+          value: 50
           periodSeconds: 60
+        # Rule 2: Hoặc đẻ thêm cứng 2 Pod trong mỗi 60 giây.
         - type: Pods
-          value: 2                    # Hoặc tăng cứng thêm 2 Pod.
+          value: 2
           periodSeconds: 60
-      selectPolicy: Max               # K8s sẽ chọn rule nào (Percent hay Pods) đẻ ra NHIỀU pod hơn để áp dụng.
+
+      # selectPolicy: Max -> Khi có 2 rules ở trên, K8s sẽ chọn Rule nào đẻ ra NHIỀU POD HƠN để áp dụng.
+      # Ví dụ: Đang có 2 Pod. Rule 1 (50%) = 1 Pod. Rule 2 (Pods) = 2 Pod. K8s sẽ chọn Rule 2 (đẻ thêm 2 Pods).
+      selectPolicy: Max
 {{- end }}
+
 ---
+
 {{- if .Values.hpa.frontend.enabled }}
+# ── HPA DÀNH CHO FRONTEND (Nginx Static Server) ──
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -95,4 +123,5 @@ spec:
         - type: Pods
           value: 2
           periodSeconds: 60
+      selectPolicy: Max
 {{- end }}
