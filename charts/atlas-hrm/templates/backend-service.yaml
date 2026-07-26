@@ -1,6 +1,11 @@
 # ==============================================================================
-# NESTJS BACKEND — CLUSTERIP SERVICE
+# BACKEND SERVICE (Internal Load Balancer)
 # ==============================================================================
+
+# [BẢN CHẤT - Điểm neo cố định trong môi trường Động]
+# Pod trong K8s sinh ra và chết đi (bị xóa, restart) liên tục theo từng giây -> Địa chỉ IP của Pod thay đổi liên tục.
+# Lớp Service sinh ra để giải quyết bài toán đó: Nó tạo 1 cái tên DNS Nội Bộ CỐ ĐỊNH (vd: atlas-hrm-backend). Bất kỳ ai (như Frontend) chỉ cần gọi vào tên này, Service sẽ dùng thuật toán Round-robin để tự động chia đều tải xuống các IP của Pod đang sống bên dưới.
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,11 +14,18 @@ metadata:
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "backend" "root" .) | nindent 4 }}
 spec:
+  # 🟩 Senior Review: Mặc định ứng dụng nội bộ luôn dùng `type: ClusterIP` (Chỉ cho phép liên lạc nội bộ cụm). 
+  # TUYỆT ĐỐI KHÔNG dùng `NodePort` hay `LoadBalancer` cho Backend/Database, vì nó sẽ khoét 1 lỗ trực tiếp phơi ứng dụng nội bộ thẳng ra ngoài Internet.
   type: ClusterIP
+  
   ports:
-    - name: http
-      port: {{ .Values.config.port }}
-      targetPort: http
+    - port: {{ .Values.config.port }}       # Cổng ảo mở ra để các anh em Service khác (Ingress, Frontend) gọi vào.
+      targetPort: http                      # Điểm mấu chốt: Trỏ vào cổng có tên là 'http' của container bên dưới (thay vì hardcode số 3000, giúp cấu hình uyển chuyển hơn).
       protocol: TCP
+      name: http
+  
+  # [BẢN CHẤT - Cơ chế Săn Tìm (Selector Matching)]
+  # Dựa vào nhãn `matchLabels` này, Service sẽ cầm danh sách đi "săn lùng" tất cả các Pod nào thỏa mãn điều kiện để nhét vào hồ bơi Load Balancing.
+  # 🟩 Tinh hoa: Service chỉ đẩy traffic vào những Pod đã VƯỢ QUA bài kiểm tra Sức khỏe (Readiness Probe). Pod nào ốm yếu hoặc đang khởi động sẽ tự động bị loại khỏi danh sách phục vụ khách.
   selector:
     {{- include "atlas-hrm.selectorLabels" (dict "component" "backend" "root" .) | nindent 4 }}

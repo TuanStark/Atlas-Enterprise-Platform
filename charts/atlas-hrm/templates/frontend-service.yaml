@@ -1,5 +1,5 @@
 # ==============================================================================
-# REACT VITE FRONTEND — CLUSTERIP SERVICE
+# FRONTEND SERVICE (Internal Load Balancer)
 # ==============================================================================
 apiVersion: v1
 kind: Service
@@ -9,11 +9,16 @@ metadata:
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 4 }}
 spec:
+  # [BẢN CHẤT - Không bao giờ để hở sườn]
+  # 🚩 Thắc mắc: Rõ ràng Frontend là nơi User truy cập, vậy tại sao Service của nó VẪN LÀ ClusterIP (Chỉ mở nội bộ)?
+  # 🟩 Senior Review: Bảo mật đa tầng (Defense in Depth). User tuyệt đối không bao giờ được đâm thẳng IP vào Service này.
+  # User bắt buộc phải đi qua cửa chính là Ingress. Ingress đóng vai trò khiên chắn (chứa bộ lọc WAF chống DDoS, bọc SSL mã hóa).
+  # Sau khi Ingress khám xét giỏ xách xong xuôi, nó mới nhẹ nhàng đẩy traffic vào cho Frontend Service nội bộ này xử lý.
   type: ClusterIP
   ports:
-    - name: http
-      port: 8080
+    - port: 8080
       targetPort: http
       protocol: TCP
+      name: http
   selector:
     {{- include "atlas-hrm.selectorLabels" (dict "component" "frontend" "root" .) | nindent 4 }}

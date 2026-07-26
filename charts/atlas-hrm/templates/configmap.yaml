@@ -1,3 +1,12 @@
+# ==============================================================================
+# CONFIGMAP (Non-Sensitive Configs)
+# ==============================================================================
+
+# [BẢN CHẤT - Phương Pháp Luận 12-Factor App]
+# Nguyên tắc số 3 của 12-Factor App: "Lưu trữ toàn bộ cấu hình (Config) trong biến môi trường".
+# 🚩 Lỗi Junior: Hardcode cứng địa chỉ DB (`host: 'localhost'`) trực tiếp vào trong source code (file `.ts`). Khi đem code qua môi trường Staging/Prod, lại phải sửa code và Build thành cục Image mới.
+# 🟩 Senior Review: Docker Image (Code) phải là duy nhất (Immutable). Khi Image đó được ném sang bất cứ môi trường nào (Dev, Test, Prod), ta chỉ việc truyền cái ConfigMap của môi trường đó vào.
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,14 +15,22 @@ metadata:
   labels:
     {{- include "atlas-hrm.labels" . | nindent 4 }}
 data:
+  # Biến hệ thống (Tất cả biến ở đây đều hiển thị bằng text thường, ai vô K8s cũng đọc được -> CẤM NHÉT PASSWORD VÀO ĐÂY)
   NODE_ENV: {{ .Values.config.nodeEnv | quote }}
   PORT: {{ .Values.config.port | quote }}
   HOST: {{ .Values.config.host | quote }}
+  
+  # Thông tin kết nối Database (Chỉ là tên DNS nội bộ cụm K8s, an toàn)
   POSTGRES_HOST: {{ .Values.config.postgresHost | quote }}
   POSTGRES_PORT: {{ .Values.config.postgresPort | quote }}
   POSTGRES_DB: {{ .Values.config.postgresDb | quote }}
+  
   REDIS_HOST: {{ .Values.config.redisHost | quote }}
   REDIS_PORT: {{ .Values.config.redisPort | quote }}
+  
   {{- with .Values.config.extraEnv }}
+  # [BẢN CHẤT - Tư duy mở rộng không giới hạn]
+  # Một Helm Chart tốt là cái mà DevOps không cần phải sửa file `.yaml` gốc khi Dev yêu cầu thêm biến môi trường mới.
+  # Khối lệnh này cho phép tùy ý "bơm" thêm vô vàn biến môi trường từ `values.yaml` vào ConfigMap.
   {{- toYaml . | nindent 2 }}
   {{- end }}

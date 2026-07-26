@@ -1,5 +1,5 @@
 # ==============================================================================
-# REACT VITE FRONTEND — DEPLOYMENT (Nginx Non-Root Port 8080)
+# REACT FRONTEND — DEPLOYMENT (Stateless Web Server)
 # ==============================================================================
 apiVersion: apps/v1
 kind: Deployment
@@ -10,7 +10,10 @@ metadata:
     {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 4 }}
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
-  revisionHistoryLimit: {{ .Values.frontend.revisionHistoryLimit | default 5 }}
+  
+  # [BẢN CHẤT - Tương tự Backend nhưng nhẹ nhàng hơn]
+  # Khác với Backend (NodeJS) mất thời gian khởi động lâu, Frontend (React) sau khi build xong chỉ là các file tĩnh (HTML/CSS/JS) được phục vụ bằng Nginx.
+  # Nó khởi động cực nhanh (chưa tới 1s), nên quá trình RollingUpdate (Tạo mới thay cũ) diễn ra chớp nhoáng và mượt mà.
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -23,26 +26,21 @@ spec:
     metadata:
       labels:
         {{- include "atlas-hrm.componentLabels" (dict "component" "frontend" "root" .) | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ .Values.frontend.terminationGracePeriodSeconds | default 15 }}
-      # SecurityContext: nginx-unprivileged UID/GID 101
+      
+      # [BẢN CHẤT - Security Context cho Frontend]
+      # 🟩 Senior Review: Ngay cả khi Frontend chỉ phục vụ file tĩnh, ta vẫn phải chạy Nginx bằng quyền Non-Root (UID 101 cho Nginx non-root).
+      # Tránh rủi ro Nginx bị dính lỗi Buffer Overflow dẫn đến việc hacker chiếm quyền Node từ Frontend.
       securityContext:
         runAsNonRoot: true
         runAsUser: 101
         runAsGroup: 101
-        seccompProfile:
-          type: RuntimeDefault
+      
       {{- with .Values.frontend.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.frontend.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.frontend.affinity }}
-      affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
@@ -53,44 +51,21 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "atlas-hrm.fullname" . }}-config
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
-            capabilities:
-              drop:
-                - ALL
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: http
-            initialDelaySeconds: 3
-            periodSeconds: 5
-            failureThreshold: 3
-            timeoutSeconds: 2
+          
+          # Nginx phản hồi tức thì, không cần Startup Probe phức tạp.
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /
               port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
-            timeoutSeconds: 2
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
-            - name: nginx-cache
-              mountPath: /var/cache/nginx
-            - name: nginx-run
-              mountPath: /var/run
-      volumes:
-        - name: tmp
-          emptyDir: {}
-        - name: nginx-cache
-          emptyDir: {}
-        - name: nginx-run
-          emptyDir: {}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
       {{- with .Values.frontend.image.pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
