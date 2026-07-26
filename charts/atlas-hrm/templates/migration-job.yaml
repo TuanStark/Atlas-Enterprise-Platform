@@ -1,35 +1,60 @@
 # ==============================================================================
-# PRISMA DATABASE MIGRATION JOB
-# Chạy 1 lần khi install/upgrade để apply schema changes
+# DATABASE MIGRATION JOB (Helm Hooks)
 # ==============================================================================
 {{- if .Values.migration.enabled }}
+
+# [BẢN CHẤT - Vòng đời (Lifecycle) & Sự khác biệt giữa Job vs Deployment]
+# 🚩 Lỗi Junior: Bỏ chung lệnh `npx prisma migrate` vào script khởi động (CMD) của Backend. 
+# Hậu quả: Khi deploy mới, K8s gọi 3 Pod Backend bật lên cùng lúc. 3 thằng cùng giành nhau chạy lệnh Migrate chọc vào DB -> Gây Deadlock vỡ Database (Lock timeout).
+# 🟩 Senior Review: Quá trình update Schema DB (Migrate) phải TÁCH RỜI khỏi quá trình chạy App. Đóng gói nó thành 1 K8s Job, đảm bảo nó chạy DUY NHẤT 1 lần và chạy xong thì mới cho App lên.
+
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "atlas-hrm.fullname" . }}-migration-{{ .Release.Revision }}
+  name: {{ include "atlas-hrm.fullname" . }}-migration
   namespace: {{ include "atlas-hrm.namespace" . }}
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "migration" "root" .) | nindent 4 }}
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-weight: "-5"
-    helm.sh/hook-delete-policy: before-hook-creation
+    # [BẢN CHẤT - Quyền năng của Helm Hooks]
+    # Báo cho công cụ Helm biết: "Ê, đừng có mang cái Job này rải xuống cụm cùng lúc với bọn kia".
+    # `post-install,post-upgrade`: Kích hoạt cái Job này SAU KHI (post) Database, Secrets, ConfigMap đã được cài đặt xong.
+    "helm.sh/hook": post-install,post-upgrade
+    
+    # Chạy xong, K8s tự dọn dẹp sạch sẽ cái Job cũ để lần deploy sau không bị lỗi báo "đã tồn tại Job tên này".
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
+  # Số lần "cố chấp" làm lại nếu Job tèo (Vd: DB chậm chưa lên kịp khiến migrate fail -> K8s sẽ tự chạy lại lệnh này thêm 3 lần nữa rồi mới bỏ cuộc).
   backoffLimit: {{ .Values.migration.backoffLimit | default 3 }}
+  
+  # Chống treo vô hạn: Nếu lệnh migrate bị kẹt quá 300s (5 phút) -> K8s ép chết Job.
   activeDeadlineSeconds: {{ .Values.migration.activeDeadlineSeconds | default 300 }}
+  
+  # TTL rọn rác: Job chạy thành công (Completed), K8s sẽ cho sống ảo 600s để DevOps có thời gian coi log, sau đó tự động xóa sạch.
   ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished | default 600 }}
+  
   template:
     metadata:
+      name: {{ include "atlas-hrm.fullname" . }}-migration
       labels:
-        {{- include "atlas-hrm.selectorLabels" (dict "component" "migration" "root" .) | nindent 8 }}
+        {{- include "atlas-hrm.componentLabels" (dict "component" "migration" "root" .) | nindent 8 }}
     spec:
-      restartPolicy: Never
       serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
+      
+      # Quan trọng nhất của Job: Chạy xong là TẮT (OnFailure), TUYỆT ĐỐI không được restart mãi mãi (Always) như Deployment.
+      restartPolicy: OnFailure
+      
       containers:
-        - name: prisma-migrate
+        - name: prisma-migration
           image: {{ include "atlas-hrm.image" .Values.backend.image }}
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
-          command: ["npx", "prisma", "migrate", "deploy"]
+          
+          # [BẢN CHẤT - Ghi đè Entrypoint]
+          # Lấy chính Image của ứng dụng Backend, nhưng chặn đứng lệnh Start Server, thay bằng lệnh Migrate DB.
+          command:
+            - sh
+            - -c
+            - "npx prisma migrate deploy"
           envFrom:
             - configMapRef:
                 name: {{ include "atlas-hrm.fullname" . }}-config
@@ -40,8 +65,8 @@ spec:
               cpu: 100m
               memory: 128Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 300m
+              memory: 256Mi
       {{- with .Values.backend.image.pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
