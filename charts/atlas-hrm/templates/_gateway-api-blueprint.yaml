@@ -1,0 +1,128 @@
+{{/* ==========================================================================
+# 🚀 BLUEPRINT GATEWAY API (BẢN THIẾT KẾ TƯƠNG LAI)
+# ==============================================================================
+# [LƯU Ý QUAN TRỌNG]: File này bắt đầu bằng dấu `_` (underscore). 
+# Theo chuẩn của Helm, nó sẽ BỊ BỎ QUA và không được deploy vào hệ thống.
+# Mục đích của file này là để làm TÀI LIỆU SỐNG (Living Document) giúp anh 
+# học hỏi kiến trúc Gateway API chuẩn Enterprise. Khi nào cần dùng, 
+# chỉ cần bỏ dấu `_` đi và xóa các cụm {{/* ... *\/}} là xong.
+========================================================================== */}}
+
+{{/* ==========================================================================
+# TẦNG 1: THE GATEWAY (Vai trò: Cloud/Cluster Ops)
+# Bản chất: Mở cổng (Port 80/443), cài đặt chứng chỉ SSL. KHÔNG QUAN TÂM ĐƯỜNG DẪN.
+========================================================================== */}}
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: Gateway
+# metadata:
+#   name: {{ include "atlas-hrm.fullname" . }}-gateway
+#   namespace: {{ include "atlas-hrm.namespace" . }}
+#   labels:
+#     {{- include "atlas-hrm.labels" . | nindent 4 }}
+# spec:
+#   # Tùy thuộc vào hạ tầng (AWS VPC Lattice, Nginx Gateway Fabric, hoặc Envoy)
+#   gatewayClassName: nginx
+#   listeners:
+#     # 1. Bắt buộc chuyển HTTP -> HTTPS
+#     - name: http
+#       protocol: HTTP
+#       port: 80
+#       hostname: {{ .Values.ingress.host | quote }}
+#       
+#     # 2. Xử lý HTTPS với chứng chỉ bảo mật
+#     - name: https
+#       protocol: HTTPS
+#       port: 443
+#       hostname: {{ .Values.ingress.host | quote }}
+#       tls:
+#         mode: Terminate
+#         certificateRefs:
+#           - name: {{ include "atlas-hrm.fullname" . }}-tls
+#       
+#       # 🟩 Senior Review: Phân quyền RBAC tối thượng.
+#       # Chỉ cho phép các file HTTPRoute nằm trong CÙNG NAMESPACE được phép cắm vào Gateway này.
+#       # Tránh tình trạng namespace của dự án khác vô tình cấu hình láo làm sập Gateway.
+#       allowedRoutes:
+#         namespaces:
+#           from: Same
+
+
+{{/* ==========================================================================
+# TẦNG 2: HTTP ROUTE BACKEND (Vai trò: Application Developer)
+# Bản chất: Nơi team Dev Backend tự cấu hình API, Canary Deployment, Headers.
+========================================================================== */}}
+# ---
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: HTTPRoute
+# metadata:
+#   name: {{ include "atlas-hrm.fullname" . }}-backend-route
+#   namespace: {{ include "atlas-hrm.namespace" . }}
+# spec:
+#   # 1. Trỏ lên Tầng 1: "Xin chào Lễ tân Gateway, tôi muốn nhận khách từ cổng của bạn"
+#   parentRefs:
+#     - name: {{ include "atlas-hrm.fullname" . }}-gateway
+#   
+#   hostnames:
+#     - {{ .Values.ingress.host | quote }}
+#     
+#   # 2. Luật định tuyến
+#   rules:
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /api
+#             
+#       # 🟩 Senior Review - Quyền năng của Gateway API: Không cần dùng Annotation bẩn của Nginx nữa!
+#       # Mọi thứ được chuẩn hóa thành K8s API.
+#       filters:
+#         # A. Gỡ bỏ prefix `/api` trước khi chui vào Pod Backend (URL Rewrite)
+#         - type: URLRewrite
+#           urlRewrite:
+#             path:
+#               type: ReplacePrefixMatch
+#               replacePrefixMatch: /
+#               
+#         # B. Tiêm thêm Header để tăng cường bảo mật
+#         - type: RequestHeaderModifier
+#           requestHeaderModifier:
+#             add:
+#               - name: X-Gateway-Managed
+#                 value: "true"
+#                 
+#       # 🟩 Senior Review - CANARY DEPLOYMENT NGUYÊN BẢN (Native)
+#       # Khi update version mới, ta có thể dễ dàng chia 90% traffic cho bản ổn định (v1),
+#       # và 10% traffic cho bản mới (v2) để test rủi ro mà không cần cài thêm tool ngoài (Istio).
+#       backendRefs:
+#         - name: {{ include "atlas-hrm.fullname" . }}-backend
+#           port: 8080
+#           weight: 90
+#         - name: {{ include "atlas-hrm.fullname" . }}-backend-canary-v2
+#           port: 8080
+#           weight: 10
+
+
+{{/* ==========================================================================
+# TẦNG 3: HTTP ROUTE FRONTEND (Vai trò: Frontend Developer)
+# Bản chất: Phục vụ React SPA.
+========================================================================== */}}
+# ---
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: HTTPRoute
+# metadata:
+#   name: {{ include "atlas-hrm.fullname" . }}-frontend-route
+#   namespace: {{ include "atlas-hrm.namespace" . }}
+# spec:
+#   parentRefs:
+#     - name: {{ include "atlas-hrm.fullname" . }}-gateway
+#   
+#   hostnames:
+#     - {{ .Values.ingress.host | quote }}
+#     
+#   rules:
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /
+#       backendRefs:
+#         - name: {{ include "atlas-hrm.fullname" . }}-frontend
+#           port: 8080
