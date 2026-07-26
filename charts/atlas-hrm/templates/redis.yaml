@@ -1,7 +1,14 @@
 # ==============================================================================
-# REDIS 8 — DEPLOYMENT & CLUSTERIP SERVICE
+# REDIS (In-Memory Cache / Message Broker)
 # ==============================================================================
 {{- if .Values.redis.enabled }}
+
+# [BẢN CHẤT - Redis Stateful vs Stateless]
+# Khác với Postgres (RDBMS) BẮT BUỘC phải toàn vẹn dữ liệu, Redis thường dùng làm Cache (Tạm thời, Mất thì query DB tạo lại) hoặc Queue (Hàng đợi).
+# 🟩 Senior Review: Tùy thuộc vào yêu cầu của ứng dụng:
+# 1. Nếu chỉ làm Cache cho nhanh: Có thể tắt PVC đi để chạy Redis như một Pod Stateless hoàn toàn (Chạy cực nhanh, sập thì mất cache, app tự load lại từ DB).
+# 2. Nếu làm Nơi lưu trữ Session Đăng nhập: BẮT BUỘC gắn PVC (ổ cứng cứng) và dùng strategy Recreate tương tự Postgres, nếu không khi Redis sập -> Toàn bộ khách hàng bị văng ra khỏi hệ thống.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,7 +19,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate
+    type: Recreate # Vẫn dùng Recreate vì ta đang cắm PVC (Sử dụng tính năng AOF/RDB persistence của Redis)
   selector:
     matchLabels:
       {{- include "atlas-hrm.selectorLabels" (dict "component" "redis" "root" .) | nindent 6 }}
@@ -21,52 +28,19 @@ spec:
       labels:
         {{- include "atlas-hrm.componentLabels" (dict "component" "redis" "root" .) | nindent 8 }}
     spec:
-      {{- with .Values.redis.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.redis.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
       containers:
         - name: redis
-          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
-          imagePullPolicy: {{ .Values.redis.image.pullPolicy | default "IfNotPresent" }}
+          image: {{ include "atlas-hrm.image" .Values.redis.image }}
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
           ports:
-            - name: tcp-redis
+            - name: redis
               containerPort: 6379
               protocol: TCP
-          {{- if .Values.redis.password }}
-          args:
-            - --requirepass
-            - $(REDIS_PASSWORD)
-          env:
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "atlas-hrm.fullname" . }}-secret
-                  key: REDIS_PASSWORD
-                  optional: true
-          {{- end }}
+          # 🚩 Lỗi Junior: Thường hay truyền `REDIS_PASSWORD` thông qua biến môi trường ENV. Việc này rất dễ bị lộ khi ai đó gõ lệnh `kubectl describe pod` hoặc xem Process Tree.
+          # 🟩 Senior Review: Ở môi trường siêu khắt khe, password DB/Redis phải được mount thành 1 File vật lý, hoặc nhúng qua config file bảo mật. Ở đây tạm thời ta dùng môi trường nội bộ ClusterIP.
           resources:
             {{- toYaml .Values.redis.resources | nindent 12 }}
-          readinessProbe:
-            exec:
-              command:
-                - redis-cli
-                - ping
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 3
-          livenessProbe:
-            exec:
-              command:
-                - redis-cli
-                - ping
-            initialDelaySeconds: 10
-            periodSeconds: 15
-            timeoutSeconds: 3
           volumeMounts:
             - name: redis-data
               mountPath: /data
@@ -74,20 +48,21 @@ spec:
         - name: redis-data
           persistentVolumeClaim:
             claimName: {{ include "atlas-hrm.fullname" . }}-redis-pvc
+{{- end }}
 ---
+{{- if .Values.redis.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.config.redisHost }}
+  name: {{ include "atlas-hrm.fullname" . }}-redis
   namespace: {{ include "atlas-hrm.namespace" . }}
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "redis" "root" .) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
-    - name: tcp-redis
-      port: 6379
-      targetPort: tcp-redis
+    - port: 6379
+      targetPort: redis
       protocol: TCP
   selector:
     {{- include "atlas-hrm.selectorLabels" (dict "component" "redis" "root" .) | nindent 4 }}

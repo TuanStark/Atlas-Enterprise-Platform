@@ -1,7 +1,14 @@
 # ==============================================================================
-# POSTGRESQL 17 — DEPLOYMENT & CLUSTERIP SERVICE
+# POSTGRESQL (Stateful Database Deployment)
 # ==============================================================================
 {{- if .Values.postgres.enabled }}
+
+# [BẢN CHẤT - Nghệ thuật chạy Database trên K8s]
+# Kubernetes vốn được sinh ra để chạy ứng dụng Vô thường (Stateless), trong khi Database đòi hỏi Dữ liệu Bền vững (Stateful).
+# 🚩 Lỗi Junior Trầm trọng: Triển khai K8s Database bằng Deployment thông thường, gán Strategy là RollingUpdate (Tạo mới trước, Xóa cũ sau). 
+# Hậu quả thảm khốc: Lúc update version Image DB, K8s gọi ra 2 Pod DB chạy SONG SONG, cả 2 thằng cùng giành nhau ghi dữ liệu đè lên CÙNG 1 cái Ổ cứng (PVC) -> Hậu quả là Split-brain và Corrupt vỡ nát toàn bộ dữ liệu ngay tắp lự!
+# 🟩 Senior Review: Khi triển khai Stateful Database Đơn Lẻ (1-Node, không phải cụm Cluster chia Shard), BẮT BUỘC Chiến lược Cập nhật (Strategy) phải là Recreate. 
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -11,8 +18,13 @@ metadata:
     {{- include "atlas-hrm.componentLabels" (dict "component" "postgres" "root" .) | nindent 4 }}
 spec:
   replicas: 1
+  
+  # 🟩 BẮT BUỘC CHO DATABASE: RECREATE
+  # Cơ chế: K8s phải TẮT CHẾT HẲN Pod cũ -> Nhả cái ổ cứng PVC ra -> RỒI MỚI tạo Pod mới -> Cắm ổ cứng vào. 
+  # Điều này khiến DB bị downtime vài giây khi update, nhưng BẢO TOÀN MẠNG SỐNG cho dữ liệu.
   strategy:
     type: Recreate
+    
   selector:
     matchLabels:
       {{- include "atlas-hrm.selectorLabels" (dict "component" "postgres" "root" .) | nindent 6 }}
@@ -21,6 +33,7 @@ spec:
       labels:
         {{- include "atlas-hrm.componentLabels" (dict "component" "postgres" "root" .) | nindent 8 }}
     spec:
+      serviceAccountName: {{ include "atlas-hrm.serviceAccountName" . }}
       {{- with .Values.postgres.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -31,18 +44,13 @@ spec:
       {{- end }}
       containers:
         - name: postgres
-          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
-          imagePullPolicy: {{ .Values.postgres.image.pullPolicy | default "IfNotPresent" }}
+          image: {{ include "atlas-hrm.image" .Values.postgres.image }}
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
           ports:
-            - name: tcp-pg
+            - name: postgres
               containerPort: 5432
               protocol: TCP
           env:
-            - name: POSTGRES_DB
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "atlas-hrm.fullname" . }}-config
-                  key: POSTGRES_DB
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -53,49 +61,35 @@ spec:
                 secretKeyRef:
                   name: {{ include "atlas-hrm.fullname" . }}-secret
                   key: POSTGRES_PASSWORD
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "atlas-hrm.fullname" . }}-config
+                  key: POSTGRES_DB
           resources:
             {{- toYaml .Values.postgres.resources | nindent 12 }}
-          readinessProbe:
-            exec:
-              command:
-                - pg_isready
-                - -U
-                - postgres
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 5
-          livenessProbe:
-            exec:
-              command:
-                - pg_isready
-                - -U
-                - postgres
-            initialDelaySeconds: 15
-            periodSeconds: 15
-            timeoutSeconds: 5
           volumeMounts:
-            - name: postgres-data
+            - name: data
               mountPath: /var/lib/postgresql/data
       volumes:
-        - name: postgres-data
+        - name: data
           persistentVolumeClaim:
             claimName: {{ include "atlas-hrm.fullname" . }}-postgres-pvc
+{{- end }}
 ---
+{{- if .Values.postgres.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.config.postgresHost }}
+  name: {{ include "atlas-hrm.fullname" . }}-postgres
   namespace: {{ include "atlas-hrm.namespace" . }}
   labels:
     {{- include "atlas-hrm.componentLabels" (dict "component" "postgres" "root" .) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
-    - name: tcp-pg
-      port: 5432
-      targetPort: tcp-pg
+    - port: 5432
+      targetPort: postgres
       protocol: TCP
   selector:
     {{- include "atlas-hrm.selectorLabels" (dict "component" "postgres" "root" .) | nindent 4 }}
