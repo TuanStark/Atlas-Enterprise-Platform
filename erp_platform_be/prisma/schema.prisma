@@ -10,8 +10,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
-
 enum TenantStatus {
   active
   inactive
@@ -229,6 +227,16 @@ enum EmploymentStatus {
   @@map("employment_status")
 }
 
+enum ContractStatus {
+  draft
+  pending_signature
+  active
+  expired
+  terminated
+
+  @@map("contract_status")
+}
+
 enum AssignmentStatus {
   active
   ended
@@ -427,6 +435,7 @@ model Tenant {
   employees                 Employee[]                 @relation
   employmentTypes           EmploymentType[]           @relation
   contractTypes             ContractType[]             @relation
+  contractTemplates         ContractTemplate[]         @relation
   employments               Employment[]               @relation
   jobTitles                 JobTitle[]                 @relation
   workLocations             WorkLocation[]             @relation
@@ -513,17 +522,17 @@ model TenantSetting {
 }
 
 model Principal {
-  id          String          @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  tenantId    String          @map("tenant_id") @db.Uuid
-  type        PrincipalType   @map("type")
-  status      PrincipalStatus @map("status")
-  displayName String?         @map("display_name") @db.VarChar(255)
-  metadata    Json?           @map("metadata") @db.JsonB
-  createdAt   DateTime?       @map("created_at") @db.Timestamptz
-  updatedAt   DateTime?       @map("updated_at") @db.Timestamptz
-  deletedAt   DateTime?       @map("deleted_at") @db.Timestamptz
-  version     Int?            @map("version")
-  avatarFileId  String?         @map("avatar_file_id") @db.Uuid
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  tenantId     String          @map("tenant_id") @db.Uuid
+  type         PrincipalType   @map("type")
+  status       PrincipalStatus @map("status")
+  displayName  String?         @map("display_name") @db.VarChar(255)
+  metadata     Json?           @map("metadata") @db.JsonB
+  createdAt    DateTime?       @map("created_at") @db.Timestamptz
+  updatedAt    DateTime?       @map("updated_at") @db.Timestamptz
+  deletedAt    DateTime?       @map("deleted_at") @db.Timestamptz
+  version      Int?            @map("version")
+  avatarFileId String?         @map("avatar_file_id") @db.Uuid
 
   tenant                             Tenant                    @relation(fields: [tenantId], references: [id])
   user                               User?                     @relation
@@ -839,11 +848,11 @@ model OrganizationUnit {
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
   version        Int?      @map("version")
 
-  organization                Organization         @relation(fields: [organizationId], references: [id])
-  parentUnit                  OrganizationUnit?    @relation(name: "OrganizationUnit_parentUnit", fields: [parentUnitId], references: [id])
-  parentUnitOrganizationUnits OrganizationUnit[]   @relation("OrganizationUnit_parentUnit")
-  unitType                    OrganizationUnitType @relation(fields: [unitTypeId], references: [id])
-  departmentJobRequisitions   JobRequisition[]     @relation
+  organization                      Organization             @relation(fields: [organizationId], references: [id])
+  parentUnit                        OrganizationUnit?        @relation(name: "OrganizationUnit_parentUnit", fields: [parentUnitId], references: [id])
+  parentUnitOrganizationUnits       OrganizationUnit[]       @relation("OrganizationUnit_parentUnit")
+  unitType                          OrganizationUnitType     @relation(fields: [unitTypeId], references: [id])
+  departmentJobRequisitions         JobRequisition[]         @relation
   departmentOrganizationAssignments OrganizationAssignment[] @relation
 
   @@unique([organizationId, code])
@@ -1228,6 +1237,7 @@ model File {
   avatarPrincipals     Principal[]           @relation("Principal_avatarFile")
   employeeDocuments    EmployeeDocument[]    @relation
   employmentContracts  EmploymentContract[]  @relation
+  contractAnnexes      ContractAnnex[]       @relation
   payslipPayrolls      Payroll[]             @relation
   resumeCandidates     Candidate[]           @relation
   offerJobOffers       JobOffer[]            @relation
@@ -1651,23 +1661,61 @@ model Employment {
 }
 
 model EmploymentContract {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  employmentId   String    @map("employment_id") @db.Uuid
-  contractTypeId String    @map("contract_type_id") @db.Uuid
-  contractNumber String    @map("contract_number") @db.VarChar(100)
-  startDate      DateTime  @map("start_date") @db.Date
-  endDate        DateTime? @map("end_date") @db.Date
-  signedDate     DateTime? @map("signed_date") @db.Date
-  fileId         String?   @map("file_id") @db.Uuid
-  isCurrent      Boolean?  @default(true) @map("is_current")
-  createdAt      DateTime? @map("created_at") @db.Timestamptz
-  updatedAt      DateTime? @map("updated_at") @db.Timestamptz
+  id                 String         @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  employmentId       String         @map("employment_id") @db.Uuid
+  contractTypeId     String         @map("contract_type_id") @db.Uuid
+  contractNumber     String         @map("contract_number") @db.VarChar(100)
+  startDate          DateTime       @map("start_date") @db.Date
+  endDate            DateTime?      @map("end_date") @db.Date
+  signedDate         DateTime?      @map("signed_date") @db.Date
+  fileId             String?        @map("file_id") @db.Uuid
+  isCurrent          Boolean?       @default(true) @map("is_current")
+  status             ContractStatus @default(draft) @map("status")
+  baseSalary         Decimal?       @map("base_salary") @db.Decimal(15, 2)
+  workingHours       String?        @map("working_hours") @db.VarChar(255)
+  contractTemplateId String?        @map("contract_template_id") @db.Uuid
+  createdAt          DateTime?      @map("created_at") @db.Timestamptz
+  updatedAt          DateTime?      @map("updated_at") @db.Timestamptz
 
-  employment   Employment   @relation(fields: [employmentId], references: [id])
-  contractType ContractType @relation(fields: [contractTypeId], references: [id])
-  file         File?        @relation(fields: [fileId], references: [id])
+  employment       Employment        @relation(fields: [employmentId], references: [id])
+  contractType     ContractType      @relation(fields: [contractTypeId], references: [id])
+  file             File?             @relation(fields: [fileId], references: [id])
+  contractTemplate ContractTemplate? @relation(fields: [contractTemplateId], references: [id])
+  contractAnnexes  ContractAnnex[]   @relation
 
   @@map("employment_contracts")
+}
+
+model ContractAnnex {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  employmentContractId String    @map("employment_contract_id") @db.Uuid
+  annexNumber          String    @map("annex_number") @db.VarChar(100)
+  content              String?   @map("content") @db.Text
+  signedDate           DateTime? @map("signed_date") @db.Date
+  effectiveDate        DateTime  @map("effective_date") @db.Date
+  fileId               String?   @map("file_id") @db.Uuid
+  createdAt            DateTime? @map("created_at") @db.Timestamptz
+  updatedAt            DateTime? @map("updated_at") @db.Timestamptz
+
+  employmentContract EmploymentContract @relation(fields: [employmentContractId], references: [id])
+  file               File?              @relation(fields: [fileId], references: [id])
+
+  @@map("contract_annexes")
+}
+
+model ContractTemplate {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  name      String    @map("name") @db.VarChar(255)
+  content   String    @map("content") @db.Text
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime? @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id])
+  employmentContracts EmploymentContract[] @relation
+
+  @@map("contract_templates")
 }
 
 model EmploymentStatusHistory {
@@ -1737,14 +1785,14 @@ model OrganizationAssignment {
   createdAt           DateTime?         @map("created_at") @db.Timestamptz
   updatedAt           DateTime?         @map("updated_at") @db.Timestamptz
 
-  tenant                            Tenant                   @relation(fields: [tenantId], references: [id])
-  employment                        Employment               @relation(name: "OrganizationAssignment_employment", fields: [employmentId], references: [id])
-  department                        OrganizationUnit         @relation(fields: [departmentId], references: [id])
-  position                          Position                 @relation(fields: [positionId], references: [id])
-  jobTitle                          JobTitle?                @relation(fields: [jobTitleId], references: [id])
-  managerEmployment                 Employment?              @relation(name: "OrganizationAssignment_managerEmployment", fields: [managerEmploymentId], references: [id])
-  workLocation                      WorkLocation?            @relation(fields: [workLocationId], references: [id])
-  costCenter                        CostCenter?              @relation(fields: [costCenterId], references: [id])
+  tenant            Tenant           @relation(fields: [tenantId], references: [id])
+  employment        Employment       @relation(name: "OrganizationAssignment_employment", fields: [employmentId], references: [id])
+  department        OrganizationUnit @relation(fields: [departmentId], references: [id])
+  position          Position         @relation(fields: [positionId], references: [id])
+  jobTitle          JobTitle?        @relation(fields: [jobTitleId], references: [id])
+  managerEmployment Employment?      @relation(name: "OrganizationAssignment_managerEmployment", fields: [managerEmploymentId], references: [id])
+  workLocation      WorkLocation?    @relation(fields: [workLocationId], references: [id])
+  costCenter        CostCenter?      @relation(fields: [costCenterId], references: [id])
 
   @@index([employmentId, effectiveFrom])
   @@index([departmentId])

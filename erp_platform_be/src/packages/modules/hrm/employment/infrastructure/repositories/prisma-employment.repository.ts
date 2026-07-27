@@ -20,20 +20,7 @@ export class PrismaEmploymentRepository implements EmploymentRepository {
     await this.prisma.employment.create({
       data: {
         ...data,
-        employmentContracts: {
-          create: entity.contracts.map((c) => ({
-            id: c.id.toString(),
-            contractTypeId: c.contractTypeId.toString(),
-            contractNumber: c.contractNumber,
-            startDate: c.startDate,
-            endDate: c.endDate,
-            signedDate: c.signedDate,
-            fileId: c.fileId,
-            isCurrent: c.isCurrent,
-            createdAt: c.createdAt,
-            updatedAt: c.updatedAt,
-          })),
-        },
+
         employmentStatusHistories: {
           create: entity.statusHistory.map((h) => ({
             id: h.id.toString(),
@@ -72,25 +59,7 @@ export class PrismaEmploymentRepository implements EmploymentRepository {
         },
       });
 
-      // Sync contracts: delete and re-create
-      await tx.employmentContract.deleteMany({ where: { employmentId: data.id } });
-      if (entity.contracts.length > 0) {
-        await tx.employmentContract.createMany({
-          data: entity.contracts.map((c) => ({
-            id: c.id.toString(),
-            employmentId: data.id,
-            contractTypeId: c.contractTypeId.toString(),
-            contractNumber: c.contractNumber,
-            startDate: c.startDate,
-            endDate: c.endDate ?? null,
-            signedDate: c.signedDate ?? null,
-            fileId: c.fileId ?? null,
-            isCurrent: c.isCurrent,
-            createdAt: c.createdAt,
-            updatedAt: c.updatedAt,
-          })),
-        });
-      }
+
 
       // Sync status history
       await tx.employmentStatusHistory.deleteMany({ where: { employmentId: data.id } });

@@ -17,18 +17,7 @@ export class EmploymentReadModelMapper {
       status: entity.status,
       reason: entity.reason,
       metadata: entity.metadata,
-      contracts: entity.contracts.map((c) => ({
-        id: c.id.toString(),
-        contractTypeId: c.contractTypeId.toString(),
-        contractNumber: c.contractNumber,
-        startDate: c.startDate,
-        endDate: c.endDate,
-        signedDate: c.signedDate,
-        fileId: c.fileId,
-        isCurrent: c.isCurrent,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
-      })),
+
       statusHistory: entity.statusHistory.map((h) => ({
         id: h.id.toString(),
         fromStatus: h.fromStatus,

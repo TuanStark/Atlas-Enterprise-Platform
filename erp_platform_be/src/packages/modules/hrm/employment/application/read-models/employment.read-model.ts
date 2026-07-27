@@ -14,24 +14,13 @@ export interface EmploymentReadModel {
   status: EmploymentStatus;
   reason?: string;
   metadata?: Record<string, unknown>;
-  contracts: EmploymentContractReadModel[];
+
   statusHistory: EmploymentStatusHistoryReadModel[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface EmploymentContractReadModel {
-  id: string;
-  contractTypeId: string;
-  contractNumber: string;
-  startDate: Date;
-  endDate?: Date;
-  signedDate?: Date;
-  fileId?: string;
-  isCurrent: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+
 
 export interface EmploymentStatusHistoryReadModel {
   id: string;

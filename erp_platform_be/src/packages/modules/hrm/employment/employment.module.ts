@@ -14,7 +14,6 @@ import {
   CreateEmploymentHandler,
   UpdateEmploymentStatusHandler,
   TerminateEmploymentHandler,
-  CreateEmploymentContractHandler,
 } from './application/commands/employment.commands';
 
 // Query Handlers
@@ -31,7 +30,6 @@ const commandHandlers = [
   CreateEmploymentHandler,
   UpdateEmploymentStatusHandler,
   TerminateEmploymentHandler,
-  CreateEmploymentContractHandler,
 ];
 
 const queryHandlers = [

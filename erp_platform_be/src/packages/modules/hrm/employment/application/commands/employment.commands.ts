@@ -39,13 +39,7 @@ export class TerminateEmploymentCommand {
   ) {}
 }
 
-export class CreateEmploymentContractCommand {
-  constructor(
-    public readonly tenantId: Identifier,
-    public readonly id: Identifier,
-    public readonly dto: CreateEmploymentContractDto,
-  ) {}
-}
+
 
 // --- Handlers ---
 
@@ -134,35 +128,3 @@ export class TerminateEmploymentHandler
   }
 }
 
-@CommandHandler(CreateEmploymentContractCommand)
-export class CreateEmploymentContractHandler
-  extends BaseCommandHandler
-  implements ICommandHandler<CreateEmploymentContractCommand>
-{
-  constructor(
-    @Inject(repo.EMPLOYMENT_REPOSITORY)
-    private readonly repository: repo.EmploymentRepository,
-  ) {
-    super();
-  }
-
-  async execute(command: CreateEmploymentContractCommand): Promise<Identifier> {
-    const employment = this.ensureFound(
-      await this.repository.findById(command.tenantId, command.id),
-      'Employment',
-      command.id.toString(),
-    );
-
-    const contract = employment.addContract({
-      contractTypeId: Identifier.create(command.dto.contractTypeId),
-      contractNumber: command.dto.contractNumber,
-      startDate: new Date(command.dto.startDate),
-      endDate: command.dto.endDate ? new Date(command.dto.endDate) : undefined,
-      signedDate: command.dto.signedDate ? new Date(command.dto.signedDate) : undefined,
-      fileId: command.dto.fileId,
-    });
-
-    await this.repository.update(employment);
-    return contract.id;
-  }
-}

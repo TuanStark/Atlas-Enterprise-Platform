@@ -1,15 +1,12 @@
 import {
   Employment as PrismaEmployment,
-  EmploymentContract as PrismaContract,
   EmploymentStatusHistory as PrismaHistory,
 } from '@prisma/client';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { Employment } from '../../domain/aggregates/employment.aggregate';
-import { EmploymentContract } from '../../domain/entities/employment-contract.entity';
 import { EmploymentStatusHistory } from '../../domain/entities/employment-status-history.entity';
 
 export type PrismaEmploymentPayload = PrismaEmployment & {
-  employmentContracts?: PrismaContract[];
   employmentStatusHistories?: PrismaHistory[];
 };
 
@@ -30,20 +27,7 @@ export class EmploymentPersistenceMapper {
       status: prisma.status,
       reason: prisma.reason ?? undefined,
       metadata: prisma.metadata as Record<string, unknown> | undefined,
-      contracts: (prisma.employmentContracts ?? []).map((c) =>
-        EmploymentContract.rehydrate(Identifier.create(c.id), {
-          employmentId: id,
-          contractTypeId: Identifier.create(c.contractTypeId),
-          contractNumber: c.contractNumber,
-          startDate: c.startDate,
-          endDate: c.endDate ?? undefined,
-          signedDate: c.signedDate ?? undefined,
-          fileId: c.fileId ?? undefined,
-          isCurrent: c.isCurrent ?? true,
-          createdAt: c.createdAt ?? new Date(),
-          updatedAt: c.updatedAt ?? new Date(),
-        }),
-      ),
+
       statusHistory: (prisma.employmentStatusHistories ?? []).map((h) =>
         EmploymentStatusHistory.rehydrate(Identifier.create(h.id), {
           employmentId: id,

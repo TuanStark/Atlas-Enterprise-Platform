@@ -8,13 +8,11 @@ import {
   CreateEmploymentDto,
   UpdateEmploymentStatusDto,
   TerminateEmploymentDto,
-  CreateEmploymentContractDto,
 } from '../../application/dto/employment.dto';
 import {
   CreateEmploymentCommand,
   UpdateEmploymentStatusCommand,
   TerminateEmploymentCommand,
-  CreateEmploymentContractCommand,
 } from '../../application/commands/employment.commands';
 import {
   GetEmploymentQuery,
@@ -101,24 +99,6 @@ export class EmploymentController {
         Identifier.create(context.tenantId),
         Identifier.create(id),
         context.principalId,
-        dto,
-      ),
-    );
-  }
-
-  @Post('employments/:id/contracts')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Add contract to employment' })
-  @ApiCreatedResponse({ type: String, description: 'ID of the created contract' })
-  addContract(
-    @CurrentContext() context: RequestContext,
-    @Param('id') id: string,
-    @Body() dto: CreateEmploymentContractDto,
-  ) {
-    return this.commandBus.execute(
-      new CreateEmploymentContractCommand(
-        Identifier.create(context.tenantId),
-        Identifier.create(id),
         dto,
       ),
     );

@@ -1,10 +1,7 @@
 import { AggregateRoot } from '@shared-kernel/domain/aggregate-root';
 import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { EmploymentStatus } from '@prisma/client';
-import {
-  EmploymentContract,
-  EmploymentContractProps,
-} from '../entities/employment-contract.entity';
+
 import {
   EmploymentStatusHistory,
   EmploymentStatusHistoryProps,
@@ -23,7 +20,7 @@ export interface EmploymentProps {
   status: EmploymentStatus;
   reason?: string;
   metadata?: Record<string, unknown>;
-  contracts: EmploymentContract[];
+
   statusHistory: EmploymentStatusHistory[];
   createdAt: Date;
   updatedAt: Date;
@@ -56,7 +53,7 @@ export class Employment extends AggregateRoot<EmploymentProps> {
       probationStartDate: props.probationStartDate,
       probationEndDate: props.probationEndDate,
       status: initialStatus,
-      contracts: [],
+
       statusHistory: [],
       createdAt: now,
       updatedAt: now,
@@ -126,9 +123,7 @@ export class Employment extends AggregateRoot<EmploymentProps> {
     return this.props.metadata;
   }
 
-  get contracts(): readonly EmploymentContract[] {
-    return this.props.contracts;
-  }
+
 
   get statusHistory(): readonly EmploymentStatusHistory[] {
     return this.props.statusHistory;
@@ -206,25 +201,7 @@ export class Employment extends AggregateRoot<EmploymentProps> {
     this.touch();
   }
 
-  addContract(
-    props: Omit<EmploymentContractProps, 'employmentId' | 'isCurrent' | 'createdAt' | 'updatedAt'>,
-  ): EmploymentContract {
-    // Deactivate current active contracts
-    for (const contract of this.props.contracts) {
-      if (contract.isCurrent) {
-        contract.deactivate();
-      }
-    }
 
-    const contract = EmploymentContract.create({
-      ...props,
-      employmentId: this.id,
-    });
-
-    this.props.contracts.push(contract);
-    this.touch();
-    return contract;
-  }
 
   private addStatusHistory(
     props: Omit<EmploymentStatusHistoryProps, 'employmentId' | 'createdAt'>,

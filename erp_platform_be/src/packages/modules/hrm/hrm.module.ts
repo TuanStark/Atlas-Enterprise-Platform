@@ -8,6 +8,7 @@ import { RecruitmentModule } from './recruitment/recruitment.module';
 import { PayrollModule } from './payroll/payroll.module';
 import { PerformanceModule } from './performance/performance.module';
 import { TrainingModule } from './training/training.module';
+import { ContractModule } from './contract/contract.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TrainingModule } from './training/training.module';
     PayrollModule,
     PerformanceModule,
     TrainingModule,
+    ContractModule,
   ],
   exports: [
     EmployeeModule,
@@ -31,6 +33,7 @@ import { TrainingModule } from './training/training.module';
     PayrollModule,
     PerformanceModule,
     TrainingModule,
+    ContractModule,
   ],
 })
 export class HrmModule {}
