@@ -1,5 +1,5 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
 import type { RequestContext } from '@shared-kernel/application/request-context';
@@ -14,11 +14,16 @@ import {
   CreateContractAnnexCommand,
   SignContractCommand,
 } from '../../application/commands/contract.commands';
+import { ListContractsQuery } from '../../application/queries/list-contracts/list-contracts.query';
+import { GetContractsByEmploymentQuery } from '../../application/queries/get-contracts-by-employment/get-contracts-by-employment.query';
 
 @ApiTags('Contracts')
 @Controller('contracts')
 export class ContractController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -65,6 +70,38 @@ export class ContractController {
         Identifier.create(context.tenantId),
         Identifier.create(contractId),
         dto,
+      ),
+    );
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List all contracts' })
+  list(
+    @CurrentContext() context: RequestContext,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.queryBus.execute(
+      new ListContractsQuery(
+        Identifier.create(context.tenantId),
+        page ? parseInt(page, 10) : 1,
+        pageSize ? parseInt(pageSize, 10) : 15,
+        status,
+      ),
+    );
+  }
+
+  @Get('employment/:id')
+  @ApiOperation({ summary: 'Get contracts by employment ID' })
+  getByEmployment(
+    @CurrentContext() context: RequestContext,
+    @Param('id') employmentId: string,
+  ) {
+    return this.queryBus.execute(
+      new GetContractsByEmploymentQuery(
+        Identifier.create(context.tenantId),
+        Identifier.create(employmentId),
       ),
     );
   }

@@ -36,7 +36,8 @@ const COLORS = ['#0a65ff', '#10b981', '#a855f7', '#f59e0b', '#06b6d4'];
 function DashboardPage() {
   const navigate = useNavigate();
   const user = useCurrentUser();
-  const { data: employees = [], isLoading: isLoadingEmployees } = useEmployees();
+  const { data: employeeResponse, isLoading: isLoadingEmployees } = useEmployees({ pageSize: 1000 });
+  const employees = employeeResponse?.data || [];
   const { data: leaveRequests = [], isLoading: isLoadingLeaves } = useLeaveRequests();
   const { data: attendanceRecords = [], isLoading: isLoadingAttendance } = useAttendanceRecords();
   const { data: jobPostings = [], isLoading: isLoadingPostings } = useJobPostings();

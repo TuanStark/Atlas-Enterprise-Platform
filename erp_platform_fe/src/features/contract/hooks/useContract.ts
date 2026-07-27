@@ -2,13 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
 import { contractApi } from '../api/contractApi';
 import type { CreateContractDto, CreateContractAnnexDto, Contract } from '../types';
-import type { ApiError } from '@shared/types';
+import type { ApiError, ListQueryParams, OffsetPaginatedResponse } from '@shared/types';
 
 const contractKeys = {
   all: ['contracts'] as const,
   lists: () => [...contractKeys.all, 'list'] as const,
+  list: (params?: ListQueryParams) => [...contractKeys.lists(), params] as const,
   byEmployment: (employmentId: string) => [...contractKeys.all, 'employment', employmentId] as const,
 };
+
+export function useContracts(params?: ListQueryParams) {
+  return useQuery<OffsetPaginatedResponse<Contract>, ApiError>({
+    queryKey: contractKeys.list(params),
+    queryFn: () => contractApi.list(params),
+  });
+}
 
 export function useEmploymentContracts(employmentId?: string) {
   return useQuery<Contract[], ApiError>({

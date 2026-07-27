@@ -66,6 +66,7 @@ const MENU_DEFINITION: PermissionMenuItem[] = [
     label: 'Quản lý nhân sự',
     children: [
       { key: '/hrm/employees', icon: <Users size={14} />, label: 'Danh sách nhân viên', permission: { resource: 'hrm.employee', action: 'read' } },
+      { key: '/hrm/contracts', icon: <FileText size={14} />, label: 'Quản lý hợp đồng', permission: { resource: 'hrm.contract', action: 'read' } },
       { key: '/hrm/leave-requests', icon: <CalendarDays size={14} />, label: 'Yêu cầu nghỉ phép', permission: { resource: 'hrm.leave', action: 'read' } },
       { key: '/hrm/attendance', icon: <Clock size={14} />, label: 'Lịch sử chấm công', permission: { resource: 'hrm.attendance', action: 'read' } },
       { key: '/hrm/timesheet', icon: <CalendarDays size={14} />, label: 'Bảng phân ca làm việc', permission: { resource: 'hrm.shift', action: 'read' } },

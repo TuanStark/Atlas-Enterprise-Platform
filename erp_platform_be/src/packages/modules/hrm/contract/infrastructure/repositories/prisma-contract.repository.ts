@@ -60,6 +60,106 @@ export class PrismaContractRepository implements IContractRepository {
     });
   }
 
+  async findByEmploymentId(tenantId: Identifier, employmentId: Identifier): Promise<Contract[]> {
+    const records = await this.prisma.employmentContract.findMany({
+      where: {
+        employmentId: employmentId.toString(),
+        contractType: {
+          tenantId: tenantId.toString(),
+        },
+      },
+      include: {
+        contractAnnexes: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return records.map((record) => {
+      const annexes = record.contractAnnexes.map((a) =>
+        ContractAnnex.rehydrate(Identifier.create(a.id), {
+          employmentContractId: Identifier.create(a.employmentContractId),
+          annexNumber: a.annexNumber,
+          content: a.content ?? undefined,
+          effectiveDate: a.effectiveDate,
+          signedDate: a.signedDate ?? undefined,
+          fileId: a.fileId ?? undefined,
+          createdAt: a.createdAt ?? new Date(),
+          updatedAt: a.updatedAt ?? new Date(),
+        }),
+      );
+
+      return Contract.rehydrate(Identifier.create(record.id), {
+        employmentId: Identifier.create(record.employmentId),
+        contractTypeId: Identifier.create(record.contractTypeId),
+        contractNumber: record.contractNumber,
+        startDate: record.startDate,
+        endDate: record.endDate ?? undefined,
+        signedDate: record.signedDate ?? undefined,
+        fileId: record.fileId ?? undefined,
+        isCurrent: record.isCurrent ?? true,
+        status: record.status as any,
+        baseSalary: record.baseSalary ? Number(record.baseSalary) : undefined,
+        workingHours: record.workingHours ?? undefined,
+        contractTemplateId: record.contractTemplateId
+          ? Identifier.create(record.contractTemplateId)
+          : undefined,
+        createdAt: record.createdAt ?? new Date(),
+        updatedAt: record.updatedAt ?? new Date(),
+        annexes,
+      });
+    });
+  }
+
+  async findAll(tenantId: Identifier, params: { page?: number; pageSize?: number; status?: string }): Promise<{ data: any[]; total: number }> {
+    const page = params.page || 1;
+    const pageSize = params.pageSize || 15;
+    const skip = (page - 1) * pageSize;
+
+    const where: any = {
+      contractType: {
+        tenantId: tenantId.toString(),
+      },
+    };
+
+    if (params.status) {
+      where.status = params.status;
+    }
+
+    const [total, records] = await Promise.all([
+      this.prisma.employmentContract.count({ where }),
+      this.prisma.employmentContract.findMany({
+        where,
+        include: {
+          contractType: true,
+          employment: {
+            include: {
+              employee: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+    ]);
+
+    return {
+      data: records.map((r) => ({
+        id: r.id,
+        contractNumber: r.contractNumber,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        status: r.status,
+        contractType: r.contractType?.name,
+        employeeName: r.employment?.employee
+          ? `${r.employment.employee.lastName} ${r.employment.employee.firstName}`
+          : 'Unknown',
+        employmentId: r.employmentId,
+      })),
+      total,
+    };
+  }
+
   async save(contract: Contract): Promise<void> {
     const data = {
       employmentId: contract.employmentId.toString(),

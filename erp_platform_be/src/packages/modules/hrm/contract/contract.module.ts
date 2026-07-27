@@ -9,6 +9,8 @@ import {
   SignContractHandler,
   CreateContractAnnexHandler,
 } from './application/commands/contract.commands';
+import { ListContractsHandler } from './application/queries/list-contracts/list-contracts.handler';
+import { GetContractsByEmploymentHandler } from './application/queries/get-contracts-by-employment/get-contracts-by-employment.handler';
 
 const CommandHandlers = [
   CreateContractHandler,
@@ -16,11 +18,17 @@ const CommandHandlers = [
   CreateContractAnnexHandler,
 ];
 
+const QueryHandlers = [
+  ListContractsHandler,
+  GetContractsByEmploymentHandler,
+];
+
 @Module({
   imports: [CqrsModule, PrismaModule],
   controllers: [ContractController],
   providers: [
     ...CommandHandlers,
+    ...QueryHandlers,
     {
       provide: IContractRepository,
       useClass: PrismaContractRepository,
