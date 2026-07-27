@@ -6,6 +6,7 @@ import { EmployeeDomainService } from './domain/services/employee-domain.service
 import { PrismaEmployeeRepository } from './infrastructure/repositories/prisma-employee.repository';
 import { CreateEmployeeHandler } from './application/commands/create-employee/create-employee.handler';
 import { UpdateEmployeeHandler } from './application/commands/update-employee/update-employee.handler';
+import { DeleteEmployeeHandler } from './application/commands/delete-employee/delete-employee.handler';
 import {
   SyncEmployeeContactsHandler,
   SyncEmployeeAddressesHandler,
@@ -18,6 +19,7 @@ import { EmployeeController } from './presentation/controllers/employee.controll
 const commandHandlers = [
   CreateEmployeeHandler,
   UpdateEmployeeHandler,
+  DeleteEmployeeHandler,
   SyncEmployeeContactsHandler,
   SyncEmployeeAddressesHandler,
   SyncEmployeeEmergencyContactsHandler,

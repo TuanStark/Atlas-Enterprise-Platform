@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
@@ -14,6 +14,7 @@ import {
 } from '../../application/dto/employee-child.dto';
 import { CreateEmployeeCommand } from '../../application/commands/create-employee/create-employee.command';
 import { UpdateEmployeeCommand } from '../../application/commands/update-employee/update-employee.command';
+import { DeleteEmployeeCommand } from '../../application/commands/delete-employee/delete-employee.command';
 import {
   SyncEmployeeContactsCommand,
   SyncEmployeeAddressesCommand,
@@ -44,8 +45,24 @@ export class EmployeeController {
   @Get()
   @ApiOperation({ summary: 'List all employees' })
   @ApiOkResponse({ description: 'List of employees' })
-  list(@CurrentContext() context: RequestContext) {
-    return this.queryBus.execute(new ListEmployeesQuery(Identifier.create(context.tenantId)));
+  list(
+    @CurrentContext() context: RequestContext,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('searchText') searchText?: string,
+    @Query('status') status?: string,
+    @Query('departmentId') departmentId?: string,
+  ) {
+    return this.queryBus.execute(
+      new ListEmployeesQuery(
+        Identifier.create(context.tenantId),
+        page ? parseInt(page, 10) : 1,
+        pageSize ? parseInt(pageSize, 10) : 20,
+        searchText,
+        status,
+        departmentId,
+      ),
+    );
   }
 
   @Get(':id')
@@ -140,6 +157,16 @@ export class EmployeeController {
         Identifier.create(id),
         dto,
       ),
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete employee' })
+  @ApiOkResponse({ description: 'Employee deleted' })
+  delete(@CurrentContext() context: RequestContext, @Param('id') id: string) {
+    return this.commandBus.execute(
+      new DeleteEmployeeCommand(Identifier.create(context.tenantId), Identifier.create(id)),
     );
   }
 }

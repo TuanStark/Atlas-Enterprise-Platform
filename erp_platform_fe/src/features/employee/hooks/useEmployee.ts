@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
 import { employeeApi } from '../api/employeeApi';
 import type { Employee, CreateEmployeeDto, UpdateEmployeeDto } from '../types';
-import type { ListQueryParams, ApiError } from '@shared/types';
+import type { ListQueryParams, ApiError, OffsetPaginatedResponse } from '@shared/types';
 
 /** Query key factory for employees */
 const employeeKeys = {
@@ -19,7 +19,7 @@ const employeeKeys = {
  * Maps to: GET /api/v1/hrm/employees
  */
 export function useEmployees(params?: ListQueryParams) {
-  return useQuery<Employee[], ApiError>({
+  return useQuery<OffsetPaginatedResponse<Employee>, ApiError>({
     queryKey: employeeKeys.list(params),
     queryFn: () => employeeApi.list(params),
   });

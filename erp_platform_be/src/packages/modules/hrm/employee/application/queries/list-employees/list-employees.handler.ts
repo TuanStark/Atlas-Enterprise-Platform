@@ -12,8 +12,15 @@ export class ListEmployeesHandler implements IQueryHandler<ListEmployeesQuery> {
     private readonly repository: employeeRepo.EmployeeRepository,
   ) {}
 
-  async execute(query: ListEmployeesQuery): Promise<EmployeeReadModel[]> {
-    const employees = await this.repository.findAll(query.tenantId);
+  async execute(query: ListEmployeesQuery): Promise<{ data: EmployeeReadModel[]; total: number }> {
+    const { tenantId, page, pageSize, searchText, status, departmentId } = query;
+    const { data: employees, total } = await this.repository.findAll(tenantId, {
+      page,
+      pageSize,
+      searchText,
+      status,
+      departmentId,
+    });
     const employeeIds = employees.map((emp) => emp.id.toString());
 
     const empRecords = await this.repository.findEmploymentsByEmployeeIds(
@@ -28,11 +35,14 @@ export class ListEmployeesHandler implements IQueryHandler<ListEmployeesQuery> {
       employmentsByEmployee.set(e.employeeId, list);
     }
 
-    return employees.map((employee) =>
-      EmployeeReadModelMapper.toReadModel(
-        employee,
-        employmentsByEmployee.get(employee.id.toString()),
+    return {
+      data: employees.map((employee) =>
+        EmployeeReadModelMapper.toReadModel(
+          employee,
+          employmentsByEmployee.get(employee.id.toString()),
+        ),
       ),
-    );
+      total,
+    };
   }
 }

@@ -36,6 +36,12 @@ export interface PaginatedResponse<T> {
   };
 }
 
+/** Offset-based pagination response from backend */
+export interface OffsetPaginatedResponse<T> {
+  data: T[];
+  total: number;
+}
+
 /** Query params for list endpoints */
 export interface ListQueryParams {
   limit?: number;
@@ -43,6 +49,11 @@ export interface ListQueryParams {
   sort?: string;
   filter?: Record<string, unknown>;
   search?: string;
+  page?: number;
+  pageSize?: number;
+  searchText?: string;
+  status?: string;
+  departmentId?: string;
 }
 
 /** Login request */

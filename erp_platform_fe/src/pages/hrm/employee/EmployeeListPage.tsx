@@ -25,16 +25,29 @@ function EmployeeListPage() {
   const [filters, setFilters] = useState<{
     searchText: string;
     status: string | undefined;
+    page: number;
+    pageSize: number;
   }>({
     searchText: '',
     status: undefined,
+    page: 1,
+    pageSize: 15,
   });
 
-  const { data: employees = [], isLoading } = useEmployees();
+  const { data: response, isLoading } = useEmployees({
+    page: filters.page,
+    pageSize: filters.pageSize,
+    searchText: filters.searchText,
+    status: filters.status,
+  });
+  
+  const employees = response?.data || [];
+  const total = response?.total || 0;
+
   const deleteMutation = useDeleteEmployee();
 
   const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
   };
 
   const filterFields: FilterBarField[] = [
@@ -321,12 +334,7 @@ function EmployeeListPage() {
     },
   ];
 
-  const filteredData = employees.filter((emp) => {
-    const fullName = `${emp.lastName || ''} ${emp.firstName || ''} ${emp.employeeCode || (emp as any).employeeNo || ''}`;
-    const matchesSearch = fullName.toLowerCase().includes(filters.searchText.toLowerCase());
-    const matchesStatus = !filters.status || emp.status === filters.status;
-    return matchesSearch && matchesStatus;
-  });
+  // Removed client-side filtering
 
   if (isLoading) {
     return (
@@ -381,18 +389,23 @@ function EmployeeListPage() {
       <Card className="!rounded-2xl !border-solid !border-border-light shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
         <div style={{ marginBottom: 16 }}>
           <Text type="secondary" style={{ fontSize: 13 }}>
-            Tìm thấy <Text strong>{filteredData.length}</Text> nhân viên
+            Tìm thấy <Text strong>{total}</Text> nhân viên
           </Text>
         </div>
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={employees}
           rowKey="id"
           scroll={{ x: 3800 }}
           pagination={{
-            pageSize: 15,
+            current: filters.page,
+            pageSize: filters.pageSize,
+            total: total,
             showSizeChanger: true,
             showTotal: (total) => `Tổng ${total} nhân viên`,
+            onChange: (page, pageSize) => {
+              setFilters(prev => ({ ...prev, page, pageSize }));
+            },
           }}
           size="middle"
           rowClassName="hover:!bg-bg-tertiary !cursor-pointer transition-colors duration-150"

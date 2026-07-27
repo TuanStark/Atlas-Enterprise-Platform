@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Tabs, Tag, Button, Space, Avatar, Typography, Row, Col, Timeline, Spin, Descriptions } from 'antd';
 import { ArrowLeft, Edit, Mail, Phone, MapPin, Briefcase, Calendar, User, FileText } from 'lucide-react';
 import { useEmployee } from '@features/employee/hooks/useEmployee';
+import { EmployeeContracts } from '@features/contract/components/EmployeeContracts';
 import { PermissionGate } from '@shared/hooks/usePermission';
 import { PERMISSIONS } from '@shared/constants/permissions';
 
@@ -101,6 +102,9 @@ function EmployeeDetailPage() {
             </Descriptions.Item>
             <Descriptions.Item label="Hình thức làm việc">{currentEmployment?.employmentType || 'Toàn thời gian'}</Descriptions.Item>
           </Descriptions>
+          <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--color-border-light)' }}>
+            <EmployeeContracts employmentId={currentEmployment?.id || ''} />
+          </div>
         </div>
       ),
     },

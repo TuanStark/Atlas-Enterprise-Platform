@@ -238,17 +238,65 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     return count > 0;
   }
 
-  async findAll(tenantId: Identifier): Promise<Employee[]> {
-    const records = await this.prisma.employee.findMany({
-      where: {
-        tenantId: tenantId.toString(),
-        deletedAt: null,
-      },
-      include: this.includeRelations,
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(
+    tenantId: Identifier,
+    options?: {
+      page?: number;
+      pageSize?: number;
+      searchText?: string;
+      status?: string;
+      departmentId?: string;
+    },
+  ): Promise<{ data: Employee[]; total: number }> {
+    const page = Math.max(1, options?.page || 1);
+    const pageSize = Math.max(1, options?.pageSize || 20);
+    const skip = (page - 1) * pageSize;
 
-    return records.map(EmployeePersistenceMapper.toDomain);
+    let where: any = {
+      tenantId: tenantId.toString(),
+      deletedAt: null,
+    };
+
+    if (options?.searchText) {
+      where.OR = [
+        { employeeNo: { contains: options.searchText, mode: 'insensitive' } },
+        { firstName: { contains: options.searchText, mode: 'insensitive' } },
+        { lastName: { contains: options.searchText, mode: 'insensitive' } },
+      ];
+    }
+
+    if (options?.status) {
+      where.status = options.status;
+    }
+
+    if (options?.departmentId) {
+      where.employments = {
+        some: {
+          organizationAssignments: {
+            some: {
+              departmentId: options.departmentId,
+              status: 'active',
+            },
+          },
+        },
+      };
+    }
+
+    const [records, total] = await Promise.all([
+      this.prisma.employee.findMany({
+        where,
+        include: this.includeRelations,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.employee.count({ where }),
+    ]);
+
+    return {
+      data: records.map(EmployeePersistenceMapper.toDomain),
+      total,
+    };
   }
 
   async findEmploymentsByEmployeeIds(tenantId: Identifier, employeeIds: string[]): Promise<any[]> {
