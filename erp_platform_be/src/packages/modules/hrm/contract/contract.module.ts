@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { PrismaModule } from 'src/database/prisma.module';
+import { IContractRepository } from './domain/repositories/contract.repository';
+import { PrismaContractRepository } from './infrastructure/repositories/prisma-contract.repository';
 import { ContractController } from './presentation/controllers/contract.controller';
 import {
   CreateContractHandler,
@@ -14,8 +17,14 @@ const CommandHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, PrismaModule],
   controllers: [ContractController],
-  providers: [...CommandHandlers],
+  providers: [
+    ...CommandHandlers,
+    {
+      provide: IContractRepository,
+      useClass: PrismaContractRepository,
+    },
+  ],
 })
 export class ContractModule {}
