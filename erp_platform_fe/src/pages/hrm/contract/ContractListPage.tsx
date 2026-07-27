@@ -1,11 +1,11 @@
 import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-import { Card, Table, Button, Space, Tag, Typography, Spin, Tooltip } from 'antd';
+import { Card, Table, Button, Space, Tag, Typography, Spin, Tooltip, Modal, Form, InputNumber, Select, DatePicker } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { FileText, Download, Eye } from 'lucide-react';
+import { FileText, Download, Eye, Plus } from 'lucide-react';
 import { FilterBar } from '@shared/components/FilterBar';
 import type { FilterBarField } from '@shared/components/FilterBar';
-import { useContracts } from '@features/contract/hooks/useContract';
+import { useContracts, useCreateContract } from '@features/contract/hooks/useContract';
+import { useEmployees } from '@features/employee/hooks/useEmployee';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -28,6 +28,32 @@ function ContractListPage() {
     page: 1,
     pageSize: 15,
   });
+
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  
+  const createMutation = useCreateContract();
+  
+  // Fetch employees for the dropdown
+  const { data: employeesResponse } = useEmployees({ pageSize: 1000 });
+  const employeesList = employeesResponse?.data || [];
+
+  const handleCreateContract = async (values: any) => {
+    try {
+      await createMutation.mutateAsync({
+        employmentId: values.employmentId,
+        contractType: values.contractType,
+        startDate: values.startDate.format('YYYY-MM-DD'),
+        endDate: values.endDate ? values.endDate.format('YYYY-MM-DD') : undefined,
+        baseSalary: values.baseSalary,
+        salaryCurrency: 'VND',
+      });
+      setIsCreateModalVisible(false);
+      form.resetFields();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const { data: response, isLoading } = useContracts({
     page: filters.page,
@@ -155,6 +181,14 @@ function ContractListPage() {
         </div>
         <Space>
           <Button
+            type="primary"
+            icon={<Plus size={16} />}
+            className="rounded-lg h-9 font-semibold text-[13px] shadow-sm"
+            onClick={() => setIsCreateModalVisible(true)}
+          >
+            Tạo hợp đồng
+          </Button>
+          <Button
             icon={<Download size={16} />}
             className="rounded-lg h-9 font-semibold text-[13px] border-border-light text-text-secondary hover:text-primary hover:border-primary shadow-sm"
           >
@@ -191,6 +225,47 @@ function ContractListPage() {
           )}
         </div>
       </Card>
+
+      <Modal
+        title="Tạo Hợp đồng mới"
+        open={isCreateModalVisible}
+        onCancel={() => setIsCreateModalVisible(false)}
+        onOk={() => form.submit()}
+        confirmLoading={createMutation.isPending}
+        destroyOnClose={false}
+      >
+        <Form form={form} layout="vertical" onFinish={handleCreateContract}>
+          <Form.Item name="employmentId" label="Nhân viên" rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]}>
+            <Select showSearch optionFilterProp="children" placeholder="Chọn nhân viên">
+              {employeesList.map(emp => {
+                const employmentId = emp.employments?.[0]?.id;
+                if (!employmentId) return null;
+                return (
+                  <Select.Option key={employmentId} value={employmentId}>
+                    {emp.employeeCode} - {emp.lastName} {emp.firstName}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Form.Item>
+          <Form.Item name="contractType" label="Loại hợp đồng" rules={[{ required: true, message: 'Vui lòng chọn loại hợp đồng' }]}>
+            <Select placeholder="Chọn loại hợp đồng">
+              <Select.Option value="probation">Thử việc</Select.Option>
+              <Select.Option value="indefinite">Không xác định thời hạn</Select.Option>
+              <Select.Option value="definite_12m">Xác định thời hạn 12 tháng</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu' }]}>
+            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày bắt đầu" />
+          </Form.Item>
+          <Form.Item name="endDate" label="Ngày kết thúc">
+            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày kết thúc" />
+          </Form.Item>
+          <Form.Item name="baseSalary" label="Lương cơ bản (VND)" rules={[{ required: true, message: 'Vui lòng nhập mức lương' }]}>
+            <InputNumber style={{ width: '100%' }} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} placeholder="Nhập mức lương" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
