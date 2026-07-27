@@ -4,11 +4,7 @@ import { Identifier } from '@shared-kernel/domain/primitives/identifier';
 import { BaseCommandHandler } from '@shared-kernel/application';
 import { Contract } from '../../domain/aggregates/contract.aggregate';
 import { IContractRepository } from '../../domain/repositories/contract.repository';
-import {
-  CreateContractDto,
-  CreateContractAnnexDto,
-  SignContractDto,
-} from '../dto/contract.dto';
+import { CreateContractDto, CreateContractAnnexDto, SignContractDto } from '../dto/contract.dto';
 
 // --- Commands ---
 
@@ -60,7 +56,9 @@ export class CreateContractHandler
       endDate: dto.endDate,
       baseSalary: dto.baseSalary,
       workingHours: dto.workingHours,
-      contractTemplateId: dto.contractTemplateId ? Identifier.create(dto.contractTemplateId) : undefined,
+      contractTemplateId: dto.contractTemplateId
+        ? Identifier.create(dto.contractTemplateId)
+        : undefined,
     });
 
     await this.contractRepository.save(contract);

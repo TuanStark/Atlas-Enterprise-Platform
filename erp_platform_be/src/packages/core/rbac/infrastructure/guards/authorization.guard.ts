@@ -122,7 +122,9 @@ export class AuthorizationGuard implements CanActivate {
 
     if (isPlatformOnly) {
       if (!isSuperAdmin) {
-        throw new ForbiddenException('Chỉ tài khoản System Super Admin mới có quyền truy cập chức năng này.');
+        throw new ForbiddenException(
+          'Chỉ tài khoản System Super Admin mới có quyền truy cập chức năng này.',
+        );
       }
       return true;
     }

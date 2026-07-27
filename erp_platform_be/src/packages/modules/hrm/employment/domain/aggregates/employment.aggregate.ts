@@ -123,8 +123,6 @@ export class Employment extends AggregateRoot<EmploymentProps> {
     return this.props.metadata;
   }
 
-
-
   get statusHistory(): readonly EmploymentStatusHistory[] {
     return this.props.statusHistory;
   }
@@ -200,8 +198,6 @@ export class Employment extends AggregateRoot<EmploymentProps> {
     }
     this.touch();
   }
-
-
 
   private addStatusHistory(
     props: Omit<EmploymentStatusHistoryProps, 'employmentId' | 'createdAt'>,

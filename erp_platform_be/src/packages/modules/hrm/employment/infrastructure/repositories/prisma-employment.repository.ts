@@ -59,8 +59,6 @@ export class PrismaEmploymentRepository implements EmploymentRepository {
         },
       });
 
-
-
       // Sync status history
       await tx.employmentStatusHistory.deleteMany({ where: { employmentId: data.id } });
       if (entity.statusHistory.length > 0) {

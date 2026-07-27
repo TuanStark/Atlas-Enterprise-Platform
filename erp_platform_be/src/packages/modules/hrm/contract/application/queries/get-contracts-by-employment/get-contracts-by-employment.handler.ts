@@ -13,7 +13,7 @@ export class GetContractsByEmploymentHandler implements IQueryHandler<GetContrac
 
   async execute(query: GetContractsByEmploymentQuery): Promise<any[]> {
     const contracts = await this.repository.findByEmploymentId(query.tenantId, query.employmentId);
-    
+
     // Convert to DTO
     return contracts.map((c) => ({
       id: c.id.toString(),
@@ -28,7 +28,7 @@ export class GetContractsByEmploymentHandler implements IQueryHandler<GetContrac
       workingHours: c.workingHours,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
-      annexes: c.annexes.map(a => ({
+      annexes: c.annexes.map((a) => ({
         id: a.id.toString(),
         annexNumber: a.annexNumber,
         content: a.content,

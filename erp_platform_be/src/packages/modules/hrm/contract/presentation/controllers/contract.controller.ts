@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentContext } from '@core/identity/presentation/decorators/current-context.decorator';
@@ -29,10 +39,7 @@ export class ContractController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new draft contract' })
   @ApiCreatedResponse({ type: String, description: 'ID of the created contract' })
-  create(
-    @CurrentContext() context: RequestContext,
-    @Body() dto: CreateContractDto,
-  ) {
+  create(@CurrentContext() context: RequestContext, @Body() dto: CreateContractDto) {
     return this.commandBus.execute(
       new CreateContractCommand(Identifier.create(context.tenantId), dto),
     );
@@ -94,10 +101,7 @@ export class ContractController {
 
   @Get('employment/:id')
   @ApiOperation({ summary: 'Get contracts by employment ID' })
-  getByEmployment(
-    @CurrentContext() context: RequestContext,
-    @Param('id') employmentId: string,
-  ) {
+  getByEmployment(@CurrentContext() context: RequestContext, @Param('id') employmentId: string) {
     return this.queryBus.execute(
       new GetContractsByEmploymentQuery(
         Identifier.create(context.tenantId),

@@ -20,8 +20,6 @@ export interface EmploymentReadModel {
   updatedAt: Date;
 }
 
-
-
 export interface EmploymentStatusHistoryReadModel {
   id: string;
   fromStatus?: EmploymentStatus;

@@ -13,9 +13,7 @@ export interface ContractAnnexProps {
 }
 
 export class ContractAnnex extends Entity<ContractAnnexProps> {
-  static create(
-    props: Omit<ContractAnnexProps, 'createdAt' | 'updatedAt'>,
-  ): ContractAnnex {
+  static create(props: Omit<ContractAnnexProps, 'createdAt' | 'updatedAt'>): ContractAnnex {
     const now = new Date();
     return new ContractAnnex(Identifier.create(), {
       ...props,

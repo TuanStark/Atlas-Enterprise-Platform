@@ -39,8 +39,6 @@ export class TerminateEmploymentCommand {
   ) {}
 }
 
-
-
 // --- Handlers ---
 
 @CommandHandler(CreateEmploymentCommand)
@@ -127,4 +125,3 @@ export class TerminateEmploymentHandler
     await this.repository.update(employment);
   }
 }
-

@@ -12,16 +12,9 @@ import {
 import { ListContractsHandler } from './application/queries/list-contracts/list-contracts.handler';
 import { GetContractsByEmploymentHandler } from './application/queries/get-contracts-by-employment/get-contracts-by-employment.handler';
 
-const CommandHandlers = [
-  CreateContractHandler,
-  SignContractHandler,
-  CreateContractAnnexHandler,
-];
+const CommandHandlers = [CreateContractHandler, SignContractHandler, CreateContractAnnexHandler];
 
-const QueryHandlers = [
-  ListContractsHandler,
-  GetContractsByEmploymentHandler,
-];
+const QueryHandlers = [ListContractsHandler, GetContractsByEmploymentHandler];
 
 @Module({
   imports: [CqrsModule, PrismaModule],

@@ -283,7 +283,11 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
         code: 'SUPER_ADMIN',
         tenantId: { not: tenant.id }, // Non-SYSTEM tenants
       },
-      data: { code: 'ADMIN', name: 'Tenant Admin', description: 'Quản trị viên cao nhất của doanh nghiệp.' },
+      data: {
+        code: 'ADMIN',
+        name: 'Tenant Admin',
+        description: 'Quản trị viên cao nhất của doanh nghiệp.',
+      },
     });
 
     // Seed SUPER_ADMIN role for SYSTEM Tenant
@@ -376,7 +380,9 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     const allTenants = await this.prisma.tenant.findMany();
     for (const t of allTenants) {
       const tenantRoles = await this.prisma.role.findMany({ where: { tenantId: t.id } });
-      const tenantAdminRole = tenantRoles.find((r) => r.code === 'ADMIN' || r.code === 'SUPER_ADMIN');
+      const tenantAdminRole = tenantRoles.find(
+        (r) => r.code === 'ADMIN' || r.code === 'SUPER_ADMIN',
+      );
       if (tenantAdminRole) {
         for (const r of tenantRoles) {
           if (r.id !== tenantAdminRole.id) {

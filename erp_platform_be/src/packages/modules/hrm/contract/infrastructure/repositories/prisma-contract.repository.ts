@@ -110,7 +110,10 @@ export class PrismaContractRepository implements IContractRepository {
     });
   }
 
-  async findAll(tenantId: Identifier, params: { page?: number; pageSize?: number; status?: string }): Promise<{ data: any[]; total: number }> {
+  async findAll(
+    tenantId: Identifier,
+    params: { page?: number; pageSize?: number; status?: string },
+  ): Promise<{ data: any[]; total: number }> {
     const page = params.page || 1;
     const pageSize = params.pageSize || 15;
     const skip = (page - 1) * pageSize;

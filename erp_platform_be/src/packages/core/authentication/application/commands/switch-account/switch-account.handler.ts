@@ -32,7 +32,7 @@ export class SwitchAccountHandler implements ICommandHandler<SwitchAccountComman
     private readonly transaction: TransactionRunner,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-  ) { }
+  ) {}
 
   async execute(command: SwitchAccountCommand): Promise<Result<LoginResponseDto>> {
     const { currentPrincipalId, tenantId, dto } = command;

@@ -61,7 +61,7 @@ export class TenantController extends BaseCrudControllerHelper {
   @RequirePermission('admin.settings:read')
   async getById(
     @CurrentContext() context: RequestContext,
-    @Param('id') id: string
+    @Param('id') id: string,
   ): Promise<Result<TenantDto>> {
     if (!context.roles.includes('SUPER_ADMIN') && context.tenantId !== id) {
       throw new ForbiddenException('Bạn chỉ có quyền xem thông tin Tenant của chính mình.');
@@ -91,8 +91,8 @@ export class TenantController extends BaseCrudControllerHelper {
   @RequirePermission('admin.settings:update')
   async update(
     @CurrentContext() context: RequestContext,
-    @Param('id') id: string, 
-    @Body() dto: UpdateTenantDto
+    @Param('id') id: string,
+    @Body() dto: UpdateTenantDto,
   ): Promise<Result<TenantDto>> {
     if (!context.roles.includes('SUPER_ADMIN') && context.tenantId !== id) {
       throw new ForbiddenException('Bạn chỉ có quyền cập nhật Tenant của chính mình.');
