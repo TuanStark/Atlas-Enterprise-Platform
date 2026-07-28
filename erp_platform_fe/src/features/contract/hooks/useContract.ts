@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
 import { contractApi } from '../api/contractApi';
 import type { CreateContractDto, CreateContractAnnexDto, Contract } from '../types';
-import type { ApiError, ListQueryParams, OffsetPaginatedResponse } from '@shared/types';
+import type { ApiError, ListQueryParams, PaginatedResponse } from '@shared/types';
 
 const contractKeys = {
   all: ['contracts'] as const,
@@ -12,9 +12,9 @@ const contractKeys = {
 };
 
 export function useContracts(params?: ListQueryParams) {
-  return useQuery<OffsetPaginatedResponse<Contract>, ApiError>({
+  return useQuery<PaginatedResponse<Contract>, ApiError>({
     queryKey: contractKeys.list(params),
-    queryFn: () => contractApi.list(params),
+    queryFn: () => contractApi.getAll(params),
   });
 }
 
@@ -60,7 +60,7 @@ export function useCreateContractAnnex() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ contractId, employmentId, data }: { contractId: string; employmentId: string; data: CreateContractAnnexDto }) => 
+    mutationFn: ({ contractId, data }: { contractId: string; employmentId: string; data: CreateContractAnnexDto }) =>
       contractApi.addAnnex(contractId, data),
     onSuccess: (_, variables) => {
       message.success('Tạo phụ lục thành công!');
