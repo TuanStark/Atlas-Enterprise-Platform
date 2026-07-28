@@ -22,6 +22,7 @@ import { NotificationModule } from './packages/shared/notification/notification.
 import { CalendarModule } from './packages/shared/calendar/calendar.module';
 import { SearchModule } from './packages/shared/search/search.module';
 import { WorkflowModule } from './packages/shared/workflow/workflow.module';
+import { ArchiveModule } from './packages/shared/archive/archive.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { WorkflowModule } from './packages/shared/workflow/workflow.module';
     CalendarModule,
     SearchModule,
     WorkflowModule,
+    ArchiveModule,
   ],
   controllers: [AppController],
   providers: [

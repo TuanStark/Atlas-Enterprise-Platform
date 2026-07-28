@@ -7,7 +7,7 @@ import { ContractAnnex } from '../../domain/entities/contract-annex.entity';
 
 @Injectable()
 export class PrismaContractRepository implements IContractRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findById(id: Identifier, tenantId: Identifier): Promise<Contract | null> {
     const record = await this.prisma.employmentContract.findFirst({
@@ -222,4 +222,43 @@ export class PrismaContractRepository implements IContractRepository {
       }
     });
   }
+
+  async delete(id: Identifier, tenantId: Identifier): Promise<void> {
+    const contract = await this.prisma.employmentContract.findFirst({
+      where: {
+        id: id.toString(),
+        contractType: {
+          tenantId: tenantId.toString(),
+        },
+      },
+    });
+
+    if (!contract) {
+      throw new Error('Contract not found');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.contractAnnex.deleteMany({
+        where: { employmentContractId: id.toString() },
+      });
+
+      await tx.employmentContract.delete({
+        where: { id: id.toString() },
+      });
+    });
+  }
+
+  async findContractTypeIdByCode(tenantId: Identifier, code: string): Promise<Identifier | null> {
+    const type = await this.prisma.contractType.findFirst({
+      where: {
+        tenantId: tenantId.toString(),
+        code,
+      },
+    });
+    if (!type) {
+      return null;
+    }
+    return Identifier.create(type.id);
+  }
 }
+

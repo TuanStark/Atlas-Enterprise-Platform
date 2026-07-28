@@ -24,6 +24,7 @@ import {
   Clock,
   Briefcase,
   ShieldAlert,
+  Archive,
 } from 'lucide-react';
 import { useCanAccess } from '@shared/hooks/usePermission';
 import { useAuthStore } from '@features/auth/store/authStore';
@@ -126,6 +127,7 @@ const MENU_DEFINITION: PermissionMenuItem[] = [
       { key: '/admin/tags', icon: <Tags size={14} />, label: 'Quản lý nhãn', permission: { resource: 'admin.settings', action: 'read' } },
       { key: '/admin/custom-fields', icon: <Sliders size={14} />, label: 'Trường tùy chỉnh', permission: { resource: 'admin.settings', action: 'read' } },
       { key: '/admin/files', icon: <FileText size={14} />, label: 'Quản lý tệp', permission: { resource: 'admin.settings', action: 'read' } },
+      { key: '/admin/archives', icon: <Archive size={14} />, label: 'Kho Lưu trữ', permission: { resource: 'admin.archive', action: 'read' } },
       { key: '/admin/settings', icon: <Settings size={14} />, label: 'Cài đặt hệ thống', permission: { resource: 'admin.settings', action: 'read' } },
     ],
   },

@@ -49,6 +49,7 @@ const WorkflowListPage = lazy(() => import('@pages/admin/workflows/WorkflowListP
 const CustomFieldPage = lazy(() => import('@pages/admin/custom-fields/CustomFieldPage'));
 const NotificationCenterPage = lazy(() => import('@pages/admin/notifications/NotificationCenterPage'));
 const FileManagementPage = lazy(() => import('@pages/admin/files/FileManagementPage'));
+const ArchiveVaultPage = lazy(() => import('@pages/admin/archive/ArchiveVaultPage'));
 
 // --- System Platform Admin Pages ---
 const SystemTenantPage = lazy(() => import('@pages/system/SystemTenantPage'));
@@ -90,7 +91,11 @@ export const routes: RouteObject[] = [
       { path: '/hrm/employees/new', element: <EmployeeFormPage /> },
       { path: '/hrm/employees/:id', element: <EmployeeDetailPage /> },
       { path: '/hrm/employees/:id/edit', element: <EmployeeFormPage /> },
-      { path: '/hrm/contracts', element: <ContractListPage /> },
+      { path: '/hrm/contracts', element: (
+        <PermissionGuard resource="hrm.contract" action="read">
+          <ContractListPage />
+        </PermissionGuard>
+      ) },
       { path: '/hrm/positions', element: <PositionListPage /> },
 
       // HRM — Leave
@@ -191,6 +196,14 @@ export const routes: RouteObject[] = [
         element: (
           <PermissionGuard resource="admin.settings" action="read">
             <FileManagementPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: '/admin/archives',
+        element: (
+          <PermissionGuard resource="admin.archive" action="read">
+            <ArchiveVaultPage />
           </PermissionGuard>
         ),
       },

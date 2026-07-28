@@ -506,6 +506,33 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       }
     }
 
+    // 7. Seed Contract Types
+    this.logger.log('Seeding Contract Types...');
+    const contractTypes = [
+      { code: 'probation', name: 'Thử việc', durationMonth: 2 },
+      { code: 'indefinite', name: 'Không xác định thời hạn', durationMonth: null },
+      { code: 'definite_12m', name: 'Xác định thời hạn 12 tháng', durationMonth: 12 },
+    ];
+    for (const t of allTenants) {
+      for (const type of contractTypes) {
+        await this.prisma.contractType.upsert({
+          where: {
+            tenantId_code: {
+              tenantId: t.id,
+              code: type.code,
+            },
+          },
+          update: {},
+          create: {
+            tenantId: t.id,
+            code: type.code,
+            name: type.name,
+            durationMonth: type.durationMonth,
+          },
+        });
+      }
+    }
+
     this.logger.log('Database seeding check finished.');
   }
 }

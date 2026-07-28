@@ -9,6 +9,8 @@ export interface IContractRepository {
     params: { page?: number; pageSize?: number; status?: string },
   ): Promise<{ data: any[]; total: number }>;
   save(contract: Contract): Promise<void>;
+  delete(id: Identifier, tenantId: Identifier): Promise<void>;
+  findContractTypeIdByCode(tenantId: Identifier, code: string): Promise<Identifier | null>;
 }
 
 export const IContractRepository = Symbol('IContractRepository');

@@ -7,6 +7,16 @@ export const PERMISSIONS = {
       DELETE: 'hrm.employee:delete',
       EXPORT: 'hrm.employee:export',
     },
+    CONTRACT: {
+      READ: 'hrm.contract:read',
+      CREATE: 'hrm.contract:create',
+      UPDATE: 'hrm.contract:update',
+      DELETE: 'hrm.contract:delete',
+      SIGN: 'hrm.contract:sign',
+      EXPORT: 'hrm.contract:export',
+      TERMINATE: 'hrm.contract:terminate',
+      ARCHIVE: 'hrm.contract:archive',
+    },
     LEAVE: {
       READ: 'hrm.leave:read',
       CREATE: 'hrm.leave:create',
@@ -75,6 +85,10 @@ export const PERMISSIONS = {
     SETTINGS: {
       READ: 'admin.settings:read',
       UPDATE: 'admin.settings:update',
+    },
+    ARCHIVE: {
+      READ: 'admin.archive:read',
+      RESTORE: 'admin.archive:restore',
     },
   },
 } as const;

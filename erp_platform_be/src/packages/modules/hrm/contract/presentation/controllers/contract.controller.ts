@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -18,11 +19,16 @@ import {
   CreateContractDto,
   CreateContractAnnexDto,
   SignContractDto,
+  UpdateContractDto,
+  TerminateContractDto,
 } from '../../application/dto/contract.dto';
 import {
   CreateContractCommand,
   CreateContractAnnexCommand,
   SignContractCommand,
+  UpdateContractCommand,
+  TerminateContractCommand,
+  DeleteContractCommand,
 } from '../../application/commands/contract.commands';
 import { ListContractsQuery } from '../../application/queries/list-contracts/list-contracts.query';
 import { GetContractsByEmploymentQuery } from '../../application/queries/get-contracts-by-employment/get-contracts-by-employment.query';
@@ -45,6 +51,24 @@ export class ContractController {
     );
   }
 
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a draft contract' })
+  @ApiOkResponse({ description: 'Contract updated successfully' })
+  update(
+    @CurrentContext() context: RequestContext,
+    @Param('id') contractId: string,
+    @Body() dto: UpdateContractDto,
+  ) {
+    return this.commandBus.execute(
+      new UpdateContractCommand(
+        Identifier.create(context.tenantId),
+        Identifier.create(contractId),
+        dto,
+      ),
+    );
+  }
+
   @Patch(':id/sign')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Sign a contract' })
@@ -59,6 +83,40 @@ export class ContractController {
         Identifier.create(context.tenantId),
         Identifier.create(contractId),
         dto,
+      ),
+    );
+  }
+
+  @Patch(':id/terminate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Terminate an active contract' })
+  @ApiOkResponse({ description: 'Contract terminated successfully' })
+  terminate(
+    @CurrentContext() context: RequestContext,
+    @Param('id') contractId: string,
+    @Body() dto: TerminateContractDto,
+  ) {
+    return this.commandBus.execute(
+      new TerminateContractCommand(
+        Identifier.create(context.tenantId),
+        Identifier.create(contractId),
+        dto,
+      ),
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a draft contract' })
+  @ApiOkResponse({ description: 'Contract deleted successfully' })
+  remove(
+    @CurrentContext() context: RequestContext,
+    @Param('id') contractId: string,
+  ) {
+    return this.commandBus.execute(
+      new DeleteContractCommand(
+        Identifier.create(context.tenantId),
+        Identifier.create(contractId),
       ),
     );
   }

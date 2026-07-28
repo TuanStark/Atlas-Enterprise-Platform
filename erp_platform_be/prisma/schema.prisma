@@ -471,6 +471,7 @@ model Tenant {
   assetAssignments          AssetAssignment[]          @relation
   assetMaintenances         AssetMaintenance[]         @relation
   assetDisposals            AssetDisposal[]            @relation
+  archiveRecords            ArchiveRecord[]            @relation
 
   @@map("tenants")
 }
@@ -567,6 +568,7 @@ model Principal {
   updatedByPerformanceGoalProgress   PerformanceGoalProgress[] @relation
   assignedByAssetAssignments         AssetAssignment[]         @relation
   returnedByAssetReturns             AssetReturn[]             @relation
+  archivedByArchiveRecords           ArchiveRecord[]           @relation
 
   @@index([tenantId])
   @@map("principals")
@@ -2548,4 +2550,25 @@ model AssetDisposal {
   asset  Asset  @relation(fields: [assetId], references: [id])
 
   @@map("asset_disposals")
+}
+
+model ArchiveRecord {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  sourceModule   String   @map("source_module") @db.VarChar(100)
+  sourceEntity   String   @map("source_entity") @db.VarChar(100)
+  sourceRecordId String   @map("source_record_id") @db.Uuid
+  displayLabel   String   @map("display_label") @db.VarChar(500)
+  snapshotData   Json?    @map("snapshot_data") @db.JsonB
+  archivedBy     String   @map("archived_by") @db.Uuid
+  archivedAt     DateTime @default(now()) @map("archived_at") @db.Timestamptz
+  reason         String?  @map("reason") @db.Text
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  principal Principal @relation(fields: [archivedBy], references: [id])
+
+  @@unique([tenantId, sourceModule, sourceEntity, sourceRecordId])
+  @@index([tenantId, sourceModule, sourceEntity])
+  @@index([archivedAt])
+  @@map("archive_records")
 }
